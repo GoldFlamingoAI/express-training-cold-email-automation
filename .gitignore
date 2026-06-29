@@ -1,0 +1,79 @@
+# ── Environment ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Workflow files (project-managed; gitignored only when generated) ─
+logs/
+state/
+*.log
+
+# ── OS ───────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Build / dist (any language) ──────────────────────────────────────
+dist/
+build/
+out/
+target/
+bin/
+obj/
+
+# ── Test / coverage ──────────────────────────────────────────────────
+coverage/
+.nyc_output/
+htmlcov/
+.coverage
+.pytest_cache/
+.tox/
+
+# ── Temporary ────────────────────────────────────────────────────────
+*.tmp
+*.temp
+
+# ── Node.js ──────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.npm/
+
+# ── Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# ── Go ───────────────────────────────────────────────────────────────
+vendor/
+
+# ── Rust ─────────────────────────────────────────────────────────────
+# Cargo.lock — uncomment ONLY for library crates. Keep committed for binary crates.
+**/*.rs.bk
+
+# ── Java / JVM ───────────────────────────────────────────────────────
+*.class
+*.jar
+.gradle/
+
+# ── Ruby ─────────────────────────────────────────────────────────────
+.bundle/

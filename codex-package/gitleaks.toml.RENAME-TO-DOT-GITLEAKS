@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+# Add project-specific allowlist patterns here if you hit false positives:
+# [[allowlist.regexes]]
+# description = "Example allowlist"
+# regex = '''example-pattern'''

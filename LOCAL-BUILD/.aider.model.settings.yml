@@ -1,0 +1,6 @@
+- name: ollama/gemma4:31b
+  edit_format: whole
+  max_tokens: 8192
+  use_repo_map: true
+  extra_params:
+    num_ctx: 8192

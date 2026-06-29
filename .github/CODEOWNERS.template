@@ -1,0 +1,10 @@
+# All PRs require user review before merge.
+# Replace @YOUR-HANDLE with your GitHub username (or org/team handle).
+
+* @YOUR-HANDLE
+
+# Workflow and CI files — Claude Code only
+.github/ @YOUR-HANDLE
+AGENTS.md @YOUR-HANDLE
+CLAUDE.md @YOUR-HANDLE
+docs/codex/ @YOUR-HANDLE

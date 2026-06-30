@@ -87,14 +87,6 @@ the 9 setup steps (15–30 min) needed before the first Codex session.
 │           ├── deviation-template.md
 │           └── error-template.md
 │
-└── LOCAL-BUILD/                     ← Quarantined (dormant local AI engine)
-    ├── README.md                    ← What's inside, run instructions
-    ├── FINAL-OCR-BUILD/             ← Docling + LlamaIndex + Ollama + Streamlit
-    ├── ocr-build/                   ← Build notes
-    ├── FRAMEWORK/                   ← Legacy Aider+Claude workflow
-    ├── legacy-js-config/            ← .eslintrc.json, .prettierrc
-    ├── LOCAL-AI-ENGINE-SETUP-POSTMORTEM.md
-    └── SETUP.md                     ← Legacy clasp+Aider+Ollama setup
 ```
 
 ---
@@ -127,14 +119,3 @@ See `docs/codex/FRESH_START.md`.
 - No `.github/workflows/` changes from Codex — Claude Code only
 - No secrets committed (gitleaks scan on every PR)
 
----
-
-## Local Build (Dormant)
-
-`LOCAL-BUILD/` contains a separate local AI engine project (Docling + LlamaIndex +
-Ollama + Streamlit) plus the older Aider+Claude framework that predates this Codex
-workflow. It is **quarantined** — Codex never reads or touches that folder, and
-nothing inside it should affect the Codex workflow at the repo root.
-
-Return to it when running local models again. See `LOCAL-BUILD/README.md` for setup,
-the post-mortem, and the legacy framework reference.

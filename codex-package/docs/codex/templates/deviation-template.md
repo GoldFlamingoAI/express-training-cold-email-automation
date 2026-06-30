@@ -1,5 +1,0 @@
-[YYYY-MM-DD] DEVIATION: [what and why] — [TASK_X.X]
-  Brief said: [what the brief expected]
-  Did instead: [what was actually done]
-  Reason: [why the deviation was necessary]
-  PR: [#NN]

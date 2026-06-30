@@ -1,60 +1,130 @@
-# AGENTS.md — [PROJECT-NAME]
+# AGENTS.md — Express Training Cold Email MVP
 
 Codex reads this file at every session start. Claude Code reads it during reviews.
 This file overrides any conflicting instructions in chat.
 
 ## Stack
-<!-- Replace this section with your project's stack. -->
-- [Runtime and version — e.g. "Node.js 22 LTS", "Python 3.12", "Go 1.22"]
-- [Architecture — e.g. ARM64, x86_64, cross-platform]
-- [Key libraries / frameworks]
-- [External API SDKs your project will integrate]
-- [Deploy context — local-only / cloud / containerized / single-user]
+- Runtime: Google Apps Script (V8 engine, clasp for local push/pull to `src/`)
+- Architecture: cloud-only, single-user, runs on Google's infrastructure
+- Database: Google Sheets (10 named tabs — see Sheet Tabs below)
+- Email: GmailApp (draft creation and thread search only — human approves and sends every email)
+- Secrets: `PropertiesService.getScriptProperties()` — never sheet cells, never hardcoded
+- Deploy context: Apps Script project bound to an isolated Google Workspace Business Starter account
 
 ## File Structure
-<!-- Replace with your project's actual layout. The paths below are placeholders. -->
-- [entry-point file]               → orchestrator / entry point
-- [feature module path A]          → [description]
-- [feature module path B]          → [description]
-- [shared utilities path]          → shared utilities
-- [state directory]                → per-job state (gitignored)
-- [logs directory]                 → structured logs (gitignored)
-- docs/                            → reference docs
-- docs/codex/                      → Codex workflow protocol files
+- `src/Code.gs`                  → orchestrator — chains modules, exposes trigger entry points
+- `src/ImportService.gs`         → imports CSV/paste data into COMPANIES tab (I/O)
+- `src/Cleaner.gs`               → normalizes names, URLs, cities, job titles (pure)
+- `src/Deduplicator.gs`          → prevents duplicate companies and contacts (pure)
+- `src/MassachusettsFilter.gs`   → enforces MA-only scope (pure)
+- `src/LeadScorer.gs`            → 100-pt scoring model, ≥75 approval gate (pure)
+- `src/AuditLogger.gs`           → writes structured entries to ACTIVITY_LOG tab (I/O)
+- `src/TemplateEngine.gs`        → merges approved templates with merge fields (pure)
+- `src/DraftService.gs`          → creates Gmail drafts via GmailApp (I/O)
+- `src/ApprovalGate.gs`          → checks all 10 pre-send conditions (pure)
+- `src/ReplyMonitor.gs`          → detects replies via Gmail search + labels (I/O) [Phase 2]
+- `src/BounceMonitor.gs`         → detects NDR bounces via Gmail search (I/O) [Phase 2]
+- `src/SuppressionService.gs`    → reads/writes SUPPRESSION tab (I/O) [Phase 2]
+- `src/FollowUpScheduler.gs`     → identifies contacts eligible for follow-up (I/O) [Phase 2]
+- `src/DashboardService.gs`      → calculates metrics, writes DASHBOARD tab (I/O) [Phase 2]
+- `src/ZeroBounceClient.gs`      → ZeroBounce API wrapper via UrlFetchApp (I/O) [Phase 3]
+- `src/ApolloClient.gs`          → Apollo API wrapper via UrlFetchApp (I/O) [Phase 3]
+- `src/HunterClient.gs`          → Hunter API wrapper via UrlFetchApp (I/O) [Phase 3]
+- `appsscript.json`              → Apps Script manifest (OAuth scopes, runtime version)
+- `PROPERTIES.example`           → documents all required PropertiesService keys (no real values)
+- `docs/`                        → reference docs
+- `docs/codex/`                  → Codex workflow protocol files
+
+## Sheet Tabs (the Sheets file IS the state layer)
+- `SETTINGS`           — campaign settings, sending limits, template versions, flags (incl. DRAFT_ONLY)
+- `COMPANIES`          — source Massachusetts business records
+- `CONTACTS`           — contact names, titles, LinkedIn, emails, status, scores
+- `CAMPAIGNS`          — campaign and email-sequence configuration
+- `QUEUE`              — contacts currently eligible for drafting or follow-up
+- `SUPPRESSION`        — opt-outs, bounces, negative replies, exclusions
+- `ACTIVITY_LOG`       — every enrichment, draft, send, reply, and error (AuditLogger writes here only)
+- `DASHBOARD`          — campaign metrics (DashboardService writes here only)
+- `TEMPLATES`          — approved static email templates (human-maintained)
+- `PLAYBOOK_REQUESTS`  — contacts who requested the free AI Tactical Playbook
 
 ## Patterns
-<!-- Replace with your project's actual module conventions. -->
-- Module exports: [single primary export / named exports] with a contract docblock at top
-- Errors: raised with stage/operation context; the orchestrator catches and logs
-- State: only via `[your state module]` — never touch state files inline
-- Logs: only via `[your logger module]` — never raw print/log calls (`console.log`, `print`, `fmt.Println`, etc.)
-- Concurrency: only via `[your concurrency primitive]`, configured from `.env`
-- Files: only via `[your file helpers module]` — no inline filesystem calls
+
+### Pure vs I/O — the central module rule
+Every module is either **pure** or **I/O**. Never mix.
+
+**Pure modules** (Cleaner, Deduplicator, MassachusettsFilter, LeadScorer, TemplateEngine, ApprovalGate):
+- Accept data as function arguments, return transformed data or a result object
+- Never read from or write to Sheets, GmailApp, PropertiesService, or UrlFetchApp
+- No side effects of any kind
+
+**I/O modules** (ImportService, DraftService, AuditLogger, ReplyMonitor, BounceMonitor, SuppressionService, FollowUpScheduler, DashboardService, ZeroBounceClient, ApolloClient, HunterClient):
+- Are the only modules that touch Sheets, GmailApp, UrlFetchApp, or PropertiesService
+- Each I/O module owns one interaction surface (e.g., DraftService owns GmailApp draft creation)
+
+**Orchestrator** (`Code.gs`):
+- Reads data from Sheets, passes it through pure modules, hands result to I/O modules
+- Contains no business logic itself — it only chains modules in sequence
+
+### Logging
+- All production logging via `auditLog(stage, action, contactId, details, status)` in `AuditLogger.gs`
+- `Logger.log()` is allowed only for temporary local debug — must be removed before PR is marked ready
+- `console.log()` is forbidden — not available in Apps Script V8 runtime
+
+### Secrets
+- API keys and tokens only via `PropertiesService.getScriptProperties().getProperty('KEY_NAME')`
+- Never hardcoded in any `.gs` file
+- Never stored in sheet cells
+- All required keys documented in `PROPERTIES.example` with placeholder values
+
+### Configurable limits and thresholds
+- Daily email limits read from `SETTINGS` tab at runtime — never hardcoded
+- Lead score approval gate (≥75) read from `SETTINGS` tab — never hardcoded
+- Max follow-ups (3) read from `SETTINGS` tab — never hardcoded
+- `DRAFT_ONLY` flag read from `SETTINGS` tab — never hardcoded
+
+### Gmail interaction
+- Draft creation: only via `DraftService.createDraft()` — no `GmailApp` calls in other modules
+- Thread/reply search: only via `GmailApp.search()` in `ReplyMonitor.gs` and `BounceMonitor.gs`
+- Label operations: only within the relevant monitor module
+- `DRAFT_ONLY` mode: when `true` in SETTINGS, DraftService creates the draft and stops — never auto-sends
+
+### External API calls
+- ZeroBounce: only via `ZeroBounceClient.verify(email)` — never inline `UrlFetchApp`
+- Apollo: only via `ApolloClient.*` functions
+- Hunter: only via `HunterClient.*` functions
+- `UrlFetchApp` is allowed only inside the three named client modules above
 
 ## Style
-- Formatter: [your formatter, e.g. prettier / black / gofmt / rustfmt]
-- Linter: [your linter, e.g. eslint / ruff / golangci-lint / clippy]
-- Type hints: [JSDoc / TypeScript / Python type hints / etc.] on every exported function
-- Imports: [your import order convention]
-- Filenames: [your filename convention — e.g. snake_case.py, camelCase.ts, kebab-case folders]
-- Comments: only when WHY is non-obvious. Never explain WHAT the code does.
+- Language: JavaScript (Apps Script V8 — ES2019, no module system, all files share global scope)
+- Filenames: PascalCase `.gs` (e.g., `ImportService.gs`, `AuditLogger.gs`)
+- Functions: `camelCase`
+- Constants: `SCREAMING_SNAKE_CASE`
+- JSDoc required on every top-level (exported) function — one-line description + `@param` + `@returns`
+- Comments: only when WHY is non-obvious. Never explain what the code does.
+- No `var` — use `const` and `let`
+- No unused variables
+- Error handling: every `catch` block must call `auditLog()` with stage context — silent catch is a blocker
 
 ## Never Do
 - Never push to main — `codex/*` branches only, always via PR
 - Never open more than 1 PR per task
-- Never commit `.env` or any real secret
-- Never add a dependency without the gate below
+- Never commit `.clasp.json` (contains scriptId), any API key, or any real credential
+- Never add a new Google service scope to `appsscript.json` without the dependency gate below
 - Never make architecture decisions — flag in PHASES.md, log in NOTES.md
 - Never modify `.github/workflows/` — Claude Code only
-- Never use raw print/log calls — use the project logger
-- Never bypass the project's state module for state writes
-- Never call external services outside their wrapper modules
+- Never use `console.log()` — not available in Apps Script V8
+- Never leave `Logger.log()` debug calls in code when marking a PR ready
+- Never write to Sheets directly from a pure module
+- Never call `GmailApp` outside of `DraftService.gs`, `ReplyMonitor.gs`, or `BounceMonitor.gs`
+- Never call `UrlFetchApp` outside of `ZeroBounceClient.gs`, `ApolloClient.gs`, or `HunterClient.gs`
+- Never hardcode sending limits, score thresholds, or daily caps — all must come from SETTINGS tab
+- Never store secrets in sheet cells or hardcode in `.gs` files — use `PropertiesService`
 - Never split deviation logs across commits — NOTES.md lands with the code
 - Never split error logs across commits — ERRORS.md lands with the code
 - Never touch files outside the task brief's "files in scope" list
 - Never add tests, docs, or config not requested in the task brief
 - Never refactor "while you're in there" — out-of-scope changes block the PR
-<!-- Add project-specific "Never Do" rules here -->
+- Never call Phase 3 client modules (ZeroBounceClient, ApolloClient, HunterClient) from Phase 1 or Phase 2 code — they are opt-in at Phase 3 only
 
 ---
 
@@ -88,17 +158,18 @@ Do not open a PR or take any other action until the user confirms EMERGENCY.md i
 
 ## New Dependency
 
-Before adding any package, stop and ask in the PR description:
+For Apps Script, a "dependency" means enabling a new OAuth scope in `appsscript.json`
+or adding a new Advanced Google Service. Before adding either, stop and ask in the PR description:
 
 ```
-Need: [package name and version] — [reason]
-Architecture/platform notes: [verify against your project's architecture]
+Need: [scope or service name] — [reason]
+Impact: [what new capability this grants]
 Approve?
   y = add and tag PR with DEPS_ADDED
   n = find an alternative
 ```
 
-Never install without explicit approval in the task brief or a separate review approval.
+Never add a new scope without explicit approval in the task brief.
 
 ---
 
@@ -178,7 +249,7 @@ These 11 rules override everything else. Violating any of them blocks the PR.
 
 **10. Banned language.** Never use "blocked," "pending," "I will," "should," "approximately," "successfully," or "done" without a PR URL. Either do it now or output: "STOPPING because: [exact technical reason]."
 
-**11. Commit message must include task number.** Every commit in the PR must end with `[TASK_X.X]`. PR title must end with `[TASK_X.X]`. Example: `feat: add module skeleton [TASK_2.1a]`.
+**11. Commit message must include task number.** Every commit in the PR must end with `[TASK_X.X]`. PR title must end with `[TASK_X.X]`. Example: `feat: add AuditLogger module [TASK_1.2]`.
 
 ---
 
@@ -188,4 +259,4 @@ These 11 rules override everything else. Violating any of them blocks the PR.
 - Always open a draft PR at the start of work; mark ready when complete
 - Never commit directly to main
 - Use `NEEDS_REVIEW:` markers in code for things you want Claude to inspect closely
-- Use `NEEDS_WIFI_TEST:` markers for integration points that need live API calls
+- Use `NEEDS_WIFI_TEST:` markers for integration points that need live API calls (Gmail, ZeroBounce, etc.)

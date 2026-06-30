@@ -46,26 +46,45 @@ For any of the above, post a review comment with the specific rule violated and 
 
 ## Tier 2: Architecture Drift
 
-> ⚠️ Fill in the project-specific contracts and module paths below before Phase 1 starts.
-> Until filled, Tier 2 is enforced generically — Claude blocks pattern violations against
-> whatever modules AGENTS.md names, but cannot enforce specific interface shapes.
-
 ### 2.1 Contract preservation
-Block if any of these change without an explicit task ID:
-- [list immutable interfaces / module exports here once defined]
-- State file format in `state/` (once defined)
+Block if any of these change without an explicit task ID in the brief:
+
+**Immutable function signatures** (once established by their task PR):
+- `auditLog(stage, action, contactId, details, status)` — 5-param signature; change = **blocker**
+- `checkApproval(contact, settings, dailySentCount, isSuppressed)` — return shape `{approved, failedChecks[]}` = **blocker** to change
+- `scoreLead(lead, approvalThreshold)` — return shape `{score, breakdown, approved}` = **blocker** to change
+- `createDraft(toEmail, subject, body, contactId)` — return shape `{success, draftId, error}` = **blocker** to change
+
+**Sheet schema** (column order is immutable once established in Task 1.1):
+- COMPANIES tab column set
+- CONTACTS tab column set
+- ACTIVITY_LOG tab column set: `[timestamp, stage, action, contactId, details, status]`
+
+Adding new columns to any tab requires an explicit task — never inline.
 
 ### 2.2 Pattern enforcement
-- State writes must go through `[your state module]` — no inline filesystem calls = **blocker**
-- File operations must go through `[your file helpers module]` = **blocker**
-- Logging must go through `[your logger module]` — rogue raw print/log calls (`console.log`, `print`, `fmt.Println`, etc.) = **blocker**
-- External services called outside their wrapper modules = **blocker**
-- Concurrency hardcoded instead of read from `.env` = **blocker**
+
+**Pure vs I/O module boundary** — this is the core architectural rule:
+- Any Sheets access (`SpreadsheetApp`, `getRange`, `setValue`, `appendRow`, etc.) in a pure module (Cleaner, Deduplicator, MassachusettsFilter, LeadScorer, TemplateEngine, ApprovalGate) = **blocker**
+- Any `GmailApp` call outside `DraftService.gs`, `ReplyMonitor.gs`, `BounceMonitor.gs` = **blocker**
+- Any `UrlFetchApp` call outside `ZeroBounceClient.gs`, `ApolloClient.gs`, `HunterClient.gs` = **blocker**
+- Any `PropertiesService` call inside a pure module = **blocker** (pure modules receive config as arguments)
+
+**Logging:**
+- Production logging must go through `auditLog()` from `AuditLogger.gs` — rogue `console.log()` = **blocker**
+- `Logger.log()` debug calls left in code when PR is marked ready = **request changes**
+- Secrets or email addresses in log `details` field = **blocker**
+
+**Configuration / hardcoded values:**
+- Sending daily limit hardcoded anywhere (not from SETTINGS tab) = **blocker**
+- Lead score approval threshold hardcoded in LeadScorer = **blocker** (must be passed in by caller)
+- API keys hardcoded in any `.gs` file = **blocker** (use `PropertiesService`)
+- DRAFT_ONLY flag hardcoded = **blocker** (must come from SETTINGS tab)
 
 ### 2.3 Dependency hygiene
-- New deps in `package.json` (or equivalent manifest) require approval gate per AGENTS.md = **blocker** if unapproved
-- Architecture-incompatible packages (e.g. x86 on ARM64) = **blocker**
-- Version pin missing = **request changes** (not blocker)
+- New OAuth scope added to `appsscript.json` without the dependency gate (per AGENTS.md) = **blocker** if unapproved
+- New Advanced Google Service enabled without brief permission = **blocker**
+- `.clasp.json` committed (contains scriptId — treat as a credential) = **blocker**
 
 ---
 

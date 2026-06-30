@@ -1,13 +1,13 @@
-# Project Phases — [PROJECT-NAME]
+# Project Phases — Express Training Cold Email MVP
 
 ## Legend
 - 🤖 = Codex (cloud, online — primary coder)
-- 🏠 = Desk (WiFi required, Claude Code reviews / live API tests)
+- 🏠 = Human task (manual setup, no code)
 - ✅ = Complete  🏗️ = In progress  ⏸️ = Blocked
 
 ## Current Status
 - **Current Phase:** Phase 1
-- **Current Task:** Task 1.1 — [first task name]
+- **Current Task:** Task 1.1 — Project scaffold
 - **Branch pattern:** `codex/task-X.X-short-name`
 - **Assigned:** Codex
 - **Mode:** 🤖 Cloud (online)
@@ -29,27 +29,82 @@ If a task feels like it needs more files than the brief allows, split it: tag su
 
 ---
 
-## Phase 0: Discovery ✅ 🏠
-- [x] Specs reviewed
-- [x] Stack chosen
-- [x] Architecture decisions documented
+## Phase 0: Discovery + Manual Setup ✅ 🏠
 
-## Phase 1: [Phase Name] 🤖
-*Goal: [one-sentence description of what this phase delivers.]*
+Architecture and tooling decisions are complete. The following manual setup must be done by the user **before Phase 1 Codex work begins**:
 
-- [ ] **Task 1.1** 🤖 [Task description] (1 PR)
-- [ ] **Task 1.2** 🤖 [Task description] (1 PR)
-- [ ] **Task 1.3** 🤖 [Task description] (1 PR)
+- [x] MVP architecture spec reviewed and approved (`starting-architecture/`)
+- [x] Stack chosen: Apps Script + Sheets + Gmail + Lemwarm + Apollo/Hunter/ZeroBounce free tiers
+- [x] Lean phasing decided: core draft loop first, monitors second, API clients optional
+- [ ] 🏠 **Buy secondary cold-outreach domain** (not the primary business domain)
+- [ ] 🏠 **Create isolated Google Workspace Business Starter tenant** (separate from primary account)
+- [ ] 🏠 **Configure DNS:** MX records, SPF, DKIM, DMARC (`p=none` monitoring mode first)
+- [ ] 🏠 **Create sender identity:** real name, profile photo, signature, physical address
+- [ ] 🏠 **Connect Lemwarm Essential** to the isolated inbox; run 3–4 weeks before first send
+- [ ] 🏠 **Configure Google Postmaster Tools** for the new domain
+- [ ] 🏠 **Create the Google Sheets file** with the 10 required tabs: SETTINGS, COMPANIES, CONTACTS, CAMPAIGNS, QUEUE, SUPPRESSION, ACTIVITY_LOG, DASHBOARD, TEMPLATES, PLAYBOOK_REQUESTS
+- [ ] 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
+- [ ] 🏠 **Obtain Massachusetts source company list** (CSV) — WTFP grantees and other MA employers
+- [ ] 🏠 **Connect Codex to this GitHub repo** (GitHub OAuth, write access to `codex/*` branches only)
+
+*None of these tasks go to Codex. Complete them before sending Task 1.1 brief.*
+
+---
+
+## Phase 1: Core Draft Loop 🤖
+*Goal: Build the full pipeline from CSV import through Gmail draft creation, with all 10 pre-send conditions enforced, so the first smoke-test emails can be reviewed and sent by a human.*
+
+- [ ] **Task 1.1** 🤖 Project scaffold: `appsscript.json`, `src/Code.gs` (orchestrator skeleton), `PROPERTIES.example` (1 PR)
+- [ ] **Task 1.2** 🤖 AuditLogger module: `src/AuditLogger.gs` — structured logging to ACTIVITY_LOG tab (1 PR)
+- [ ] **Task 1.3** 🤖 ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
+- [ ] **Task 1.4** 🤖 Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
+- [ ] **Task 1.5** 🤖 Deduplicator module: `src/Deduplicator.gs` — pure duplicate detection for companies and contacts (1 PR)
+- [ ] **Task 1.6** 🤖 MassachusettsFilter module: `src/MassachusettsFilter.gs` — pure MA-only confirmation (1 PR)
+- [ ] **Task 1.7** 🤖 LeadScorer module: `src/LeadScorer.gs` — pure 100-pt scoring, ≥75 approval gate (1 PR)
+- [ ] **Task 1.8** 🤖 TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
+- [ ] **Task 1.9** 🤖 ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
+- [ ] **Task 1.10** 🤖 DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
 - [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit + calibration
 
-## Phase 2: [Phase Name] 🤖
-*Goal: [one-sentence description.]*
+*After Phase 1 merge: human manually sends smoke-test emails (3–5/day) from Gmail. DRAFT_ONLY=TRUE is the default.*
 
-- [ ] **Task 2.1** 🤖 [Task description] (1 PR)
-- [ ] **Task 2.2** 🤖 [Task description] (1 PR)
+---
+
+## Phase 2: Tracking and Follow-ups 🤖
+*Goal: Detect replies and bounces, enforce suppression, schedule follow-up drafts, and surface metrics on the DASHBOARD tab.*
+
+- [ ] **Task 2.1** 🤖 SuppressionService module: `src/SuppressionService.gs` — reads/writes SUPPRESSION tab, `isSuppressed()` check (1 PR)
+- [ ] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR)
+- [ ] **Task 2.3** 🤖 BounceMonitor module: `src/BounceMonitor.gs` — Gmail NDR detection, updates CONTACTS + SUPPRESSION (1 PR)
+- [ ] **Task 2.4** 🤖 FollowUpScheduler module: `src/FollowUpScheduler.gs` — identifies follow-up eligible contacts, adds to QUEUE (1 PR)
+- [ ] **Task 2.5** 🤖 DashboardService + Code.gs trigger wire-up: `src/DashboardService.gs` + `src/Code.gs` updated with monitor + dashboard triggers (1 PR)
 - [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit + calibration
 
-<!-- Add more phases as needed -->
+*Note: ReplyMonitor and BounceMonitor are the most brittle modules — expect ERRORS.md activity here. Human remains the safety net at this volume.*
+
+---
+
+## Phase 3: API Clients — Optional 🤖
+*Goal: Replace manual CSV workflows with API-backed discovery and verification — only if manual enrichment becomes the bottleneck.*
+
+*Trigger: start Phase 3 only when manual CSV processing is consuming too much time or free credits are consistently exhausted.*
+
+- [ ] **Task 3.1** 🤖 ZeroBounceClient module: `src/ZeroBounceClient.gs` — ZeroBounce email verification API (1 PR)
+- [ ] **Task 3.2** 🤖 ApolloClient module: `src/ApolloClient.gs` — Apollo contact search API (1 PR)
+- [ ] **Task 3.3** 🤖 HunterClient module: `src/HunterClient.gs` — Hunter email finder/verifier API (1 PR)
+- [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit
+
+---
+
+## Upgrade Triggers (human decides, not Codex)
+
+| Signal | Action |
+|--------|--------|
+| ZeroBounce free (100/mo) consistently exhausted | Switch to MillionVerifier or ZeroBounce PAYG credits (~$1–2/300 emails) |
+| Apollo free credits exhausted each month | Add Apollo paid plan |
+| Manual sending (10/day) is the bottleneck | Evaluate Instantly or Lemlist; drop standalone Lemwarm if bundled warm-up included |
+| First domain healthy + positive replies confirmed | Add second domain + inbox |
+| 150–300 verified contacts ready | Start Phase 3 API clients |
 
 ---
 

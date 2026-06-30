@@ -1,5 +1,0 @@
-[YYYY-MM-DD] ERROR: Stage [X] | [class] | [message]
-  Tried: [fixes attempted]
-  Resolved: [yes/no — if yes, how]
-  Task: [TASK_X.X]
-  PR: [#NN]

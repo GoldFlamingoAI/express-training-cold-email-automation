@@ -4,7 +4,7 @@ Codex reads this file at every session start. Claude Code reads it during review
 This file overrides any conflicting instructions in chat.
 
 ## Stack
-- Runtime: Google Apps Script (V8 engine, clasp for local push/pull to `src/`)
+- Runtime: Google Apps Script (V8 engine)
 - Architecture: cloud-only, single-user, runs on Google's infrastructure
 - Database: Google Sheets (10 named tabs — see Sheet Tabs below)
 - Email: GmailApp (draft creation and thread search only — human approves and sends every email)
@@ -108,7 +108,7 @@ Every module is either **pure** or **I/O**. Never mix.
 ## Never Do
 - Never push to main — `codex/*` branches only, always via PR
 - Never open more than 1 PR per task
-- Never commit `.clasp.json` (contains scriptId), any API key, or any real credential
+- Never commit any API key or real credential
 - Never add a new Google service scope to `appsscript.json` without the dependency gate below
 - Never make architecture decisions — flag in PHASES.md, log in NOTES.md
 - Never modify `.github/workflows/` — Claude Code only

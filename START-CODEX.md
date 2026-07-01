@@ -1,6 +1,6 @@
-# Start Codex — Run This After TEMPLATE_SETUP.md
+# Start Codex — Handing Work to Codex
 
-Setup is done. AGENTS.md, PHASES.md, and CODEX_TASK_RECIPES.md are filled.
+Setup is done. AGENTS.md, PHASES.md, and PLAYBOOK.md are filled.
 CODEOWNERS is renamed. Branch protection is on. Now hand work to Codex.
 
 ---
@@ -34,7 +34,7 @@ Required fields:
 ### 3. Paste the Brief into Codex
 
 Codex will:
-- Read `AGENTS.md`, `PHASES.md`, `CODEX_TASK_RECIPES.md`, `NOTES.md`, `ERRORS.md`
+- Read `AGENTS.md`, `PHASES.md`, `PLAYBOOK.md`, `NOTES.md`, `ERRORS.md`
 - Output the Session Start banner (confirm it loaded)
 - Create branch `codex/task-X.X-short-name`
 - Open a draft PR
@@ -56,15 +56,14 @@ findings as PR comments or in chat.
 - **Issues** → tell Codex the exact fix instructions Claude gave you
 - **Security issue** → do NOT hand back to Codex. Ask Claude to fix directly via follow-up PR.
 
-### 6. Pull and Move On
+### 6. Deploy and Move On
 
-After merging:
+After merging, open the Apps Script editor and copy the merged `.gs` file
+content from GitHub into the matching script file. There is no local clone and
+no `git pull` — GitHub is the source of truth and you paste from GitHub into
+Apps Script by hand.
 
-```bash
-git pull origin main
-```
-
-Then back to Step 1 for the next task. Codex does NOT auto-chain — one PR, one merge, one pull.
+Then back to Step 1 for the next task. Codex does NOT auto-chain — one PR, one merge, one paste.
 
 ---
 
@@ -98,5 +97,4 @@ Outputs a verdict: pass (move to next phase) or issues (fix before moving on).
 - `CLAUDE.md` — Claude Code's project instructions
 - `docs/codex/REVIEW_STANDARDS.md` — Claude's 5-tier review rubric
 - `docs/codex/HANDOFF.md` — task brief format and examples
-- `docs/codex/DROPIN_PLAYBOOK.md` — full workflow reference
 - `docs/codex/FRESH_START.md` — reset procedure

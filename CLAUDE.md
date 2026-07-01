@@ -197,7 +197,7 @@ Project-specific checks to fill in once Phase 1 is defined:
 2. Scan NOTES.md for repeated deviation patterns
 3. Scan ERRORS.md for recurring failure classes
 4. If 1+ patterns hitting threshold: tighten AGENTS.md / PLAYBOOK.md directly on GitHub, log entry in PHASES.md "Codex Calibration Log"
-5. Tell user: "Tightened [file] — pull before next Codex session"
+5. Tell user: "Tightened [file] — it's live on GitHub; Codex loads it automatically next session"
 
 ---
 
@@ -235,10 +235,8 @@ Never leave the user without a clear next step.
 
 **If the PR is clean:**
 > PR looks good — no issues found. Safe to merge.
-> Click **Merge** when ready, then pull main locally:
-> ```bash
-> git pull origin main
-> ```
+> Click **Merge** when ready, then copy the merged `.gs` file from GitHub into
+> the Apps Script editor to deploy it.
 
 **If the PR has issues:**
 > Found [X] issue(s). Do not merge yet.
@@ -267,11 +265,8 @@ When a phase audit is complete, always tell the user one of:
 4. Commit all three files directly
 5. Tell the user:
 > Phase [X] audit complete — all clear. PLAYBOOK.md updated for Phase [X+1].
-> Pull before the next Codex session:
-> ```bash
-> git pull origin main
-> ```
-> Then paste the next task brief into Codex.
+> The changes are live on GitHub; Codex loads them automatically next session.
+> Paste the next task brief into Codex when ready.
 
 **If the phase has issues:**
 > Phase [X] audit found [X] issue(s) — do not start the next phase yet.
@@ -284,15 +279,13 @@ When a phase audit is complete, always tell the user one of:
 
 Any time you update AGENTS.md, PLAYBOOK.md, CLAUDE.md, or any file Codex reads at
 session start — whether from an EMERGENCY or routine calibration — always tell
-the user explicitly which files changed and give them the exact command to pull:
+the user explicitly which files changed:
 
-> I've updated [filename(s)] on GitHub. Pull before the next Codex session:
-> ```bash
-> git pull origin main
-> ```
-> Codex will load the corrected rules automatically on next session.
+> I've updated [filename(s)] on GitHub. The changes are live on the repo now —
+> Codex will load the corrected rules automatically on its next session. No
+> action needed on your end.
 
-Never assume the user knows a pull is needed. Always say it.
+Never leave the user guessing whether a change took effect. Always confirm it's live.
 
 ---
 
@@ -307,7 +300,7 @@ do the following before anything else:
    - What the repeated mistake is
    - That no PRs should be merged until resolved
    - That they need to bring Claude in to fix AGENTS.md and/or PLAYBOOK.md
-   - That after the fix they must run `git pull origin main` before any Codex work
+   - That after the fix, the corrected rules are live on GitHub and Codex loads them automatically next session
 
 An EMERGENCY.md at the root is impossible to miss. It signals the user to bring
 Claude in for a correction session before Codex writes another line.
@@ -338,7 +331,7 @@ Next session should:
   - [actionable item 2]
 
 User actions before next session:
-  - git pull origin main  (if rule files changed)
+  - [any manual steps — e.g. copy merged .gs into Apps Script editor]
   - [other]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

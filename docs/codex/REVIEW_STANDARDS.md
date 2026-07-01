@@ -84,7 +84,6 @@ Adding new columns to any tab requires an explicit task — never inline.
 ### 2.3 Dependency hygiene
 - New OAuth scope added to `appsscript.json` without the dependency gate (per AGENTS.md) = **blocker** if unapproved
 - New Advanced Google Service enabled without brief permission = **blocker**
-- `.clasp.json` committed (contains scriptId — treat as a credential) = **blocker**
 
 ---
 

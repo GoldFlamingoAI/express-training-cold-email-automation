@@ -3,6 +3,24 @@
  * Chains pure modules and I/O modules for the Phase 1 import-to-draft workflow.
  * Modules: ImportService, Cleaner, Deduplicator, MassachusettsFilter, LeadScorer,
  * AuditLogger, TemplateEngine, ApprovalGate, and DraftService.
+ * Modules:
+ * - ImportService: imports CSV/paste data into COMPANIES.
+ * - Cleaner: normalizes company and contact fields.
+ * - Deduplicator: checks duplicate companies and contacts.
+ * - MassachusettsFilter: enforces Massachusetts-only scope.
+ * - LeadScorer: calculates lead scores and approval readiness.
+ * - AuditLogger: writes structured ACTIVITY_LOG entries.
+ * - TemplateEngine: merges approved templates with contact fields.
+ * - ApprovalGate: checks all pre-send requirements.
+ * - DraftService: creates Gmail drafts for human review.
+ * - SuppressionService: tracks opt-outs, bounces, and exclusions.
+ * - ReplyMonitor: detects replies through Gmail search.
+ * - BounceMonitor: detects NDR bounce messages through Gmail search.
+ * - FollowUpScheduler: identifies follow-up eligible contacts.
+ * - DashboardService: calculates campaign metrics.
+ * - ZeroBounceClient: verifies emails through ZeroBounce.
+ * - ApolloClient: discovers contacts through Apollo.
+ * - HunterClient: discovers and verifies emails through Hunter.
  */
 
 /**
@@ -54,6 +72,10 @@ function runImportPipeline(rawRows) {
     auditLog('Orchestrator', 'IMPORT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
+ * @returns {void}
+ */
+function runImportPipeline() {
+  // TODO: wire modules in TaskX.X
 }
 
 /**
@@ -110,6 +132,10 @@ function runDraftPipeline() {
     auditLog('Orchestrator', 'DRAFT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
+ * @returns {void}
+ */
+function runDraftPipeline() {
+  // TODO: wire modules in TaskX.X
 }
 
 /**
@@ -242,4 +268,8 @@ function countTodayActivity(spreadsheet, action) {
 
     return timestamp instanceof Date && timestamp.toDateString() === today && rowAction === action;
   }).length;
+ * @returns {void}
+ */
+function runFullPipeline() {
+  // TODO: wire modules in TaskX.X
 }

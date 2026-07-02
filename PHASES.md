@@ -7,6 +7,7 @@
 
 ## Current Status
 - **Current Phase:** Phase 1
+- **Current Task:** Task 1.5 — Deduplicator module
 - **Current Task:** Task 1.4 — Cleaner module
 - **Current Task:** Task 1.2 — AuditLogger module
 - **Branch pattern:** `codex/task-X.X-short-name`
@@ -58,6 +59,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] **Task 1.1** ✅ Project scaffold: `appsscript.json`, `src/Code.gs` (orchestrator skeleton), `PROPERTIES.example` (1 PR)
 - [x] **Task 1.2** ✅ AuditLogger module: `src/AuditLogger.gs` — structured logging to ACTIVITY_LOG tab (1 PR)
 - [x] **Task 1.3** ✅ ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
+- [x] **Task 1.4** ✅ Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
 - [ ] **Task 1.3** 🤖 ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
 - [ ] **Task 1.4** 🤖 Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
 - [ ] **Task 1.5** 🤖 Deduplicator module: `src/Deduplicator.gs` — pure duplicate detection for companies and contacts (1 PR)

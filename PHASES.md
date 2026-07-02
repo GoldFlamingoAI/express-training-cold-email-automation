@@ -7,7 +7,7 @@
 
 ## Current Status
 - **Current Phase:** Phase 1
-- **Current Task:** Task 1.3 — ImportService module
+- **Current Task:** Task 1.2 — AuditLogger module
 - **Branch pattern:** `codex/task-X.X-short-name`
 - **Assigned:** Codex
 - **Mode:** 🤖 Cloud (online)

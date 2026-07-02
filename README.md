@@ -63,7 +63,6 @@ express-training-cold-email-automation/
 │       ├── TRACKING.md              ← Per-phase audit log (Claude maintains)
 │       └── templates/               ← Brief, PR, deviation, error templates
 │
-└── starting-architecture/           ← Original MVP spec (reference only)
 ```
 
 ---
@@ -95,3 +94,4 @@ See `docs/codex/FRESH_START.md`.
 - `PHASES.md` must be updated in the same PR as the code
 - No `.github/workflows/` changes from Codex — Claude Code only
 - No secrets committed (gitleaks scan on every PR)
+

@@ -95,27 +95,10 @@ jobs:
         with:
           config-path: .gitleaks.toml
 
-      # ── ADD YOUR STACK'S LINT/TEST STEPS BELOW ────────────────────────────
-      # Examples:
-      #
-      # Node.js:
-      #   - uses: actions/setup-node@v4
-      #     with: { node-version: 22, cache: npm }
-      #   - run: npm ci
-      #   - run: npm run lint
-      #   - run: npx prettier --check .
-      #
-      # Python:
-      #   - uses: actions/setup-python@v5
-      #     with: { python-version: '3.12' }
-      #   - run: pip install -r requirements.txt
-      #   - run: ruff check .
-      #   - run: pytest
-      #
-      # Go:
-      #   - uses: actions/setup-go@v5
-      #     with: { go-version: '1.22' }
-      #   - run: go vet ./...
-      #   - run: go test ./...
-      #
+      # ── Stack note — no local build step ─────────────────────────────────
+      # This project is Google Apps Script (cloud-only, V8 engine). There is no
+      # local build, install, lint, or test stage: Codex writes .gs files to
+      # GitHub and the human copies them into the Apps Script editor by hand.
+      # CI enforces the Codex contract (task tags, PHASES.md, workflow ownership)
+      # and secret scanning only — nothing is compiled or run here.
       # ──────────────────────────────────────────────────────────────────────

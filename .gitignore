@@ -1,14 +1,13 @@
-# ── Environment ──────────────────────────────────────────────────────
+# This project is Google Apps Script (cloud-only). There is no local build,
+# no package manager, and no compiled output — so this file is deliberately lean.
+# Secrets live in Apps Script PropertiesService, never in the repo.
+
+# ── Secrets / environment (belt-and-suspenders — none of these are used) ─
 .env
 .env.local
 .env.*.local
 
-# ── Workflow files (project-managed; gitignored only when generated) ─
-logs/
-state/
-*.log
-
-# ── OS ───────────────────────────────────────────────────────────────
+# ── OS noise ─────────────────────────────────────────────────────────
 .DS_Store
 .DS_Store?
 ._*
@@ -23,57 +22,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# ── Build / dist (any language) ──────────────────────────────────────
-dist/
-build/
-out/
-target/
-bin/
-obj/
-
-# ── Test / coverage ──────────────────────────────────────────────────
-coverage/
-.nyc_output/
-htmlcov/
-.coverage
-.pytest_cache/
-.tox/
-
 # ── Temporary ────────────────────────────────────────────────────────
 *.tmp
 *.temp
-
-# ── Node.js ──────────────────────────────────────────────────────────
-node_modules/
-.pnp
-.pnp.js
-.npm/
-
-# ── Python ───────────────────────────────────────────────────────────
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-.venv/
-env/
-ENV/
-*.egg-info/
-.mypy_cache/
-.ruff_cache/
-
-# ── Go ───────────────────────────────────────────────────────────────
-vendor/
-
-# ── Rust ─────────────────────────────────────────────────────────────
-# Cargo.lock — uncomment ONLY for library crates. Keep committed for binary crates.
-**/*.rs.bk
-
-# ── Java / JVM ───────────────────────────────────────────────────────
-*.class
-*.jar
-.gradle/
-
-# ── Ruby ─────────────────────────────────────────────────────────────
-.bundle/
+*.log

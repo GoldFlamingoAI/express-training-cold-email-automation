@@ -1,8 +1,0 @@
-You're working in the GoldFlamingoAI/proofsync repo.
-Run: git checkout add-codex-workflow
-Then read every file in codex-package/ including all subfolders 
-and follow any instructions you find.
-
-Note: PLAYBOOK.md, DICTIONARY_THE_PLAYBOOK.md, and 
-MODULAR_DICTIONARY_PLAYBOOK.md are existing project files — do not touch them.
-The Codex workflow file is named CODEX_TASK_RECIPES.md.

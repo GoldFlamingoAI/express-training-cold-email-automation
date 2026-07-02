@@ -7,6 +7,7 @@
 
 ## Current Status
 - **Current Phase:** Phase 1
+- **Current Task:** CHECKPOINT — PHASE_READY audit
 - **Current Task:** Task 1.10 — DraftService + Code.gs wire-up
 - **Current Task:** Task 1.9 — ApprovalGate module
 - **Current Task:** Task 1.8 — TemplateEngine module
@@ -69,6 +70,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] **Task 1.7** ✅ LeadScorer module: `src/LeadScorer.gs` — pure 100-pt scoring, ≥75 approval gate (1 PR)
 - [x] **Task 1.8** ✅ TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
 - [x] **Task 1.9** ✅ ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
+- [x] **Task 1.10** ✅ DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
 - [ ] **Task 1.3** 🤖 ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
 - [ ] **Task 1.4** 🤖 Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
 - [ ] **Task 1.5** 🤖 Deduplicator module: `src/Deduplicator.gs` — pure duplicate detection for companies and contacts (1 PR)

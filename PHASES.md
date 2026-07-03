@@ -6,8 +6,8 @@
 - ✅ = Complete  🏗️ = In progress  ⏸️ = Blocked
 
 ## Current Status
-- **Current Phase:** Phase 1
-- **Current Task:** Task 1.1 — Project scaffold
+- **Current Phase:** Phase 2
+- **Current Task:** Task 2.2 — ReplyMonitor module
 - **Branch pattern:** `codex/task-X.X-short-name`
 - **Assigned:** Codex
 - **Mode:** 🤖 Cloud (online)
@@ -54,17 +54,17 @@ Architecture and tooling decisions are complete. The following manual setup must
 ## Phase 1: Core Draft Loop 🤖
 *Goal: Build the full pipeline from CSV import through Gmail draft creation, with all 10 pre-send conditions enforced, so the first smoke-test emails can be reviewed and sent by a human.*
 
-- [ ] **Task 1.1** 🤖 Project scaffold: `appsscript.json`, `src/Code.gs` (orchestrator skeleton), `PROPERTIES.example` (1 PR)
-- [ ] **Task 1.2** 🤖 AuditLogger module: `src/AuditLogger.gs` — structured logging to ACTIVITY_LOG tab (1 PR)
-- [ ] **Task 1.3** 🤖 ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
-- [ ] **Task 1.4** 🤖 Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
-- [ ] **Task 1.5** 🤖 Deduplicator module: `src/Deduplicator.gs` — pure duplicate detection for companies and contacts (1 PR)
-- [ ] **Task 1.6** 🤖 MassachusettsFilter module: `src/MassachusettsFilter.gs` — pure MA-only confirmation (1 PR)
-- [ ] **Task 1.7** 🤖 LeadScorer module: `src/LeadScorer.gs` — pure 100-pt scoring, ≥75 approval gate (1 PR)
-- [ ] **Task 1.8** 🤖 TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
-- [ ] **Task 1.9** 🤖 ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
-- [ ] **Task 1.10** 🤖 DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
-- [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit + calibration
+- [x] **Task 1.1** ✅ Project scaffold: `appsscript.json`, `src/Code.gs` (orchestrator skeleton), `PROPERTIES.example` (1 PR)
+- [x] **Task 1.2** ✅ AuditLogger module: `src/AuditLogger.gs` — structured logging to ACTIVITY_LOG tab (1 PR)
+- [x] **Task 1.3** ✅ ImportService module: `src/ImportService.gs` — CSV/paste import to COMPANIES tab (1 PR)
+- [x] **Task 1.4** ✅ Cleaner module: `src/Cleaner.gs` — pure normalization of names, domains, cities, titles (1 PR)
+- [x] **Task 1.5** ✅ Deduplicator module: `src/Deduplicator.gs` — pure duplicate detection for companies and contacts (1 PR)
+- [x] **Task 1.6** ✅ MassachusettsFilter module: `src/MassachusettsFilter.gs` — pure MA-only confirmation (1 PR)
+- [x] **Task 1.7** ✅ LeadScorer module: `src/LeadScorer.gs` — pure 100-pt scoring, ≥75 approval gate (1 PR)
+- [x] **Task 1.8** ✅ TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
+- [x] **Task 1.9** ✅ ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
+- [x] **Task 1.10** ✅ DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
+- [x] **CHECKPOINT** ✅ PHASE_READY → Claude Code audit + calibration
 
 *After Phase 1 merge: human manually sends smoke-test emails (3–5/day) from Gmail. DRAFT_ONLY=TRUE is the default.*
 
@@ -73,7 +73,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 ## Phase 2: Tracking and Follow-ups 🤖
 *Goal: Detect replies and bounces, enforce suppression, schedule follow-up drafts, and surface metrics on the DASHBOARD tab.*
 
-- [ ] **Task 2.1** 🤖 SuppressionService module: `src/SuppressionService.gs` — reads/writes SUPPRESSION tab, `isSuppressed()` check (1 PR)
+- [x] **Task 2.1** ✅ SuppressionService module: `src/SuppressionService.gs` — reads/writes SUPPRESSION tab, `isSuppressed()` check (1 PR)
 - [ ] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR)
 - [ ] **Task 2.3** 🤖 BounceMonitor module: `src/BounceMonitor.gs` — Gmail NDR detection, updates CONTACTS + SUPPRESSION (1 PR)
 - [ ] **Task 2.4** 🤖 FollowUpScheduler module: `src/FollowUpScheduler.gs` — identifies follow-up eligible contacts, adds to QUEUE (1 PR)

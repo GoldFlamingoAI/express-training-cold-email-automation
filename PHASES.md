@@ -64,7 +64,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] **Task 1.8** ✅ TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
 - [x] **Task 1.9** ✅ ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
 - [x] **Task 1.10** ✅ DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
-- [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit + calibration
+- [x] **CHECKPOINT** ✅ PHASE_READY → Claude Code audit + calibration (2026-07-03 — see `docs/codex/TRACKING.md`)
 
 *After Phase 1 merge: human manually sends smoke-test emails (3–5/day) from Gmail. DRAFT_ONLY=TRUE is the default.*
 

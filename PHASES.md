@@ -7,7 +7,7 @@
 
 ## Current Status
 - **Current Phase:** Phase 1
-- **Current Task:** CHECKPOINT — PHASE_READY audit
+- **Current Task:** the first unchecked `- [ ]` box in the phase checklist below. Do not track it on a separate line — the checklist is the single source of truth.
 - **Branch pattern:** `codex/task-X.X-short-name`
 - **Assigned:** Codex
 - **Mode:** 🤖 Cloud (online)
@@ -19,7 +19,7 @@
 Every task in this file is one logical unit. Codex must:
 1. Open a draft PR on a branch named `codex/task-X.X-short-name`
 2. Implement the task in **a single commit** scoped to the brief
-3. Make a **second commit** in the same PR that marks the task ✅ in PHASES.md and bumps Current Task
+3. Make a **second commit** in the same PR that marks the task ✅ in PHASES.md by flipping exactly one checkbox (`- [ ]` → `- [x]`) — no other PHASES.md edits
 4. Mark the PR ready for review
 5. Stop and wait for Claude review + user merge before starting the next task
 
@@ -113,4 +113,4 @@ Architecture and tooling decisions are complete. The following manual setup must
 
 | Date | Trigger | File tightened | Rule added/changed |
 |------|---------|----------------|--------------------|
-| — | — | — | — |
+| 2026-07-03 | PR-title tag check failed and PHASES.md conflicts on ~every PR (10 parallel `codex/summarize-repo-and-codex-role-*` branches) | AGENTS.md, PHASES.md, codex-guard.yml | Hoisted PR-title format + rejected example (rule 11); one-open-PR / start-from-fresh-main (rule 6); PHASES.md merge-conflict protocol (never "accept both"); removed mutable Current Task pointer (checklist is source of truth); CI now fails on conflict markers or duplicate task lines in PHASES.md |

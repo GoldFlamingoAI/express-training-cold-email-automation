@@ -235,11 +235,11 @@ These 11 rules override everything else. Violating any of them blocks the PR.
 
 **3. Preflight on session start.** Output the Session Start banner before any other work. If git history contradicts PHASES.md, trust git and flag Claude.
 
-**4. Update PHASES.md in same PR.** The PR that lands the code must also mark the task ✅ in PHASES.md and bump Current Task to the next incomplete one. Two changes, one PR.
+**4. Update PHASES.md in same PR.** The PR that lands the code must also mark the task ✅ in PHASES.md by flipping exactly one checkbox (`- [ ]` → `- [x]`) on that task's line. That is the ONLY PHASES.md edit. There is no "Current Task" pointer to bump — the current task is the first unchecked box. Do not add, reorder, or duplicate task lines.
 
 **5. Never skip tasks.** Always work in strict sequential order. Before opening a PR, state in the description: "I am working on Task X.X — [name]. This is the next incomplete task." If unsure, stop and ask.
 
-**6. One task per PR.** Each PR implements exactly one task or sub-task from PHASES.md. Multi-task PRs are blockers — split them.
+**6. One task per PR. One open PR at a time.** Each PR implements exactly one task or sub-task from PHASES.md. Multi-task PRs are blockers — split them. Never open a second PR while one is still open; finish and merge the current task first. Each session starts from fresh `main` (`git fetch origin main && git checkout -B codex/task-X.X-short-name origin/main`) so you are never behind. A PR whose title lists several modules (e.g. "scaffold and core Phase 1 modules: import, cleaner, dedupe…") is a multi-task PR — STOP and split it.
 
 **7. Explain before requesting files.** If a task requires files outside the brief's "files in scope" list, stop and update the PR description with the request and reason. Do not silently expand scope.
 
@@ -249,7 +249,41 @@ These 11 rules override everything else. Violating any of them blocks the PR.
 
 **10. Banned language.** Never use "blocked," "pending," "I will," "should," "approximately," "successfully," or "done" without a PR URL. Either do it now or output: "STOPPING because: [exact technical reason]."
 
-**11. Commit message must include task number.** Every commit in the PR must end with `[TASK_X.X]`. PR title must end with `[TASK_X.X]`. Example: `feat: add AuditLogger module [TASK_1.2]`.
+**11. Commit and PR title must end with the task tag.** Every commit in the PR AND the PR title must end with `[TASK_X.X]`. This is mechanically enforced by CI — a title without the tag fails the build.
+
+PR title format — exactly this shape, one task only:
+
+```
+<type>: <short summary> [TASK_X.X]
+```
+
+- ✅ `feat: add AuditLogger module [TASK_1.2]`
+- ✅ `fix: correct LeadScorer threshold read [TASK_1.7]`
+- ❌ `Project scaffold and core Phase 1 modules: import, cleaner, dedupe, scoring, template, audit, MA filter` — no tag AND bundles many tasks. This exact style has failed CI. Never produce it.
+
+If you cannot write a single `[TASK_X.X]` tag for the title, the PR contains more than one task — split it (rule 6).
+
+---
+
+## Merge Conflicts — PHASES.md (read every session)
+
+PHASES.md conflicts have wrecked past PRs. The cause: PRs that start behind
+`main` and then get resolved with "Accept both changes," which stacks
+duplicate task lines and pointers. Prevent it:
+
+1. **Start current.** Branch from fresh `origin/main` every session (rule 6). A
+   PR that never fell behind rarely conflicts.
+2. **If PHASES.md still conflicts, NEVER choose "Accept both changes."** That is
+   what produced the stacked/duplicated task lists. Instead:
+   - Take `main`'s version of PHASES.md wholesale.
+   - Re-apply only your single change: flip your one task's checkbox `- [ ]` → `- [x]`.
+   - Confirm the task list has each task exactly once and no `<<<<<<<`, `=======`,
+     or `>>>>>>>` markers remain.
+3. **Any other file conflict** you cannot resolve cleanly → STOP and hand to Claude.
+   Do not guess. Do not "accept both."
+
+CI blocks the merge if PHASES.md contains conflict markers or duplicate task
+lines, so a bad resolution will fail the build — fix it before marking ready.
 
 ---
 

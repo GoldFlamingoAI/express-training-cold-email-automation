@@ -76,6 +76,30 @@ jobs:
             exit 1
           fi
 
+      - name: Verify branch is not forked from a stale base
+        if: startsWith(github.head_ref, 'codex/')
+        run: |
+          # A branch forked far behind main produces massive conflicts and can
+          # silently revert already-merged work when resolved with "accept both."
+          # Catch it here instead of at merge time. See docs/codex/OPERATING.md.
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          # Deepen history so the merge-base is reachable (checkout is shallow).
+          git fetch --no-tags --deepen=200 origin "$BASE_REF" 2>/dev/null || \
+            git fetch --no-tags --unshallow origin 2>/dev/null || true
+          MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || echo "")
+          if [ -z "$MERGE_BASE" ]; then
+            echo "::warning::Could not compute merge-base (history too shallow). Skipping freshness check."
+            exit 0
+          fi
+          BEHIND=$(git rev-list --count "$MERGE_BASE..$BASE_SHA")
+          echo "Branch forked from a base that is $BEHIND commit(s) behind $BASE_REF."
+          if [ "$BEHIND" -gt 15 ]; then
+            echo "::error::Stale base: this branch forked $BEHIND commits behind $BASE_REF. Re-create it from fresh origin/$BASE_REF and re-apply your one task — do NOT resolve the conflicts by hand."
+            exit 1
+          fi
+
       - name: Verify no .github/workflows changes from non-owners
         env:
           # author_association is one of: OWNER, MEMBER, COLLABORATOR,

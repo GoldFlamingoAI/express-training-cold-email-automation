@@ -13,12 +13,15 @@ function checkApproval(contact, settings, dailySentCount, isSuppressed) {
   const personalEmailDomains = ['gmail.com', 'yahoo.com', 'icloud.com', 'hotmail.com'];
   const emailsSent = Number(contact.emailsSent || 0);
   const dailyLimit = Number(settings.dailyLimit || 0);
+  const maConfirmed = contact.maConfirmed === true || contact.maConfirmed === 'TRUE';
+  const roleIsRelevant = contact.roleIsRelevant === true || contact.roleIsRelevant === 'TRUE';
+  const catchAll = contact.catchAll === true || contact.catchAll === 'TRUE';
 
-  if (contact.maConfirmed !== true) {
+  if (!maConfirmed) {
     failedChecks.push('Company is not confirmed in Massachusetts');
   }
 
-  if (contact.roleIsRelevant !== true) {
+  if (!roleIsRelevant) {
     failedChecks.push('Contact does not have a relevant business role');
   }
 
@@ -30,7 +33,7 @@ function checkApproval(contact, settings, dailySentCount, isSuppressed) {
     failedChecks.push('Email has not passed final verification');
   }
 
-  if (contact.catchAll === true) {
+  if (catchAll) {
     failedChecks.push('Email is catch-all');
   }
 

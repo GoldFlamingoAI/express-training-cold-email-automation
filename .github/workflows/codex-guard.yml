@@ -95,10 +95,29 @@ jobs:
         with:
           config-path: .gitleaks.toml
 
+      # ── Apps Script syntax gate ──────────────────────────────────────────
+      # Apps Script (V8) parses as standard JS, so a syntax error means the
+      # whole project fails to load in the editor. node --check catches it
+      # here — copy each .gs to a .js temp so node treats it as a script and
+      # parses (no execution, so undefined globals like SpreadsheetApp are fine).
+      - name: Verify all .gs files parse
+        run: |
+          FAILED=0
+          for f in $(find src -name '*.gs'); do
+            cp "$f" "/tmp/$(basename "$f").js"
+            if ! node --check "/tmp/$(basename "$f").js"; then
+              echo "::error file=$f::$f has a syntax error and will not load in Apps Script"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -ne 0 ]; then
+            exit 1
+          fi
+
       # ── Stack note — no local build step ─────────────────────────────────
       # This project is Google Apps Script (cloud-only, V8 engine). There is no
-      # local build, install, lint, or test stage: Codex writes .gs files to
-      # GitHub and the human copies them into the Apps Script editor by hand.
-      # CI enforces the Codex contract (task tags, PHASES.md, workflow ownership)
-      # and secret scanning only — nothing is compiled or run here.
+      # local build, install, or test stage: Codex writes .gs files to GitHub
+      # and the human copies them into the Apps Script editor by hand. CI
+      # enforces the Codex contract (task tags, PHASES.md, workflow ownership),
+      # secret scanning, and a .gs syntax gate — nothing is compiled or run here.
       # ──────────────────────────────────────────────────────────────────────

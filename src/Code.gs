@@ -72,10 +72,6 @@ function runImportPipeline(rawRows) {
     auditLog('Orchestrator', 'IMPORT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
- * @returns {void}
- */
-function runImportPipeline() {
-  // TODO: wire modules in TaskX.X
 }
 
 /**
@@ -132,10 +128,6 @@ function runDraftPipeline() {
     auditLog('Orchestrator', 'DRAFT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
- * @returns {void}
- */
-function runDraftPipeline() {
-  // TODO: wire modules in TaskX.X
 }
 
 /**
@@ -268,8 +260,4 @@ function countTodayActivity(spreadsheet, action) {
 
     return timestamp instanceof Date && timestamp.toDateString() === today && rowAction === action;
   }).length;
- * @returns {void}
- */
-function runFullPipeline() {
-  // TODO: wire modules in TaskX.X
 }

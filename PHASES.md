@@ -8,13 +8,6 @@
 ## Current Status
 - **Current Phase:** Phase 1
 - **Current Task:** CHECKPOINT — PHASE_READY audit
-- **Current Task:** Task 1.10 — DraftService + Code.gs wire-up
-- **Current Task:** Task 1.9 — ApprovalGate module
-- **Current Task:** Task 1.8 — TemplateEngine module
-- **Current Task:** Task 1.7 — LeadScorer module
-- **Current Task:** Task 1.5 — Deduplicator module
-- **Current Task:** Task 1.4 — Cleaner module
-- **Current Task:** Task 1.2 — AuditLogger module
 - **Branch pattern:** `codex/task-X.X-short-name`
 - **Assigned:** Codex
 - **Mode:** 🤖 Cloud (online)

@@ -53,7 +53,7 @@ Block if any of these change without an explicit task ID in the brief:
 - `auditLog(stage, action, contactId, details, status)` — 5-param signature; change = **blocker**
 - `checkApproval(contact, settings, dailySentCount, isSuppressed)` — return shape `{approved, failedChecks[]}` = **blocker** to change
 - `scoreLead(lead, approvalThreshold)` — return shape `{score, breakdown, approved}` = **blocker** to change
-- `createDraft(toEmail, subject, body, contactId)` — return shape `{success, draftId, error}` = **blocker** to change
+- `createDraft(toEmail, subject, body, contactId, settings)` — return shape `{success, draftId, error}` = **blocker** to change (`settings` carries the `draftOnly` flag; established Task 1.10)
 
 **Sheet schema** (column order is immutable once established in Task 1.1):
 - COMPANIES tab column set

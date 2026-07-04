@@ -31,7 +31,6 @@ current by Claude/the user from the merged PR list, not touched by every branch.
 ├── NOTES.md / ERRORS.md             ← Running logs for real deviations/errors
 │
 ├── .github/
-│   ├── pull_request_template.md
 │   └── workflows/codex-guard.yml    ← branch-freshness, workflow ownership, secrets, .gs syntax
 │
 ├── .claude/commands/                ← Claude slash commands

@@ -148,6 +148,81 @@ function runFullPipeline(rawRows) {
 }
 
 /**
+ * Runs reply and bounce monitors, schedules follow-ups, and refreshes dashboard metrics.
+ * @returns {{replyResult: Object, bounceResult: Object, followUpResult: Object, dashboardResult: Object}}
+ */
+function runTrackingPipeline() {
+  try {
+    const replyResult = monitorReplies();
+    const bounceResult = monitorBounces();
+    const followUpResult = scheduleFollowUps();
+    const dashboardResult = refreshDashboard();
+
+    return {
+      replyResult: replyResult,
+      bounceResult: bounceResult,
+      followUpResult: followUpResult,
+      dashboardResult: dashboardResult,
+    };
+  } catch (error) {
+    auditLog('Orchestrator', 'TRACKING_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Time-driven trigger entry point for reply monitoring.
+ * @returns {{scanned: number, repliesDetected: number, updated: number}}
+ */
+function runReplyMonitorTrigger() {
+  try {
+    return monitorReplies();
+  } catch (error) {
+    auditLog('Orchestrator', 'REPLY_MONITOR_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Time-driven trigger entry point for bounce monitoring.
+ * @returns {{scanned: number, bouncesDetected: number, updated: number}}
+ */
+function runBounceMonitorTrigger() {
+  try {
+    return monitorBounces();
+  } catch (error) {
+    auditLog('Orchestrator', 'BOUNCE_MONITOR_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Time-driven trigger entry point for follow-up scheduling.
+ * @returns {{scanned: number, eligible: number, queued: number, skipped: number}}
+ */
+function runFollowUpSchedulerTrigger() {
+  try {
+    return scheduleFollowUps();
+  } catch (error) {
+    auditLog('Orchestrator', 'FOLLOW_UP_SCHEDULER_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Time-driven trigger entry point for dashboard refreshes.
+ * @returns {{metricsWritten: number}}
+ */
+function runDashboardRefreshTrigger() {
+  try {
+    return refreshDashboard();
+  } catch (error) {
+    auditLog('Orchestrator', 'DASHBOARD_REFRESH_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
  * Opens the configured campaign spreadsheet.
  * @returns {SpreadsheetApp.Spreadsheet}
  */

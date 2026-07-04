@@ -1,20 +1,28 @@
-# Workflow — Codex writes, Claude reviews
+# Workflow — Codex writes, user merges fast, Claude reviews after
 
-Codex opens PRs; Claude reviews every one against `docs/codex/REVIEW_STANDARDS.md`;
-user merges. That's the whole workflow. No bootstrap banner, no role-selection prompt —
-just read `AGENTS.md`, `PHASES.md`, `NOTES.md`, `ERRORS.md` and go.
+Codex opens PRs; **user merges directly without waiting for Claude review** (too slow to
+gate every merge); Claude reviews after the merge, against `docs/codex/REVIEW_STANDARDS.md`.
+No bootstrap banner, no role-selection prompt — just read `AGENTS.md`, `PHASES.md`,
+`NOTES.md`, `ERRORS.md` and go.
+
+## Post-merge review (🫡 tasks)
+
+Any PHASES.md task marked 🫡 is Codex-built and merged but not yet reviewed. When asked
+to review, or when picking up work: find the 🫡 tasks, review each against
+`docs/codex/REVIEW_STANDARDS.md`, then flip 🫡 → ✅ (clean) or fix directly + note it
+(issues found). Never leave a 🫡 unresolved across sessions without saying so.
 
 `EMERGENCY.md` at repo root means stop and surface it before anything else. Otherwise
 proceed straight to work.
 
-## Reviewing a Codex PR
+## Reviewing a Codex PR (now post-merge)
 
-Check the diff against `docs/codex/REVIEW_STANDARDS.md`. Trust the diff — don't re-read
-the whole repo. End with one of:
+Check the merged diff against `docs/codex/REVIEW_STANDARDS.md`. Trust the diff — don't
+re-read the whole repo. End with one of:
 
-- **Clean:** "No issues — safe to merge."
-- **Issues:** list each with the exact fix. If it's a one-line mechanical fix, offer to
-  make it directly rather than round-tripping Codex.
+- **Clean:** flip 🫡 → ✅ in PHASES.md.
+- **Issues:** fix directly in a follow-up PR (it's already merged, no round-trip to
+  Codex) and note what was wrong; then flip 🫡 → ✅.
 - **Security issue:** don't hand back to Codex — fix directly via follow-up PR.
 
 ## After every merged Codex PR — update PHASES.md immediately

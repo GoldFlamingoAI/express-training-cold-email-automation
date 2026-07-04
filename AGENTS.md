@@ -58,8 +58,12 @@ context — silent catch is a blocker.
 - One task per PR. Stay strictly inside the task's file scope — only the file(s) the task
   names. No unrequested tests, docs, or refactors. (Sprawling across many files is what
   caused past merge disasters — keep it tight.)
-- **Do not edit `PHASES.md`.** It's a roadmap Claude/the user maintain from the merged PR
-  list. Editing it from a task branch was the #1 source of merge conflicts.
+- **PHASES.md — exactly one edit allowed, nothing else.** On the line for the task you
+  implemented, flip `- [ ]` → `- [x]` and change `🤖` → `🫡` (built by Codex, pending
+  Claude review — do NOT write `✅`, that's Claude's mark after review). Do not touch any
+  other line: no "Current Task" pointer, no other task's checkbox, no reordering. This is
+  the one exception to leaving PHASES.md alone — it exists so the roadmap can't go stale
+  again (a stale roadmap deadlocked Tasks 2.3/2.5 previously).
 - Don't push to `main` or modify `.github/workflows/` (Claude-only).
 - Don't add a new OAuth scope / Advanced Service without approval — ask in the PR body.
 - Note any real judgment call in `NOTES.md` in the same PR (optional, helpful).

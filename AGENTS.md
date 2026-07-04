@@ -46,10 +46,15 @@ only. Comments only when WHY is non-obvious. Every `catch` calls `auditLog()` wi
 context — silent catch is a blocker.
 
 ## Working Rules
-- **Before writing anything, check if the target file already exists in your checkout
-  with a real implementation** (not empty/stub). If it does, the task is likely already
-  done — stop, do not regenerate it, and say so in the PR description instead of
-  rewriting it from scratch. This prevents duplicate-work conflicts with an already-merged PR.
+- **Picking your task — verify, skip, advance.** Take the first unchecked `- [ ]` task in
+  PHASES.md (skip 🏠 and CHECKPOINT lines). Before writing anything, check whether that
+  task's file(s) already exist in your checkout with a real implementation (not
+  empty/stub). If they do, the roadmap is stale — that task is already done. **Do not
+  regenerate the file, and do not stop entirely: move on to the next unchecked task and
+  repeat the check.** Implement the first task whose file is genuinely missing or
+  incomplete. In your PR description, list any already-done tasks you skipped so the
+  maintainer can check them off. If EVERY unchecked task turns out to be already
+  implemented, make no changes and report exactly that.
 - One task per PR. Stay strictly inside the task's file scope — only the file(s) the task
   names. No unrequested tests, docs, or refactors. (Sprawling across many files is what
   caused past merge disasters — keep it tight.)

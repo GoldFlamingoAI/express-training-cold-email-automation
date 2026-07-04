@@ -1,26 +1,21 @@
 # Operating Procedure — Codex Environment
 
-The worst incidents in this project came from a stale environment, not bad code: a
-cached Codex container froze the git base at an old commit, so every task forked from
-history that predated real work — producing multi-file conflicts that reverted merged
-fixes. This is fixed at the **environment level**, not by Codex remembering a rule (the
-agent phase has no internet, so it cannot `git fetch` — that instruction used to be here
-and Codex correctly reported it as impossible).
+The worst incidents in this project came from a **stale Codex thread**, not bad code: an
+old thread was continued to start a new task, so the task's branch forked from a commit
+many PRs behind current `main` — producing multi-file conflicts that reverted merged
+fixes. See `docs/codex/CODEX-ENVIRONMENT-SETTINGS.md` for the full environment-settings
+playbook (exact fields, and a GOTCHA on the Maintenance script field specifically).
 
-## The fix — one-time, per repo
+## The fix
 
-In the Codex environment settings for this repo:
-1. Base branch → `main`.
-2. Maintenance script → re-syncs git on every task resume, during the networked setup
-   phase (before the agent goes offline):
-   ```bash
-   git fetch origin main --prune && git checkout main && git reset --hard origin/main
-   ```
-3. If the environment supports "always rebuild" / disable caching, that's an equally
-   valid alternative — every task then clones fresh, no maintenance script needed.
-
-With this in place, every Codex task automatically starts from current `main`. No manual
-cache-clearing, ever.
+1. **Start a new Codex thread for every new task.** Never resume an old thread to begin
+   different work — that's what forked the stale branches. A new thread forces a fresh
+   branch off current `main`.
+2. Environment settings (`chatgpt.com/codex/settings/environments`): Maintenance script
+   = `git fetch origin main --prune` (non-destructive dependency/ref refresher — see
+   `CODEX-ENVIRONMENT-SETTINGS.md` for why a hard reset there is actively wrong).
+3. The CI branch-freshness guard in `codex-guard.yml` is the automated backstop if a
+   stale thread ever slips through anyway.
 
 ## Giving Codex a task
 

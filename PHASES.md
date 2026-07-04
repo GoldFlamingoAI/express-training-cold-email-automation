@@ -70,9 +70,9 @@ Architecture and tooling decisions are complete. The following manual setup must
 
 *Trigger: start Phase 3 only when manual CSV processing is consuming too much time or free credits are consistently exhausted.*
 
-- [ ] **Task 3.1** 🤖 ZeroBounceClient module: `src/ZeroBounceClient.gs` — ZeroBounce email verification API (1 PR)
-- [ ] **Task 3.2** 🤖 ApolloClient module: `src/ApolloClient.gs` — Apollo contact search API (1 PR)
-- [ ] **Task 3.3** 🤖 HunterClient module: `src/HunterClient.gs` — Hunter email finder/verifier API (1 PR)
+- [x] **Task 3.1** ✅ ZeroBounceClient module: `src/ZeroBounceClient.gs` — ZeroBounce email verification API (1 PR)
+- [x] **Task 3.2** ✅ ApolloClient module: `src/ApolloClient.gs` — Apollo contact search API (1 PR)
+- [x] **Task 3.3** ✅ HunterClient module: `src/HunterClient.gs` — Hunter email finder/verifier API (1 PR)
 - [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit
 
 ---

@@ -1,8 +1,8 @@
 name: Codex Guard
 
-# Stack-agnostic CI checks for the Codex + Claude Code review workflow.
-# These checks enforce the workflow contract regardless of language.
-# Add stack-specific lint/test steps in the marked block at the bottom.
+# Automated guardrails only — no ceremony (no PR-title tags, no PHASES.md
+# enforcement). Progress tracking lives in the PR list, not a shared file
+# every branch edits. See docs/codex/OPERATING.md.
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   guard:
-    name: Enforce Codex contract
+    name: Guardrails
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
@@ -22,70 +22,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # 50 commits is enough for the commit-message check on any realistic PR;
-          # avoids the bandwidth cost of fetch-depth: 0 (full history).
           fetch-depth: 50
-
-      # The next three checks enforce the Codex micro-task contract.
-      # They only apply to PRs from codex/* branches. PRs from Claude
-      # (claude/*), the repo owner, or any other branch are skipped —
-      # they don't follow the per-task PR model.
-
-      - name: Verify PR title has [TASK_X.X] tag
-        if: startsWith(github.head_ref, 'codex/')
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          if ! echo "$PR_TITLE" | grep -qE '\[TASK_[0-9]+\.[0-9]+[a-z]?\]$'; then
-            echo "::error::PR title must end with [TASK_X.X] tag. Got: $PR_TITLE"
-            exit 1
-          fi
-
-      - name: Verify every commit message has [TASK_X.X] tag
-        if: startsWith(github.head_ref, 'codex/')
-        run: |
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          MISSING=$(git log --format=%s "$BASE_SHA..$HEAD_SHA" | grep -vE '\[TASK_[0-9]+\.[0-9]+[a-z]?\]$' || true)
-          if [ -n "$MISSING" ]; then
-            echo "::error::Commits missing [TASK_X.X] tag:"
-            echo "$MISSING"
-            exit 1
-          fi
-
-      - name: Verify PHASES.md updated in this PR
-        if: startsWith(github.head_ref, 'codex/')
-        run: |
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          if ! git diff --name-only "$BASE_SHA..$HEAD_SHA" | grep -q '^PHASES\.md$'; then
-            echo "::error::PHASES.md not updated. Rule 4: every task PR must mark the task complete by flipping one checkbox."
-            exit 1
-          fi
-
-      - name: Verify PHASES.md has no conflict markers or duplicate tasks
-        run: |
-          if grep -nE '^(<{7}|={7}|>{7})' PHASES.md; then
-            echo "::error file=PHASES.md::Unresolved merge conflict markers in PHASES.md. Never 'accept both' — take main and re-apply only your one checkbox flip."
-            exit 1
-          fi
-          DUPES=$(grep -oE '\*\*Task [0-9]+\.[0-9]+[a-z]?\*\*' PHASES.md | sort | uniq -d)
-          if [ -n "$DUPES" ]; then
-            echo "::error file=PHASES.md::Duplicate task lines in PHASES.md (bad conflict resolution). Each task must appear exactly once:"
-            echo "$DUPES"
-            exit 1
-          fi
 
       - name: Verify branch is not forked from a stale base
         if: startsWith(github.head_ref, 'codex/')
         run: |
-          # A branch forked far behind main produces massive conflicts and can
-          # silently revert already-merged work when resolved with "accept both."
-          # Catch it here instead of at merge time. See docs/codex/OPERATING.md.
+          # Safety net behind the environment's maintenance-script fix (see
+          # docs/codex/OPERATING.md). A branch forked far behind main produces
+          # conflicts that can revert merged work if resolved by hand.
           BASE_REF="${{ github.event.pull_request.base.ref }}"
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          # Deepen history so the merge-base is reachable (checkout is shallow).
           git fetch --no-tags --deepen=200 origin "$BASE_REF" 2>/dev/null || \
             git fetch --no-tags --unshallow origin 2>/dev/null || true
           MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || echo "")
@@ -96,15 +43,12 @@ jobs:
           BEHIND=$(git rev-list --count "$MERGE_BASE..$BASE_SHA")
           echo "Branch forked from a base that is $BEHIND commit(s) behind $BASE_REF."
           if [ "$BEHIND" -gt 15 ]; then
-            echo "::error::Stale base: this branch forked $BEHIND commits behind $BASE_REF. Re-create it from fresh origin/$BASE_REF and re-apply your one task — do NOT resolve the conflicts by hand."
+            echo "::error::Stale base: this branch forked $BEHIND commits behind $BASE_REF. The Codex environment's maintenance script should prevent this — check docs/codex/OPERATING.md. Do not resolve by hand; re-create the branch from fresh origin/$BASE_REF."
             exit 1
           fi
 
       - name: Verify no .github/workflows changes from non-owners
         env:
-          # author_association is one of: OWNER, MEMBER, COLLABORATOR,
-          # CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE.
-          # Allow only the first three. Works for both personal and org repos.
           PR_AUTHOR_ASSOC: ${{ github.event.pull_request.author_association }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
@@ -133,10 +77,10 @@ jobs:
           config-path: .gitleaks.toml
 
       # ── Apps Script syntax gate ──────────────────────────────────────────
-      # Apps Script (V8) parses as standard JS, so a syntax error means the
-      # whole project fails to load in the editor. node --check catches it
-      # here — copy each .gs to a .js temp so node treats it as a script and
-      # parses (no execution, so undefined globals like SpreadsheetApp are fine).
+      # A syntax error means the whole project fails to load in the Apps
+      # Script editor. node --check catches it here — copy each .gs to a .js
+      # temp so node treats it as a script and parses (no execution, so
+      # undefined globals like SpreadsheetApp are fine).
       - name: Verify all .gs files parse
         run: |
           FAILED=0
@@ -150,11 +94,3 @@ jobs:
           if [ "$FAILED" -ne 0 ]; then
             exit 1
           fi
-
-      # ── Stack note — no local build step ─────────────────────────────────
-      # This project is Google Apps Script (cloud-only, V8 engine). There is no
-      # local build, install, or test stage: Codex writes .gs files to GitHub
-      # and the human copies them into the Apps Script editor by hand. CI
-      # enforces the Codex contract (task tags, PHASES.md, workflow ownership),
-      # secret scanning, and a .gs syntax gate — nothing is compiled or run here.
-      # ──────────────────────────────────────────────────────────────────────

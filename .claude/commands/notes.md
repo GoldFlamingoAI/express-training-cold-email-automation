@@ -1,6 +1,6 @@
 Read NOTES.md and surface all logged entries grouped by type:
 
-- DEVIATIONS — judgment calls Codex made that differed from AGENTS.md or PLAYBOOK.md
+- DEVIATIONS — judgment calls Codex made that differed from AGENTS.md
 - BLOCKED — any instances where Codex got stuck
 - OTHER — anything else flagged
 

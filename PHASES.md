@@ -5,27 +5,8 @@
 - 🏠 = Human task (manual setup, no code)
 - ✅ = Complete  🏗️ = In progress  ⏸️ = Blocked
 
-## Current Status
-- **Current Phase:** Phase 1
-- **Current Task:** the first unchecked `- [ ]` box in the phase checklist below. Do not track it on a separate line — the checklist is the single source of truth.
-- **Branch pattern:** `codex/task-X.X-short-name`
-- **Assigned:** Codex
-- **Mode:** 🤖 Cloud (online)
-- **Blocker:** None
-
----
-
-## Micro-Task Contract
-Every task in this file is one logical unit. Codex must:
-1. Open a draft PR on a branch named `codex/task-X.X-short-name`
-2. Implement the task in **a single commit** scoped to the brief
-3. Make a **second commit** in the same PR that marks the task ✅ in PHASES.md by flipping exactly one checkbox (`- [ ]` → `- [x]`) — no other PHASES.md edits
-4. Mark the PR ready for review
-5. Stop and wait for Claude review + user merge before starting the next task
-
-Each task is implemented as exactly one PR. No task chaining.
-
-If a task feels like it needs more files than the brief allows, split it: tag sub-tasks as `1.7a`, `1.7b`, `1.7c`. Each sub-task is its own PR.
+This is a roadmap, not a shared working file — Claude/the user keep it current from the
+merged PR list. Codex doesn't edit it. Current task = the first unchecked `- [ ]` box.
 
 ---
 
@@ -64,7 +45,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] **Task 1.8** ✅ TemplateEngine module: `src/TemplateEngine.gs` — pure template merge with contact fields (1 PR)
 - [x] **Task 1.9** ✅ ApprovalGate module: `src/ApprovalGate.gs` — pure check of all 10 pre-send conditions (1 PR)
 - [x] **Task 1.10** ✅ DraftService + Code.gs wire-up: `src/DraftService.gs` + `src/Code.gs` updated to run full pipeline (1 PR)
-- [x] **CHECKPOINT** ✅ PHASE_READY → Claude Code audit + calibration (2026-07-03 — see `docs/codex/TRACKING.md`)
+- [x] **CHECKPOINT** ✅ PHASE_READY audit passed (2026-07-03)
 
 *After Phase 1 merge: human manually sends smoke-test emails (3–5/day) from Gmail. DRAFT_ONLY=TRUE is the default.*
 
@@ -74,11 +55,11 @@ Architecture and tooling decisions are complete. The following manual setup must
 *Goal: Detect replies and bounces, enforce suppression, schedule follow-up drafts, and surface metrics on the DASHBOARD tab.*
 
 - [x] **Task 2.1** ✅ SuppressionService module: `src/SuppressionService.gs` — reads/writes SUPPRESSION tab, `isSuppressed()` check (1 PR)
-- [ ] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR)
+- [ ] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR — open in #24)
 - [ ] **Task 2.3** 🤖 BounceMonitor module: `src/BounceMonitor.gs` — Gmail NDR detection, updates CONTACTS + SUPPRESSION (1 PR)
 - [ ] **Task 2.4** 🤖 FollowUpScheduler module: `src/FollowUpScheduler.gs` — identifies follow-up eligible contacts, adds to QUEUE (1 PR)
 - [ ] **Task 2.5** 🤖 DashboardService + Code.gs trigger wire-up: `src/DashboardService.gs` + `src/Code.gs` updated with monitor + dashboard triggers (1 PR)
-- [ ] **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit + calibration
+- [ ] **CHECKPOINT** 🏠 PHASE_READY audit
 
 *Note: ReplyMonitor and BounceMonitor are the most brittle modules — expect ERRORS.md activity here. Human remains the safety net at this volume.*
 
@@ -105,12 +86,3 @@ Architecture and tooling decisions are complete. The following manual setup must
 | Manual sending (10/day) is the bottleneck | Evaluate Instantly or Lemlist; drop standalone Lemwarm if bundled warm-up included |
 | First domain healthy + positive replies confirmed | Add second domain + inbox |
 | 150–300 verified contacts ready | Start Phase 3 API clients |
-
----
-
-## Codex Calibration Log
-*Claude Code appends here every time AGENTS.md or PLAYBOOK.md is tightened in response to a Codex pattern.*
-
-| Date | Trigger | File tightened | Rule added/changed |
-|------|---------|----------------|--------------------|
-| 2026-07-03 | PR-title tag check failed and PHASES.md conflicts on ~every PR (10 parallel `codex/summarize-repo-and-codex-role-*` branches) | AGENTS.md, PHASES.md, codex-guard.yml | Hoisted PR-title format + rejected example (rule 11); one-open-PR / start-from-fresh-main (rule 6); PHASES.md merge-conflict protocol (never "accept both"); removed mutable Current Task pointer (checklist is source of truth); CI now fails on conflict markers or duplicate task lines in PHASES.md |

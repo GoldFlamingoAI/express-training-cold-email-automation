@@ -46,15 +46,14 @@ only. Comments only when WHY is non-obvious. Every `catch` calls `auditLog()` wi
 context — silent catch is a blocker.
 
 ## Working Rules
-- One task per PR, one PR open at a time.
-- Branch: `codex/task-X.X-short-name`.
-- Do not edit `PHASES.md` — it's the roadmap, kept current by Claude/the user from the
-  merged PR list. Every branch editing it was the #1 source of merge conflicts.
-- Never push to `main` directly. Never modify `.github/workflows/` (Claude-only).
-- Never add a new OAuth scope/Advanced Service without approval — ask in the PR description.
-- Stay inside the task's file scope. No unrequested tests/docs/refactors.
-- Log real judgment calls in `NOTES.md`, same PR. Log real errors in `ERRORS.md`, same PR.
-- User merges — never auto-merge.
+- One task per PR. Stay strictly inside the task's file scope — only the file(s) the task
+  names. No unrequested tests, docs, or refactors. (Sprawling across many files is what
+  caused past merge disasters — keep it tight.)
+- **Do not edit `PHASES.md`.** It's a roadmap Claude/the user maintain from the merged PR
+  list. Editing it from a task branch was the #1 source of merge conflicts.
+- Don't push to `main` or modify `.github/workflows/` (Claude-only).
+- Don't add a new OAuth scope / Advanced Service without approval — ask in the PR body.
+- Note any real judgment call in `NOTES.md` in the same PR (optional, helpful).
 
 ## Environment note
 Container Caching is Off, so every task starts from a fresh clone of current `main` —

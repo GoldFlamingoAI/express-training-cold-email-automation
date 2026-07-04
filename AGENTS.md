@@ -46,6 +46,10 @@ only. Comments only when WHY is non-obvious. Every `catch` calls `auditLog()` wi
 context — silent catch is a blocker.
 
 ## Working Rules
+- **Before writing anything, check if the target file already exists in your checkout
+  with a real implementation** (not empty/stub). If it does, the task is likely already
+  done — stop, do not regenerate it, and say so in the PR description instead of
+  rewriting it from scratch. This prevents duplicate-work conflicts with an already-merged PR.
 - One task per PR. Stay strictly inside the task's file scope — only the file(s) the task
   names. No unrequested tests, docs, or refactors. (Sprawling across many files is what
   caused past merge disasters — keep it tight.)

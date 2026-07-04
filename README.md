@@ -22,6 +22,13 @@ current by Claude/the user from the merged PR list, not touched by every branch.
 
 ---
 
+## Going live
+
+To deploy the merged code into Apps Script and start the campaign, follow
+**`docs/LAUNCH-RUNBOOK.md`** (sheet setup → paste .gs files → properties → triggers → smoke test).
+
+---
+
 ## Repo File Map
 
 ```

@@ -74,7 +74,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 *Goal: Detect replies and bounces, enforce suppression, schedule follow-up drafts, and surface metrics on the DASHBOARD tab.*
 
 - [x] **Task 2.1** ✅ SuppressionService module: `src/SuppressionService.gs` — reads/writes SUPPRESSION tab, `isSuppressed()` check (1 PR)
-- [ ] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR)
+- [x] **Task 2.2** 🤖 ReplyMonitor module: `src/ReplyMonitor.gs` — Gmail search for replies, updates CONTACTS status (1 PR)
 - [ ] **Task 2.3** 🤖 BounceMonitor module: `src/BounceMonitor.gs` — Gmail NDR detection, updates CONTACTS + SUPPRESSION (1 PR)
 - [ ] **Task 2.4** 🤖 FollowUpScheduler module: `src/FollowUpScheduler.gs` — identifies follow-up eligible contacts, adds to QUEUE (1 PR)
 - [ ] **Task 2.5** 🤖 DashboardService + Code.gs trigger wire-up: `src/DashboardService.gs` + `src/Code.gs` updated with monitor + dashboard triggers (1 PR)

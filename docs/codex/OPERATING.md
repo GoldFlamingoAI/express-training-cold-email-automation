@@ -1,21 +1,21 @@
 # Operating Procedure — Codex Environment
 
-The worst incidents in this project came from a **stale Codex thread**, not bad code: an
-old thread was continued to start a new task, so the task's branch forked from a commit
-many PRs behind current `main` — producing multi-file conflicts that reverted merged
-fixes. See `docs/codex/CODEX-ENVIRONMENT-SETTINGS.md` for the full environment-settings
-playbook (exact fields, and a GOTCHA on the Maintenance script field specifically).
+The worst incidents in this project (PR #20, #24) came from a task branch forking off an
+**old base** — history many PRs behind current `main` — then being hand-resolved, which
+reverted merged fixes. This is fixed by one environment setting, not by anything Codex
+has to remember.
 
-## The fix
+## The fix — Container Caching OFF (set once)
 
-1. **Start a new Codex thread for every new task.** Never resume an old thread to begin
-   different work — that's what forked the stale branches. A new thread forces a fresh
-   branch off current `main`.
-2. Environment settings (`chatgpt.com/codex/settings/environments`): Maintenance script
-   = `git fetch origin main --prune` (non-destructive dependency/ref refresher — see
-   `CODEX-ENVIRONMENT-SETTINGS.md` for why a hard reset there is actively wrong).
-3. The CI branch-freshness guard in `codex-guard.yml` is the automated backstop if a
-   stale thread ever slips through anyway.
+In the Codex environment settings (`chatgpt.com/codex/settings/environments`), set
+**Container Caching → Off**. Every task then provisions a fresh container = fresh clone of
+current `main`, so a stale base is impossible. No maintenance script, no manual resets, no
+per-task ritual. Set once, reused for every task. Full playbook + exact fields:
+`docs/codex/CODEX-ENVIRONMENT-SETTINGS.md`.
+
+- **New thread per task** is still good hygiene (one task = one PR = one review), but with
+  caching Off it's no longer required for freshness.
+- The CI branch-freshness guard in `codex-guard.yml` is the automated backstop regardless.
 
 ## Giving Codex a task
 

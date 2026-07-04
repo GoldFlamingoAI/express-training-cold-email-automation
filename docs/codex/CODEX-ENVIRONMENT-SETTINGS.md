@@ -1,8 +1,22 @@
 # Codex Environment Settings — Playbook
 
 Where this lives: **`chatgpt.com/codex/settings/environments`** → select (or create) the
-environment for this repo. This is a standalone settings page — there is no gear/settings
+environment for this repo. It's a standalone settings page — there is no gear/settings
 icon near the task chat box. Easy to miss; that's why this doc exists.
+
+## The one setting that fixes stale-base conflicts: Container Caching = OFF
+
+Every serious conflict this repo hit (PR #20, PR #24) came from a task branch forking off
+an **old** base — history many PRs behind current `main` — then being "resolved" by hand,
+which reverted merged work. The bulletproof fix is one toggle:
+
+> **Container Caching → Off.**
+
+With caching Off, every task provisions a **fresh container = fresh clone of current
+`main`.** A stale base is not possible. No maintenance script, no manual cache resets, no
+guesswork. The only trade-off is a slightly slower task start (re-clones + runs setup each
+time) — negligible at this project's volume, and worth it to remove the entire class of
+failure.
 
 ## Exact fields to set
 
@@ -10,59 +24,43 @@ icon near the task chat box. Easy to miss; that's why this doc exists.
 |---|---|---|
 | GitHub organization / Repository | `GoldFlamingoAI` / `express-training-cold-email-automation` | — |
 | Container image | `universal` (default) | Fine for Apps Script — no special runtime needed. |
-| Container Caching | **On** | Speeds up task start. Safe to leave on — see maintenance script below. |
-| Setup script | **Automatic** | This repo has no `package.json`/`requirements.txt` to install; automatic mode no-ops harmlessly. Switch to Manual only if a future phase adds real dependencies (e.g. Phase 3 API clients). |
-| Setup script → Manual toggle | Only needed to reveal the **Maintenance script** box below it | The Maintenance script field is nested under Setup script's Manual view in the UI — click "Manual" to see it, even if Setup script itself stays empty. |
-| **Maintenance script** | `git fetch origin main --prune` | See GOTCHA below — do not put a destructive command here. |
-| Agent internet access | Leave default (restricted) | No Phase 1/2 module needs live internet from the agent. Enable only when Phase 3 (ZeroBounce/Apollo/Hunter) is actually started, and only for that environment. |
-| Secrets / Environment variables | None needed yet | `PROPERTIES.example` documents future keys; add real values here only when a task needs to hit a live API, not before. |
+| **Container Caching** | **Off** | The fix above. Every task = fresh clone of current `main`. |
+| Setup script | **Automatic** | No `package.json`/`requirements.txt` to install; auto mode no-ops. Switch to Manual only if a phase adds real dependencies (e.g. Phase 3 API clients). |
+| Maintenance script | **Leave empty** | Only runs on *cached* containers. With caching Off it never runs, so it's irrelevant. (If you ever turn caching back On, see the GOTCHA below before touching it.) |
+| Agent internet access | Leave default (restricted) | No Phase 1/2 module needs live internet from the agent. Enable only when Phase 3 is started, and only for that environment. |
+| Secrets / Environment variables | None yet | `PROPERTIES.example` documents future keys; add real values only when a task needs a live API. |
 
-## GOTCHA — the Maintenance script runs AFTER the branch checkout, not before
+## You set the environment ONCE
 
-The UI states this explicitly: *"The maintenance script is run in containers that were
-resumed from the cache, **after checking out the branch**."*
+- The environment is created once and **reused for every task**. You do **not** create a
+  new environment per task, and you do **not** re-enter any settings per task.
+- Settings (including the caching toggle) persist. Check them anytime at the URL above.
+- Each task spins up a container **from** this environment. With caching Off, that
+  container is a fresh clone every time — automatically.
 
-This matters a lot:
+## Threads vs. tasks (freshness is handled by caching Off, not by thread hygiene)
 
-- **Do NOT put `git reset --hard origin/main` (or any hard reset) in the Maintenance
-  script.** By the time it runs, the container is already on the task's actual branch. A
-  hard reset at that point discards the checkout and forces the branch onto `main` —
-  actively breaking the task, not fixing staleness.
-- The safe, correct maintenance command is just:
-  ```bash
-  git fetch origin main --prune
-  ```
-  This refreshes the container's knowledge of `origin/main` without touching the
-  currently-checked-out branch. Non-destructive, always safe.
-- **This field is a dependency-freshness helper, not the actual fix for stale-base
-  branches.** The incidents that hit this repo (PR #20, PR #24 — branches forking from a
-  commit many PRs behind current `main`) were most consistent with an **old Codex
-  thread being continued** across multiple work items, not a stale container cache per
-  se. The real fix is procedural — see below.
+Starting a **new thread per task** is still a good habit — it keeps one task = one PR =
+one review and avoids scope bleed. But with **caching Off, freshness no longer depends on
+it**: even a reused thread provisions a fresh container. So new-thread-per-task is now a
+*hygiene* preference, not a correctness requirement. (Whether a reused thread stays fresh
+was never something we could verify from OpenAI's docs — caching Off makes the question
+moot.)
 
-## The actual fix for stale-base branches: one thread per task, always
+## GOTCHA — only relevant if you ever turn caching back On
 
-**Never continue an old Codex thread to start a new task.** Each new task = a brand new
-thread in the Codex UI, which forces a fresh branch off current `main` at creation time.
-Reusing/continuing a thread that was created days or weeks ago is what produced branches
-forked from ancient commits (one incident forked from a commit ~17 PRs behind current
-`main`).
+The Maintenance script field runs *in cached containers, **after** the branch is checked
+out* (the UI says so). So:
 
-This matches what you'll observe directly: starting a new thread visibly spins up a new
-environment/container. That's the reset you want — use it every time you start a task,
-not just when something looks stale.
+- **Never put `git reset --hard origin/main` there.** By then the container is already on
+  the task branch; a hard reset would discard it and break the task.
+- The only safe maintenance command is a non-destructive `git fetch origin main --prune`.
+- Even that does not guarantee a fresh base — which is exactly why **caching Off** is the
+  recommended approach instead.
 
-## The automated backstop (already in the repo, requires no action)
+## The automated backstop (already in the repo, no action needed)
 
-`.github/workflows/codex-guard.yml` includes a **branch-freshness guard**: it fails any
-`codex/*` PR whose branch forked more than ~15 commits behind its base. If a stale
-thread ever slips through despite the above, this guard rejects the PR before it reaches
-you as a multi-file conflict — you'll see a clear CI error instead of a merge mess.
-
-## Quick reference — before every Codex task
-1. **Start a new thread.** Do not resume an old one to begin a different task.
-2. Confirm `docs/codex/OPERATING.md` still describes the current workflow (it's the file
-   Codex reads at session start).
-3. Give one scoped task per thread; one PR per task.
-4. If Codex ever reports a stale base or missing git remote, stop — don't hand-resolve
-   conflicts. Start a fresh thread instead.
+`.github/workflows/codex-guard.yml` has a **branch-freshness guard**: it fails any
+`codex/*` PR whose branch forked more than ~15 commits behind its base. If a stale base
+ever slips through, CI rejects the PR with a clear error instead of handing you a
+multi-file conflict.

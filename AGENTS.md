@@ -57,6 +57,7 @@ context — silent catch is a blocker.
 - User merges — never auto-merge.
 
 ## Environment note
-The Codex cloud environment's maintenance script re-syncs to `origin/main` on every task,
-so you always start current. If a task ever reports it's on a stale base or has no git
-remote, stop and flag it — don't push forward on an old snapshot.
+Container Caching is Off, so every task starts from a fresh clone of current `main` —
+you never need to fetch or check freshness yourself. A missing/broken `origin` remote or
+a "work" branch is a known, harmless Codex Cloud sandbox quirk (platform opens the PR
+from your changes regardless) — ignore it and proceed with the task.

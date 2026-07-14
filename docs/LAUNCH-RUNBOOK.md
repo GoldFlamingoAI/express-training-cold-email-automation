@@ -8,7 +8,7 @@ Legend: 🏠 = you do it by hand · ⏱️ = has a waiting period · ⚙️ = co
 
 ---
 
-## Step 1 — ✅ DONE — 🏠⏱️ Domain & inbox infrastructure
+## Step 1 — 🏗️ IN PROGRESS (warm-up pending) — 🏠⏱️ Domain & inbox infrastructure
 
 This is Phase 0 from `PHASES.md` — none of it is code, and the warm-up can't be rushed.
 
@@ -17,7 +17,7 @@ This is Phase 0 from `PHASES.md` — none of it is code, and the warm-up can't b
   from your main account).
 - [x] Configure **DNS**: MX records, SPF, DKIM, and DMARC (start at `p=none` monitoring mode).
 - [x] Create the **sender identity**: real name, photo, signature, physical mailing address.
-- [x] Connect **Lemwarm Essential** to the inbox and let it warm for **3–4 weeks before the
+- [ ] Connect **Warmup Inbox** to the inbox and let it warm for **4–6 weeks before the
   first real send**. ⏱️ This is the long pole — do it first.
 - [x] Set up **Google Postmaster Tools** for the domain to watch reputation.
 
@@ -249,32 +249,39 @@ Beginner steps:
 Done when: a real external recipient sees the intended sender name, profile, and signature, and
 replies work.
 
-### 0.5 ✅ DONE — Connect Lemwarm Essential and run warm-up
+### 0.5 ⏳ NOT STARTED — Connect Warmup Inbox and run warm-up
 
 Official / vendor links:
-- [Lemwarm](https://www.lemwarm.com/)
-- [Lemlist / Lemwarm help center](https://help.lemlist.com/)
+- [Warmup Inbox](https://www.warmupinbox.com/)
+- [Warmup Inbox help center](https://help.warmupinbox.com/)
 
 Beginner steps:
-1. Go to <https://www.lemwarm.com/>.
-2. Sign up for the Lemwarm Essential plan for the new sender inbox.
-3. Use the isolated Workspace sender account, for example `firstname@newdomain.com`.
-4. Follow Lemwarm's Gmail/Google Workspace connection flow.
-5. If Google asks for permission, read the consent screen carefully and approve only if it matches
-   Lemwarm's documented connection flow.
-6. In Lemwarm, complete any technical setup checklist it shows. Pay special attention to SPF, DKIM,
-   DMARC, and inbox connection warnings.
+1. Go to <https://www.warmupinbox.com/> and sign up for a plan for the new sender inbox.
+2. **Before connecting**, turn on **2-Step Verification** on the isolated Workspace sender
+   account (`firstname@newdomain.com`) if it isn't already on — Google Admin → Security →
+   2-Step Verification, or from the account's own Google security settings.
+3. Generate an **App Password**: Google Account → Security → 2-Step Verification → App
+   passwords → create one named "Warmup Inbox." Copy it — Google shows it once.
+4. In Warmup Inbox, choose **Google Workspace** as the provider and connect using the sender
+   email + the **app password** — not the normal login password, which will not work once 2FA
+   is on.
+5. If Google asks for permission during the connection flow, read the consent screen carefully
+   and approve only if it matches Warmup Inbox's documented connection flow.
+6. In Warmup Inbox, complete any technical setup checklist it shows. Pay special attention to
+   SPF, DKIM, DMARC, and inbox connection warnings — since DNS is already configured (Step 1),
+   this should come back clean; fix DNS first if it doesn't.
 7. Set warm-up to start conservatively. Do not start real cold outreach while the inbox is new.
-8. Let Lemwarm run for 3–4 weeks before the first real send.
+8. Let Warmup Inbox run for 4–6 weeks before the first real send.
 9. During warm-up, use the mailbox like a normal human business inbox:
    - Send a few genuine one-to-one messages.
    - Receive and reply to normal messages.
    - Avoid bulk sends, scraped lists, and attachments.
-10. Check Lemwarm and Gmail at least weekly for warnings, disconnects, or deliverability issues.
+10. Check Warmup Inbox and Gmail at least weekly for warnings, disconnects, or deliverability
+    issues.
 11. Keep notes on the warm-up start date and any warnings you fix.
 
-Done when: Lemwarm has run for 3–4 weeks, no critical technical warnings remain, and the inbox has
-normal send/receive behavior.
+Done when: Warmup Inbox has run for 4–6 weeks, no critical technical warnings remain, and the
+inbox has normal send/receive behavior.
 
 ### 0.6 ✅ DONE — Configure Google Postmaster Tools for the new domain
 
@@ -314,7 +321,7 @@ Beginner steps:
 
 Done when: `newdomain.com` is verified in Postmaster Tools and visible on the domains page.
 
-### 0.7 ✅ DONE — Final Phase 0 acceptance checklist before moving on
+### 0.7 🏗️ IN PROGRESS — Final Phase 0 acceptance checklist before moving on
 
 Do not start Phase 1 live deployment or send smoke-test cold emails until every item below is true:
 
@@ -326,7 +333,7 @@ Do not start Phase 1 live deployment or send smoke-test cold emails until every 
 - [x] DKIM is enabled and a received test message shows DKIM `PASS`.
 - [x] DMARC exists at `_dmarc.newdomain.com` with `p=none`.
 - [x] Sender profile photo, display name, signature, and physical mailing address are present.
-- [x] Lemwarm is connected and warming the inbox.
+- [ ] Warmup Inbox is connected and warming the inbox.
 - [x] Google Postmaster Tools is verified for the domain.
 - [x] The warm-up start date is written down.
 
@@ -501,7 +508,7 @@ Only add these when you start Phase 3:
    - `DASHBOARD` shows metrics after `runDashboardRefreshTrigger`
 4. **Send 3–5 drafts/day by hand** from Gmail (never bulk) while the domain is young.
    Watch replies/bounces flow into `CONTACTS`/`SUPPRESSION` via the monitors.
-5. Ramp volume only as Postmaster reputation stays green and Lemwarm warm-up completes.
+5. Ramp volume only as Postmaster reputation stays green and Warmup Inbox warm-up completes.
 
 ---
 

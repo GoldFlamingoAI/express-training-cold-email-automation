@@ -377,21 +377,28 @@ Then grab the **spreadsheet ID** from the URL:
 
 Break this into lettered sub-phases so each piece can be tracked independently.
 
-### Step 3.A — ✅ DONE — Create the bound Apps Script project and paste the manifest
+### Step 3.A — 🏗️ IN PROGRESS (manifest needs re-paste) — Create the bound Apps Script project and paste the manifest
 
 - [x] From the Sheet: **Extensions → Apps Script** (creates a bound project).
-- [x] **Manifest:** click the gear ⚙️ → "Show appsscript.json" → paste the contents of
-  `appsscript.json` from the repo (sets V8 + the OAuth scopes).
+- [ ] **Manifest:** click the gear ⚙️ → "Show appsscript.json" → paste the contents of
+  `appsscript.json` from the repo (sets V8 + the OAuth scopes). **The manifest changed after this
+  was originally pasted** — the Gmail scope was fixed from `gmail.compose` to
+  `https://mail.google.com/` so `ReplyMonitor`/`BounceMonitor` can call `GmailApp.search()`. The
+  currently-pasted version is the old one. Re-paste the current `appsscript.json`, then re-run any
+  function once to trigger the OAuth consent screen and approve the new scope — see
+  `COLD-EMAIL-MONDAY.md`'s pre-flight blocker. Until this is done, the already-installed
+  `runReplyMonitorTrigger`/`runBounceMonitorTrigger` triggers (Step 6) are very likely erroring on
+  every scheduled run.
 
-### Step 3.B — Foundation & pure logic files
+### Step 3.B — ✅ DONE — Foundation & pure logic files
 
-- [ ] Create one script file per foundation/pure-logic module and paste the contents from GitHub:
+- [x] Create one script file per foundation/pure-logic module and paste the contents from GitHub:
   `AuditLogger.gs` · `Cleaner.gs` · `Deduplicator.gs` · `MassachusettsFilter.gs` ·
   `LeadScorer.gs` · `TemplateEngine.gs` · `ApprovalGate.gs`
 
-### Step 3.C — I/O module files
+### Step 3.C — ✅ DONE — I/O module files
 
-- [ ] Create one script file per I/O module and paste the contents from GitHub:
+- [x] Create one script file per I/O module and paste the contents from GitHub:
   `ImportService.gs` · `DraftService.gs` · `SuppressionService.gs` · `ReplyMonitor.gs` ·
   `BounceMonitor.gs` · `FollowUpScheduler.gs` · `DashboardService.gs`
 
@@ -400,11 +407,16 @@ Break this into lettered sub-phases so each piece can be tracked independently.
 - [x] Phase 3 API client files created and pasted from GitHub:
   `ZeroBounceClient.gs` · `ApolloClient.gs` · `HunterClient.gs`
 
-### Step 3.E — Orchestrator file and save
+### Step 3.E — ✅ DONE — Orchestrator file and save
 
-- [ ] Create `Code.gs` last and paste the orchestrator contents from GitHub.
-- [ ] Save. There should be **18 `.gs` files** plus the manifest when all optional Phase 3 files
+- [x] Create `Code.gs` last and paste the orchestrator contents from GitHub.
+- [x] Save. There should be **18 `.gs` files** plus the manifest when all optional Phase 3 files
   are included.
+
+> ⚠️ **This does not include the OAuth scope fix to `appsscript.json`** (the Gmail
+> `mail.google.com` scope, needed for `ReplyMonitor`/`BounceMonitor`). That's tracked separately
+> in Step 3.A — re-check it, it is very likely still outstanding even though the rest of Step 3
+> is done. See `COLD-EMAIL-MONDAY.md`'s pre-flight blocker.
 
 > Whenever a PR merges later, re-paste that one changed `.gs` file here — Apps Script has
 > no auto-deploy.
@@ -481,9 +493,15 @@ Only add these when you start Phase 3:
 
 ## Step 6 — ⚙️ Authorize & install triggers
 
-1. ✅ DONE — In the editor, pick `runDraftPipeline` from the function dropdown and **Run** once.
-   Approve the OAuth consent screen (Sheets + Gmail compose + external request). This
-   authorizes the project.
+> ⚠️ **The authorization below is stale.** It was approved under the old `gmail.compose` scope,
+> before the Step 3.A manifest fix. `runReplyMonitorTrigger`/`runBounceMonitorTrigger` are
+> installed and firing on schedule right now, but almost certainly erroring on every run with an
+> authorization error until you re-paste the manifest and re-approve consent (Step 3.A). Check
+> `ACTIVITY_LOG` for `REPLY_MONITOR_TRIGGER_ERROR`/`BOUNCE_MONITOR_TRIGGER_ERROR` rows to confirm.
+
+1. ⚠️ NEEDS RE-AUTH (old scope) — In the editor, pick `runDraftPipeline` from the function
+   dropdown and **Run** once. Approve the OAuth consent screen (Sheets + Gmail full access +
+   external request — see Step 3.A). This re-authorizes the project under the current manifest.
 2. ✅ DONE — **Triggers** (clock icon) → add **time-driven** triggers for these four functions
    (hourly or daily to start — low frequency at MVP volume):
    - `runReplyMonitorTrigger`

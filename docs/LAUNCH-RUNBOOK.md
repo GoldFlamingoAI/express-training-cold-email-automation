@@ -484,8 +484,8 @@ Only add these when you start Phase 3:
    - `runFollowUpSchedulerTrigger`
    - `runDashboardRefreshTrigger`
 
-(`runImportPipeline`, `runDraftPipeline`, `runFullPipeline` stay **manual** — you run them
-when you load a batch.)
+3. (`runImportPipeline`, `runDraftPipeline`, `runFullPipeline` stay **manual** — you run them
+   when you load a batch.)
 
 ---
 

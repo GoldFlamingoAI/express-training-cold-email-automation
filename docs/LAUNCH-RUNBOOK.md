@@ -415,13 +415,13 @@ Apps Script editor → **Project Settings** (gear) → **Script Properties**.
 
 - [x] Add `SPREADSHEET_ID` with the ID from Step 2. This is **required — everything** depends on it.
 
-### Step 4.B — ✅ DONE — Optional Phase 3 API keys
+### Step 4.B — Optional Phase 3 API keys
 
-These were optional for Phase 1–2 manual CSV workflow, but Phase 3 setup is now marked complete.
+Skip these entirely for the Phase 1–2 manual-CSV workflow.
 
-- [x] `ZEROBOUNCE_API_KEY` — Phase 3 only
-- [x] `APOLLO_API_KEY` — Phase 3 only
-- [x] `HUNTER_API_KEY` — Phase 3 only
+- [ ] `ZEROBOUNCE_API_KEY` — Phase 3 only
+- [ ] `APOLLO_API_KEY` — Phase 3 only
+- [ ] `HUNTER_API_KEY` — Phase 3 only
 
 (See `PROPERTIES.example` in the repo.)
 
@@ -453,17 +453,17 @@ settings.
 | `FOLLOW_UP_DELAY_DAYS` | `4` | Days to wait before drafting a follow-up |
 | `FOLLOW_UP_MAX_EMAILS` | `3` | Maximum emails in a campaign sequence |
 
-### Step 5.C — ✅ DONE — Optional Phase 3 API client settings
+### Step 5.C — Optional Phase 3 API client settings
 
-Phase 3 is now marked complete, so these settings are checked off:
+Only add these when you start Phase 3:
 
-- [x] `APOLLO_CONTACT_SEARCH_URL`
-- [x] `APOLLO_CONTACT_SEARCH_PAGE_SIZE`
-- [x] `HUNTER_EMAIL_FINDER_URL`
-- [x] `HUNTER_EMAIL_VERIFIER_URL`
-- [x] `ZEROBOUNCE_VALIDATE_URL`
-- [x] `ZEROBOUNCE_CREDITS_URL`
-- [x] `ZEROBOUNCE_TIMEOUT_SECONDS`
+- [ ] `APOLLO_CONTACT_SEARCH_URL`
+- [ ] `APOLLO_CONTACT_SEARCH_PAGE_SIZE`
+- [ ] `HUNTER_EMAIL_FINDER_URL`
+- [ ] `HUNTER_EMAIL_VERIFIER_URL`
+- [ ] `ZEROBOUNCE_VALIDATE_URL`
+- [ ] `ZEROBOUNCE_CREDITS_URL`
+- [ ] `ZEROBOUNCE_TIMEOUT_SECONDS`
 
 ### Step 5.D — Template row
 

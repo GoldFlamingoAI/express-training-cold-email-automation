@@ -474,18 +474,18 @@ Only add these when you start Phase 3:
 
 ## Step 6 — ⚙️ Authorize & install triggers
 
-1. In the editor, pick `runDraftPipeline` from the function dropdown and **Run** once.
+1. ✅ DONE — In the editor, pick `runDraftPipeline` from the function dropdown and **Run** once.
    Approve the OAuth consent screen (Sheets + Gmail compose + external request). This
    authorizes the project.
-2. **Triggers** (clock icon) → add **time-driven** triggers for these four functions
+2. ✅ DONE — **Triggers** (clock icon) → add **time-driven** triggers for these four functions
    (hourly or daily to start — low frequency at MVP volume):
    - `runReplyMonitorTrigger`
    - `runBounceMonitorTrigger`
    - `runFollowUpSchedulerTrigger`
    - `runDashboardRefreshTrigger`
 
-(`runImportPipeline`, `runDraftPipeline`, `runFullPipeline` stay **manual** — you run them
-when you load a batch.)
+3. (`runImportPipeline`, `runDraftPipeline`, `runFullPipeline` stay **manual** — you run them
+   when you load a batch.)
 
 ---
 

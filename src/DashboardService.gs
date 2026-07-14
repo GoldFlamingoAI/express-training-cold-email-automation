@@ -114,8 +114,8 @@ function getDashboardServiceTable_(sheet) {
 function buildDashboardServiceMetrics_(contactsTable, queueTable, activityTable, suppressionTable, settings) {
   const contactStatusCounts = countDashboardServiceStatuses_(contactsTable);
   const queueStatusCounts = countDashboardServiceStatuses_(queueTable);
-  const draftCount = countDashboardServiceActivity_(activityTable, ['draftcreated', 'draftcreated']);
-  const todayDraftCount = countDashboardServiceTodayActivity_(activityTable, ['draftcreated', 'draftcreated']);
+  const draftCount = countDashboardServiceActivity_(activityTable, ['draftcreated']);
+  const todayDraftCount = countDashboardServiceTodayActivity_(activityTable, ['draftcreated']);
   const replyCount = contactStatusCounts.REPLIED || 0;
   const bounceCount = contactStatusCounts.BOUNCED || 0;
   const sentOrDraftedCount = Math.max(draftCount, Number(contactStatusCounts.SENT || 0) + Number(contactStatusCounts.DRAFTED || 0));

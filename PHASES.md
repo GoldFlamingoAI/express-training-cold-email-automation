@@ -92,13 +92,13 @@ graph TD
 Architecture and tooling decisions are complete. The following manual setup must be done by the user **before Phase 1 Codex work begins**:
 
 - [x] MVP architecture spec reviewed and approved (`starting-architecture/`)
-- [x] Stack chosen: Apps Script + Sheets + Gmail + Lemwarm + Apollo/Hunter/ZeroBounce free tiers
+- [x] Stack chosen: Apps Script + Sheets + Gmail + Warmup Inbox + Apollo/Hunter/ZeroBounce free tiers
 - [x] Lean phasing decided: core draft loop first, monitors second, API clients optional
 - [x] ✅ 🏠 **Buy secondary cold-outreach domain** (not the primary business domain)
 - [x] ✅ 🏠 **Create isolated Google Workspace Business Starter tenant** (separate from primary account)
 - [x] ✅ 🏠 **Configure DNS:** MX records, SPF, DKIM, DMARC (`p=none` monitoring mode first)
 - [x] ✅ 🏠 **Create sender identity:** real name, profile photo, signature, physical address
-- [x] ✅ 🏠 **Connect Lemwarm Essential** to the isolated inbox; run 3–4 weeks before first send
+- [ ] 🏠 **Connect Warmup Inbox** to the isolated inbox; run 4–6 weeks before first send
 - [x] ✅ 🏠 **Configure Google Postmaster Tools** for the new domain
 - [x] ✅ 🏠 **Create the Google Sheets file** with the 10 required tabs: SETTINGS, COMPANIES, CONTACTS, CAMPAIGNS, QUEUE, SUPPRESSION, ACTIVITY_LOG, DASHBOARD, TEMPLATES, PLAYBOOK_REQUESTS
 - [x] ✅ 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
@@ -210,6 +210,6 @@ Task 4.4 promotes verified, approved contacts into `QUEUE`.*
 |--------|--------|
 | ZeroBounce free (100/mo) consistently exhausted | Switch to MillionVerifier or ZeroBounce PAYG credits (~$1–2/300 emails) |
 | Apollo free credits exhausted each month | Add Apollo paid plan |
-| Manual sending (10/day) is the bottleneck | Evaluate Instantly or Lemlist; drop standalone Lemwarm if bundled warm-up included |
+| Manual sending (10/day) is the bottleneck | Evaluate Instantly or Lemlist; drop standalone Warmup Inbox if bundled warm-up included |
 | First domain healthy + positive replies confirmed | Add second domain + inbox |
 | 150–300 verified contacts ready | Start Phase 3 API clients |

@@ -60,14 +60,11 @@ warm-up window, not the start (see Gotcha #4 below on why).
 
 ## Track A — Warm-Up Inbox how-to
 
-> **Pick ONE warm-up tool per inbox.** The repo's older docs (`PHASES.md` Phase 0,
-> `docs/LAUNCH-RUNBOOK.md` Step 1) name **Lemwarm**; you've chosen **Warmup Inbox**. Either works —
-> but **never run two warm-up services on the same mailbox at once.** They both inject automated
-> send/receive traffic; running both doubles that traffic, muddies your reputation signals, and can
-> trip spam heuristics — the exact opposite of the goal. If `PHASES.md` shows "Connect Lemwarm" as
-> already done, confirm whether Lemwarm is actually connected before adding Warmup Inbox; if it is,
-> either stick with Lemwarm or disconnect it first. (The Lemwarm/Warmup Inbox naming across the
-> repo docs is just cosmetic drift — the mechanics below are identical for both.)
+The repo previously referenced Lemwarm in `PHASES.md`/`docs/LAUNCH-RUNBOOK.md` as if it were
+already connected — that was stale/inaccurate. The repo is now standardized on **Warmup Inbox**,
+and those checkboxes have been corrected back to "not started." **Only ever run one warm-up tool
+per inbox** — running two at once doubles the automated send/receive traffic on the account,
+muddying the reputation signals the tool is supposed to build.
 
 Setup takes a few minutes; the *waiting* is 4–6 weeks. Start this before anything else today.
 
@@ -237,9 +234,9 @@ notice before renewal or you're locked in for another year. Monthly is cancel-an
     re-approve the OAuth consent screen, or `runReplyMonitorTrigger`/`runBounceMonitorTrigger`
     fail with an authorization error. This is the single most likely thing to silently break the
     tracking half of the pipeline.
-16. **Never run two warm-up tools on one inbox** (see Track A). Lemwarm (repo docs) and Warmup
-    Inbox (your choice) do the same job — pick one. Two at once doubles synthetic traffic and hurts
-    the reputation you're trying to build.
+16. **Never run two warm-up tools on one inbox** (see Track A). The repo previously showed Lemwarm
+    as connected — that was stale and has been corrected. If you ever add a second inbox or
+    domain later, remember this same rule: one warm-up tool per mailbox, not two at once.
 17. **Manual `CONTACTS` rows must match `COMPANIES` on the company name.** Discovery resolves the
     email domain by joining `CONTACTS.company` back to a `COMPANIES` row. `COMPANIES` names were
     normalized by `Cleaner` at import; a hand-typed `CONTACTS` name that differs ("Acme" vs "Acme

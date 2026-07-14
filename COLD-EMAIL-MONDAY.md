@@ -1,0 +1,233 @@
+# Cold Email Monday — Warm-Up, Enrichment & Launch Plan
+
+Companion to `docs/LAUNCH-RUNBOOK.md`. That doc covers Phase 0 (domain/DNS/Workspace) and the
+mechanical deploy steps (paste code, set properties, install triggers). This doc picks up from
+**"domain and DNS are done, sheet and Apps Script code are pasted in, a Massachusetts company
+list is loaded"** — your current state — and covers everything between here and your first sent
+email: inbox warm-up, turning that company list into verified contacts, and the actual go-live
+sequencing.
+
+The Codex-buildable tasks referenced below live in **`PHASES.md` → Phase 4** (mirrored there on
+purpose — Codex only scans `PHASES.md` for work, per `AGENTS.md`). This file is the narrative:
+why the tasks are scoped that way, the manual steps around them, the how-tos, and the timing.
+
+---
+
+## Where you are right now
+
+- [x] Secondary domain purchased, DNS (MX/SPF/DKIM/DMARC) configured
+- [x] Google Sheet created with the 10 tabs, Apps Script project created, all `.gs` files pasted
+- [x] Massachusetts company list (WTFP grantees) sourced and imported to `COMPANIES`
+- [ ] Inbox warm-up — **not started, start today**
+- [ ] Contacts discovered/verified for the company list
+- [ ] `QUEUE` populated, first drafts created, smoke test run
+
+---
+
+## Time horizon — what to start when
+
+Warm-up is the fixed clock everything else fits around: **4–6 weeks, cannot be rushed by
+paying more.** Contact enrichment has no such floor — it's bounded by your own time and API
+credits — so it runs in parallel, but verification specifically should land *near the end* of the
+warm-up window, not the start (see Gotcha #4 below on why).
+
+| When | Track A — Inbox warm-up | Track B — Contact enrichment | Track C — Money |
+|---|---|---|---|
+| **Week 0 (today)** | Sign up for Warmup Inbox, connect the sender inbox, start warm-up conservative | Give Codex the Phase 4 task briefs; start manual Apollo research on the company list | none required yet — free tiers cover early discovery |
+| **Week 1** | Check dashboard + Postmaster Tools weekly | Phase 4 code merged/reviewed/pasted into Apps Script; run `runContactDiscoveryTrigger()` in small batches as you add Apollo-sourced names | optional: buy Hunter Starter for one month if your list is bigger than ~50 companies (free tier's 50 credits/mo) |
+| **Weeks 2–3** | Keep checking weekly; use the inbox like a human occasionally | Keep discovering; **do not run verification yet** — save freshness for later | none |
+| **Week 4 (or week 4–5 of a 6-week warm-up)** | Continue | Run the ZeroBounce verification burst now — buy a pay-as-you-go credit pack; run `runContactVerificationTrigger()` across everything discovered; run `runQueueBuilderTrigger()` to fill `QUEUE`; fill in `personalizationLine` per contact (manual) | ZeroBounce PAYG pack purchase happens here |
+| **End of warm-up (week 5–6)** | Confirm no critical warnings remain | Smoke test: `runDraftPipeline`, check `ACTIVITY_LOG`/Gmail Drafts/`DASHBOARD` | — |
+| **After smoke test** | Warm-up can continue in the background at low intensity | Send 3–5 drafts/day by hand; ramp only as Postmaster stays green | — |
+
+---
+
+## Track A — Warm-Up Inbox how-to
+
+Setup takes a few minutes; the *waiting* is 4–6 weeks. Start this before anything else today.
+
+1. Go to [warmupinbox.com](https://www.warmupinbox.com/) and sign up for a plan.
+2. **Before connecting**, enable **2-Step Verification** on the Workspace sender account
+   (`firstname@newdomain.com`) if it isn't already on — Google Admin → Security → 2-Step
+   Verification, or from the account's own Google security settings.
+3. Generate an **App Password**: Google Account → Security → 2-Step Verification → App passwords
+   → create one named "Warmup Inbox." Copy it — Google shows it once.
+4. In Warmup Inbox, choose **Google Workspace** as the provider and connect using the sender
+   email + the **app password** (not your normal login password — the normal password will not
+   work once 2FA is on).
+5. Follow any in-app checklist Warmup Inbox shows about SPF/DKIM/DMARC — since DNS is already
+   configured per `LAUNCH-RUNBOOK.md` Step 1, this should come back clean. If it flags something,
+   fix DNS before proceeding rather than warming up an unauthenticated domain.
+6. Set warm-up intensity to **low/conservative** to start. Let it ramp automatically — don't
+   manually push volume up.
+7. **Let it run 4–6 weeks before your first real cold send.** During this window:
+   - Send a handful of genuine one-to-one emails from the inbox yourself.
+   - Reply to real messages that come in.
+   - Avoid attachments, bulk sends, or anything that looks automated from *you* (Warmup Inbox's
+     own synthetic traffic is fine — that's the point of the tool).
+8. Check the Warmup Inbox dashboard and [Google Postmaster Tools](https://postmaster.google.com/)
+   **at least weekly** for spam-rate or authentication warnings.
+9. Write down the warm-up start date — everything else in this doc's timeline is relative to it.
+
+**Done when:** 4–6 weeks have elapsed, Warmup Inbox shows no critical warnings, and Postmaster
+Tools shows a healthy domain/IP reputation.
+
+---
+
+## Track B — Contact enrichment pipeline
+
+### The workflow, end to end
+
+```
+COMPANIES (already loaded)
+   ↓ human: search Apollo web UI by company domain + target title (free, no credits)
+CONTACTS row added by hand: company, firstName, lastName, title, linkedinUrl — email left blank
+   ↓ Task 4.2: runContactDiscoveryTrigger()  — Hunter finds/guesses the email
+CONTACTS row updated: email, catchAll, roleIsRelevant, maConfirmed, wtfpRelevance
+   ↓ Task 4.3: runContactVerificationTrigger()  — ZeroBounce verifies deliverability
+CONTACTS row updated: verificationResult
+   ↓ human: write a real personalizationLine per contact (not automatable — see Gotcha #10)
+   ↓ Task 4.4: runQueueBuilderTrigger()  — promotes verified + approved rows
+QUEUE row created, status = QUEUED
+   ↓ existing: runDraftPipeline()  — ApprovalGate does the final 10-point check
+Gmail draft created, human reviews and sends
+```
+
+Why Apollo is manual and not API-driven: see the free-tier discussion below — Apollo's free API
+access is thin/disputed, but **searching and viewing profiles in Apollo's web UI costs no
+credits at all** (only *revealing* an email/phone does, and you don't need Apollo to reveal
+anything since Hunter + ZeroBounce already do discovery and verification). This also means
+`ApolloClient.gs` stays dormant/unused for this workflow — nothing needs to change there.
+
+### Manual step: Apollo research (do this continuously, no rush)
+
+For each company in `COMPANIES` without a `CONTACTS` row yet:
+1. Search Apollo's web app for the company (by name or domain).
+2. Look for a contact matching one of your target titles: **Owner / Founder / CEO**,
+   **Operations Manager / Director**, or **L&D / Training Manager**.
+3. Add a row to `CONTACTS`: `company`, `firstName`, `lastName`, `title`, `linkedinUrl`. Leave
+   `email` blank — Task 4.2 fills that in.
+4. While you're there, jot down one specific, real personalization fact (a recent post, a program
+   they run, something in their company profile) somewhere you can find it later — you'll need it
+   for `personalizationLine` before this contact can ever be drafted.
+
+### Setup checklist for Phase 4 (sheet changes you make by hand — not code)
+
+- [ ] Add a **`lastName`** header column to both `CONTACTS` and `QUEUE` (see Gotcha #7 — the
+  documented schema only has `firstName`, which hurts Hunter's match accuracy).
+- [ ] In `SETTINGS`, add `RELEVANT_TITLE_KEYWORDS` = `owner,founder,ceo,president,operations manager,operations director,l&d,learning and development,training manager`
+- [ ] In `SETTINGS`, add `CONTACT_DISCOVERY_BATCH_SIZE` = `25`
+- [ ] In `SETTINGS`, add `CONTACT_VERIFICATION_BATCH_SIZE` = `25`
+- [ ] Confirm `HUNTER_API_KEY` and `ZEROBOUNCE_API_KEY` are set in Script Properties (see
+  `PROPERTIES.example`)
+
+---
+
+## Track C — Free tiers vs. paid credit bursts
+
+| Service | Free tier (API) | Paid option | Cancel-anytime? |
+|---|---|---|---|
+| **Hunter** (discovery — finder only, not verifier) | 50 credits/mo, confirmed API access | Starter $49/mo → 2,000 credits | Yes, **monthly only** — annual is discount but locks you in |
+| **ZeroBounce** (verification) | 100 validations/mo | **Pay-as-you-go**, not a subscription — buy a credit pack (2,000 credits ≈ $20–39), credits never expire | N/A — no subscription to cancel |
+| **Apollo** (manual web research only) | N/A — using the web UI, not the API | Not needed for this plan | N/A |
+
+If your company list is bigger than ~50, buy **Hunter Starter for one calendar month**, run
+discovery in bulk, then cancel before renewal (calendar-remind yourself). For ZeroBounce, just
+buy a pack — no subscription risk at all, so there's no reason to "burst and cancel" there; buy
+what you need, when you need it (ideally near the end of warm-up — see Gotcha #4).
+
+**Never choose annual billing for this strategy** — Apollo's annual plan requires 60 days' written
+notice before renewal or you're locked in for another year. Monthly is cancel-anytime.
+
+---
+
+## Gotchas
+
+1. **Apollo's free-tier API access is disputed and thin** — public sources disagree on whether it
+   exists at all, and even optimistic estimates put it around ~10 export credits/month. Don't
+   build anything that depends on it. This plan uses Apollo's web UI manually instead (free,
+   unlimited for search/browse — only *revealing* contact info costs credits, which you don't
+   need since Hunter + ZeroBounce cover that).
+2. **ZeroBounce is pay-as-you-go, not a subscription.** Don't "subscribe and cancel" — just buy a
+   credit pack once. Credits don't expire.
+3. **Monthly billing only for Apollo/Hunter if you're doing the burst-and-cancel strategy.**
+   Annual billing on Apollo requires 60 days' notice before renewal — the opposite of what you
+   want.
+4. **Verification decays; discovery barely does.** Emails found by Hunter (name + domain) stay
+   roughly valid for months. ZeroBounce's *verified* status ages faster — people change jobs,
+   mailboxes close. Run discovery early (harmless if stale), but time your verification burst for
+   the last ~1 week before you actually start sending, so freshness lines up with send date. This
+   is also why the timeline table above puts verification at week 4–5, not week 0.
+5. **Apps Script has hard execution limits**: 6 minutes per single run, 90 minutes/day cumulative
+   across all triggers, and 20,000 `UrlFetchApp` calls/day on a consumer account. This is exactly
+   why Task 4.2 and 4.3 **must** respect `CONTACT_DISCOVERY_BATCH_SIZE` /
+   `CONTACT_VERIFICATION_BATCH_SIZE` and process a bounded number of rows per run — for a large
+   company list, you'll click the trigger function multiple times (or install a low-frequency
+   time trigger) rather than expecting one run to finish everything.
+6. **Warmup Inbox requires an App Password**, not your normal Google login password — you must
+   turn on 2-Step Verification on the Workspace sender account first, or the connection will
+   fail outright.
+7. **`CONTACTS`/`QUEUE` schema (per `LAUNCH-RUNBOOK.md`) has no `lastName` column** — only
+   `firstName`. Hunter's email-finder is meaningfully more accurate with a full name. Add the
+   column by hand (additive, safe — the code matches headers by name, so this won't break
+   anything already pasted in).
+8. **Naming mismatch to be aware of:** `LAUNCH-RUNBOOK.md`'s `CONTACTS` header table lists
+   `linkedin`, but `Cleaner.cleanContact()` in the code produces `linkedinUrl`. Use `linkedinUrl`
+   in your actual sheet to match the code — `linkedin` alone won't be read by anything.
+9. **Some small MA businesses may only have a Gmail/Yahoo address**, not a business-domain email.
+   `ApprovalGate.checkApproval()` hard-blocks personal email domains by design (correct behavior —
+   don't "fix" this). Expect some discovered contacts to silently fail at draft time with "Email
+   does not use a business domain" in `ACTIVITY_LOG` — that's the gate working, not a bug.
+10. **`personalizationLine` cannot be automated in this build** — nothing in the codebase
+    generates it, and `ApprovalGate` hard-blocks any contact with a blank one. Budget real human
+    time for this; it's the one genuinely manual, unavoidable step per contact.
+11. **Hunter's `findEmailWithHunter()` returns a *guess* with a confidence `score`, not a verified
+    address.** Never skip the ZeroBounce step even for a high-score Hunter result — Hunter fills
+    `email`, only ZeroBounce is allowed to set `verificationResult`.
+12. **`DAILY_LIMIT` in `SETTINGS` still applies once `QUEUE` is full.** Even with hundreds of
+    verified, approved contacts queued, `runDraftPipeline()` only drafts up to that day's limit —
+    the rest wait for tomorrow's run. This is intentional (protects a young domain from an
+    accidental burst) — don't raise it just to clear a backlog faster.
+13. **`employeeSizeFit`/`industryFit` are hardcoded `TRUE`** per your call that the WTFP source
+    list is already pre-qualified. If you later pull companies from a broader, less-curated
+    source, revisit this — right now nothing is actually checking industry or company size.
+14. **Codex only reads `PHASES.md` for tasks**, not this file. That's why Phase 4's tasks are
+    mirrored into `PHASES.md` — if you add more tasks to this plan later, put the checkbox in
+    `PHASES.md` too or Codex will never see it.
+
+---
+
+## What's still missing / needs building
+
+Everything below is captured as a `PHASES.md` Phase 4 task (see task numbers) except where noted
+as manual:
+
+- **Contact discovery from a bare company list** — nothing currently reads `COMPANIES` and
+  produces `CONTACTS` rows. Closed by Task 4.2, fed by the manual Apollo step above.
+- **Email verification wiring** — `ZeroBounceClient.gs` exists but nothing calls it in a loop over
+  `CONTACTS`. Closed by Task 4.3.
+- **Promotion from `CONTACTS` to `QUEUE`** — `FollowUpScheduler.gs` only appends *follow-up*
+  contacts to `QUEUE`; nothing promotes a contact's *first* touch. Closed by Task 4.4.
+  (This was a real gap in the original Phase 1–3 build, not something new to this plan.)
+- **Role-relevance filtering** — no code checks a contact's title against your target roles.
+  Closed by Task 4.1.
+- **`personalizationLine` generation** — intentionally **not** in scope for Codex; this stays a
+  manual step (Gotcha #10). If you want to revisit automating this later (e.g., summarizing a
+  scraped fact), that's a separate, larger conversation — flag it explicitly if you want to pursue
+  it, it is not implied by anything in this plan.
+
+---
+
+## Go-live checklist (combines `LAUNCH-RUNBOOK.md` Step 7 with this plan)
+
+- [ ] Warm-up has run 4–6 weeks with no unresolved critical warnings
+- [ ] `DRAFT_ONLY` = `TRUE` in `SETTINGS`
+- [ ] Phase 4 code merged, reviewed, and pasted into Apps Script
+- [ ] `CONTACTS` populated via the Apollo → Hunter discovery loop
+- [ ] Verification burst run near the end of warm-up (freshness intact)
+- [ ] `personalizationLine` filled in for every contact you intend to queue
+- [ ] `QUEUE` populated via `runQueueBuilderTrigger()`
+- [ ] Smoke test: `runDraftPipeline()` run manually, `ACTIVITY_LOG` fills, Gmail Drafts populated,
+  `DASHBOARD` shows metrics after `runDashboardRefreshTrigger()`
+- [ ] Send 3–5 drafts/day by hand, never bulk, while the domain is young
+- [ ] Ramp volume only as Postmaster reputation stays green

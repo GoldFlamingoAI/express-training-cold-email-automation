@@ -100,7 +100,7 @@ function runDraftPipeline() {
         industryFit: contact.industryFit === true || contact.industryFit === 'TRUE',
         hasPersonalizationFact: Boolean(String(contact.personalizationLine || '').trim())
       }, Number(settings.approvalThreshold));
-      const approval = checkApproval(contact, settings, dailySentCount + drafted, contact.isSuppressed === true || contact.isSuppressed === 'TRUE');
+      const approval = checkApproval(contact, settings, dailySentCount + drafted, isContactSuppressed_(contact));
 
       if (!score.approved || !approval.approved) {
         skipped += 1;
@@ -223,6 +223,58 @@ function runDashboardRefreshTrigger() {
 }
 
 /**
+ * Determines whether a QUEUE contact is suppressed.
+ * Trusts a pre-computed isSuppressed column when set, and otherwise checks the
+ * live SUPPRESSION tab so bounces/opt-outs are honored even if the column is stale.
+ * @param {Object} contact - QUEUE contact record.
+ * @returns {boolean}
+ */
+function isContactSuppressed_(contact) {
+  const flagged = contact.isSuppressed === true || contact.isSuppressed === 'TRUE';
+  if (flagged) {
+    return true;
+  }
+
+  const email = String(contact.email || '').trim();
+  if (!email) {
+    return false;
+  }
+
+  try {
+    return isSuppressed(email);
+  } catch (error) {
+    auditLog('Orchestrator', 'SUPPRESSION_CHECK_FALLBACK', contact.contactId || '', error && error.message ? error.message : String(error), 'WARN');
+    return flagged;
+  }
+}
+
+/**
+ * Canonical record header names the import/draft pipeline reads by exact key.
+ * Used to tolerate case, spacing, and punctuation differences in sheet headers.
+ * @type {string[]}
+ */
+const CANONICAL_RECORD_HEADERS = [
+  'key', 'value', 'setting', 'name',
+  'company', 'website', 'industry', 'city', 'state', 'employeeSize', 'sourceUrl', 'wtfpRelevance',
+  'firstName', 'lastName', 'title', 'email', 'linkedinUrl', 'contactId',
+  'maConfirmed', 'roleIsRelevant', 'verificationResult', 'catchAll', 'status',
+  'personalizationLine', 'emailsSent', 'employeeSizeFit', 'industryFit', 'isSuppressed',
+  'subject', 'body', 'template', 'templateBody', 'senderName', 'lastSentAt'
+];
+
+/**
+ * Builds a normalized-header to canonical-header lookup.
+ * @returns {Object} Map of normalized header to canonical camelCase header.
+ */
+function canonicalRecordHeaderMap_() {
+  const map = {};
+  CANONICAL_RECORD_HEADERS.forEach(function(canonical) {
+    map[canonical.toLowerCase().replace(/[^a-z0-9]/g, '')] = canonical;
+  });
+  return map;
+}
+
+/**
  * Opens the configured campaign spreadsheet.
  * @returns {SpreadsheetApp.Spreadsheet}
  */
@@ -250,7 +302,8 @@ function readSettings(spreadsheet) {
   });
 
   settings.dailyLimit = Number(settings.dailyLimit || settings.DAILY_LIMIT || 0);
-  settings.approvalThreshold = Number(settings.approvalThreshold || settings.APPROVAL_THRESHOLD);
+  const threshold = Number(settings.approvalThreshold || settings.APPROVAL_THRESHOLD);
+  settings.approvalThreshold = Number.isFinite(threshold) && threshold > 0 ? threshold : 75;
   settings.draftOnly = String(settings.draftOnly || settings.DRAFT_ONLY || 'TRUE').toUpperCase() !== 'FALSE';
   settings.senderName = settings.senderName || settings.SENDER_NAME || '';
 
@@ -271,8 +324,11 @@ function readRecords(spreadsheet, tabName) {
     return [];
   }
 
+  const canonicalMap = canonicalRecordHeaderMap_();
   const headers = values[0].map(function(header) {
-    return String(header || '').trim();
+    const trimmed = String(header || '').trim();
+    const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return canonicalMap[normalized] || trimmed;
   });
 
   return values.slice(1).map(function(row) {

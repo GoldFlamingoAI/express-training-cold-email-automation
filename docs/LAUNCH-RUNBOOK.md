@@ -368,27 +368,36 @@ Then grab the **spreadsheet ID** from the URL:
 
 ## Step 3 — 🏠 Create the Apps Script project & paste the code
 
-1. From the Sheet: **Extensions → Apps Script** (creates a bound project).
-2. **Manifest:** click the gear ⚙️ → "Show appsscript.json" → paste the contents of
-   `appsscript.json` from the repo (sets V8 + the OAuth scopes).
-3. **Create one script file per module** and paste its contents from GitHub. Apps Script
-   shares one global scope, so execution order doesn't matter — but paste in this grouping
-   so nothing references a not-yet-pasted helper while you're testing:
+Break this into lettered sub-phases so each piece can be tracked independently.
 
-   **Foundation & pure logic (paste first):**
-   `AuditLogger.gs` · `Cleaner.gs` · `Deduplicator.gs` · `MassachusettsFilter.gs` ·
-   `LeadScorer.gs` · `TemplateEngine.gs` · `ApprovalGate.gs`
+### Step 3.A — ✅ DONE — Create the bound Apps Script project and paste the manifest
 
-   **I/O modules:**
-   `ImportService.gs` · `DraftService.gs` · `SuppressionService.gs` · `ReplyMonitor.gs` ·
-   `BounceMonitor.gs` · `FollowUpScheduler.gs` · `DashboardService.gs`
+- [x] From the Sheet: **Extensions → Apps Script** (creates a bound project).
+- [x] **Manifest:** click the gear ⚙️ → "Show appsscript.json" → paste the contents of
+  `appsscript.json` from the repo (sets V8 + the OAuth scopes).
 
-   **Phase 3 API clients (only if/when you start Phase 3):**
-   `ZeroBounceClient.gs` · `ApolloClient.gs` · `HunterClient.gs`
+### Step 3.B — Foundation & pure logic files
 
-   **Orchestrator (paste last):** `Code.gs`
+- [ ] Create one script file per foundation/pure-logic module and paste the contents from GitHub:
+  `AuditLogger.gs` · `Cleaner.gs` · `Deduplicator.gs` · `MassachusettsFilter.gs` ·
+  `LeadScorer.gs` · `TemplateEngine.gs` · `ApprovalGate.gs`
 
-4. Save. There should be **18 `.gs` files** plus the manifest.
+### Step 3.C — I/O module files
+
+- [ ] Create one script file per I/O module and paste the contents from GitHub:
+  `ImportService.gs` · `DraftService.gs` · `SuppressionService.gs` · `ReplyMonitor.gs` ·
+  `BounceMonitor.gs` · `FollowUpScheduler.gs` · `DashboardService.gs`
+
+### Step 3.D — Optional Phase 3 API client files
+
+- [ ] Only if/when you start Phase 3, create one script file per API client and paste the contents
+  from GitHub: `ZeroBounceClient.gs` · `ApolloClient.gs` · `HunterClient.gs`
+
+### Step 3.E — Orchestrator file and save
+
+- [ ] Create `Code.gs` last and paste the orchestrator contents from GitHub.
+- [ ] Save. There should be **18 `.gs` files** plus the manifest when all optional Phase 3 files
+  are included.
 
 > Whenever a PR merges later, re-paste that one changed `.gs` file here — Apps Script has
 > no auto-deploy.
@@ -397,25 +406,35 @@ Then grab the **spreadsheet ID** from the URL:
 
 ## Step 4 — ⚙️ Script Properties (secrets & the sheet link)
 
-Apps Script editor → **Project Settings** (gear) → **Script Properties** → add:
+Break Script Properties into lettered sub-phases so required setup is separated from optional
+Phase 3 API keys.
 
-| Property | Value | Needed for |
-|----------|-------|------------|
-| `SPREADSHEET_ID` | the ID from Step 2 | **Required — everything** |
-| `ZEROBOUNCE_API_KEY` | your key | Phase 3 only |
-| `APOLLO_API_KEY` | your key | Phase 3 only |
-| `HUNTER_API_KEY` | your key | Phase 3 only |
+Apps Script editor → **Project Settings** (gear) → **Script Properties**.
 
-(See `PROPERTIES.example` in the repo.) Skip the API keys entirely for the Phase 1–2
-manual-CSV workflow.
+### Step 4.A — ✅ DONE — Required spreadsheet link
+
+- [x] Add `SPREADSHEET_ID` with the ID from Step 2. This is **required — everything** depends on it.
+
+### Step 4.B — Optional Phase 3 API keys
+
+Skip these entirely for the Phase 1–2 manual-CSV workflow.
+
+- [ ] `ZEROBOUNCE_API_KEY` — Phase 3 only
+- [ ] `APOLLO_API_KEY` — Phase 3 only
+- [ ] `HUNTER_API_KEY` — Phase 3 only
+
+(See `PROPERTIES.example` in the repo.)
 
 ---
 
 ## Step 5 — ⚙️ SETTINGS tab values
 
-In the `SETTINGS` tab, add these as `key` / `value` rows:
+In the `SETTINGS` tab, add these as `key` / `value` rows. Break the settings into lettered
+sub-phases so the required core-loop values are tracked separately from monitor and optional API
+settings.
 
-**Required (Phase 1 core loop):**
+### Step 5.A — Required Phase 1 core loop settings
+
 | key | example value | meaning |
 |-----|---------------|---------|
 | `DRAFT_ONLY` | `TRUE` | Keep TRUE — creates drafts, never auto-sends. **Leave TRUE for the entire MVP.** |
@@ -423,17 +442,33 @@ In the `SETTINGS` tab, add these as `key` / `value` rows:
 | `APPROVAL_THRESHOLD` | `75` | Min lead score (0–100) to draft |
 | `SENDER_NAME` | `Your Name` | Merge field for templates |
 
-**Phase 2 monitors (sensible values):**
-`REPLY_MONITOR_LOOKBACK_DAYS` = `14` · `REPLY_MONITOR_MAX_THREADS` = `50` ·
-`BOUNCE_MONITOR_LOOKBACK_DAYS` = `14` · `BOUNCE_MONITOR_MAX_THREADS` = `50` ·
-`FOLLOW_UP_DELAY_DAYS` = `4` · `FOLLOW_UP_MAX_EMAILS` = `3`
+### Step 5.B — Phase 2 monitor settings
 
-**Phase 3 (only when you start it):** `APOLLO_CONTACT_SEARCH_URL`,
-`APOLLO_CONTACT_SEARCH_PAGE_SIZE`, `HUNTER_EMAIL_FINDER_URL`, `HUNTER_EMAIL_VERIFIER_URL`,
-`ZEROBOUNCE_VALIDATE_URL`, `ZEROBOUNCE_CREDITS_URL`, `ZEROBOUNCE_TIMEOUT_SECONDS`.
+| key | example value | meaning |
+|-----|---------------|---------|
+| `REPLY_MONITOR_LOOKBACK_DAYS` | `14` | How many days of Gmail threads ReplyMonitor checks |
+| `REPLY_MONITOR_MAX_THREADS` | `50` | Max Gmail reply threads checked per monitor run |
+| `BOUNCE_MONITOR_LOOKBACK_DAYS` | `14` | How many days of Gmail threads BounceMonitor checks |
+| `BOUNCE_MONITOR_MAX_THREADS` | `50` | Max Gmail bounce/NDR threads checked per monitor run |
+| `FOLLOW_UP_DELAY_DAYS` | `4` | Days to wait before drafting a follow-up |
+| `FOLLOW_UP_MAX_EMAILS` | `3` | Maximum emails in a campaign sequence |
 
-Also add at least one row to the `TEMPLATES` tab: a `subject` and a `body`. The body may
-use `{{firstName}}`, `{{company}}`, `{{personalizationLine}}`, `{{senderName}}`.
+### Step 5.C — Optional Phase 3 API client settings
+
+Only add these when you start Phase 3:
+
+- [ ] `APOLLO_CONTACT_SEARCH_URL`
+- [ ] `APOLLO_CONTACT_SEARCH_PAGE_SIZE`
+- [ ] `HUNTER_EMAIL_FINDER_URL`
+- [ ] `HUNTER_EMAIL_VERIFIER_URL`
+- [ ] `ZEROBOUNCE_VALIDATE_URL`
+- [ ] `ZEROBOUNCE_CREDITS_URL`
+- [ ] `ZEROBOUNCE_TIMEOUT_SECONDS`
+
+### Step 5.D — Template row
+
+- [ ] Add at least one row to the `TEMPLATES` tab: a `subject` and a `body`. The body may use
+  `{{firstName}}`, `{{company}}`, `{{personalizationLine}}`, `{{senderName}}`.
 
 ---
 

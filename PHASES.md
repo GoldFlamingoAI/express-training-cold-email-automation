@@ -25,7 +25,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] ✅ 🏠 **Connect Lemwarm Essential** to the isolated inbox; run 3–4 weeks before first send
 - [x] ✅ 🏠 **Configure Google Postmaster Tools** for the new domain
 - [x] ✅ 🏠 **Create the Google Sheets file** with the 10 required tabs: SETTINGS, COMPANIES, CONTACTS, CAMPAIGNS, QUEUE, SUPPRESSION, ACTIVITY_LOG, DASHBOARD, TEMPLATES, PLAYBOOK_REQUESTS
-- [ ] 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
+- [x] ✅ 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
 - [ ] 🏠 **Obtain Massachusetts source company list** (CSV) — WTFP grantees and other MA employers
 - [ ] 🏠 **Connect Codex to this GitHub repo** (GitHub OAuth, write access to `codex/*` branches only)
 

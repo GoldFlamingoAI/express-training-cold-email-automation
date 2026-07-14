@@ -11,6 +11,82 @@ merged PR list. Codex doesn't edit it. Current task = the first unchecked `- [ ]
 
 ---
 
+## Project Stack — high-level overview
+
+Everything below is one project end to end: infrastructure you set up once, the code
+Codex/Claude/you ship into it, what actually runs the campaign, and the external services and
+humans that feed it. Dashed amber boxes are Phase 4 — planned in `PHASES.md`/`COLD-EMAIL-MONDAY.md`
+but not yet built.
+
+```mermaid
+graph TD
+    subgraph L1["Infrastructure & Deliverability — Phase 0 (one-time)"]
+        Domain["Secondary domain"]
+        DNS["DNS: MX / SPF / DKIM / DMARC"]
+        WS["Google Workspace<br/>Business Starter tenant"]
+        PM["Google Postmaster Tools"]
+    end
+
+    subgraph L2["Inbox Warm-Up — 4-6 weeks, runs in parallel"]
+        WU["Warmup Inbox<br/>synthetic send/receive"]
+    end
+
+    subgraph L3["Dev & Deploy Workflow"]
+        CX["Codex<br/>writes PRs"]
+        GH["GitHub + CI<br/>codex-guard.yml"]
+        CC["Claude Code<br/>reviews PRs"]
+        UM["User<br/>merges"]
+        ASE["Apps Script editor<br/>manual paste (no CI deploy)"]
+    end
+
+    subgraph L4["Application Runtime — Google Apps Script (V8)"]
+        ORCH["Code.gs<br/>orchestrator + trigger entry points"]
+        PURE["Pure logic modules<br/>Cleaner · Deduplicator · MassachusettsFilter<br/>LeadScorer · TemplateEngine · ApprovalGate"]
+        IOM["I/O modules (built)<br/>ImportService · DraftService · SuppressionService<br/>ReplyMonitor · BounceMonitor · FollowUpScheduler · DashboardService"]
+        SHEETS[("Google Sheets<br/>10 tabs = database")]
+        GMAIL["GmailApp<br/>drafts + reply/bounce search"]
+    end
+
+    subgraph L4b["Phase 4 — Contact Enrichment (planned, not yet built)"]
+        RRF["RoleRelevanceFilter"]
+        CDS["ContactDiscoveryService"]
+        CVS["ContactVerificationService"]
+        QB["QueueBuilder"]
+    end
+
+    subgraph L5["External Contact-Data APIs"]
+        HUNTER["Hunter.io API<br/>email discovery"]
+        ZB["ZeroBounce API<br/>email verification"]
+        APOLLO["Apollo.io<br/>manual web UI, no API"]
+    end
+
+    subgraph L6["Human in the Loop"]
+        RESEARCH["Manual research<br/>Apollo lookups + personalization"]
+        REVIEW["Review & send drafts<br/>3-5/day"]
+    end
+
+    Domain --> DNS --> WS --> PM
+    WS --> WU
+    WU -. warms .-> GMAIL
+
+    CX --> GH --> CC --> UM --> ASE --> ORCH
+
+    ORCH --> PURE
+    ORCH --> IOM
+    IOM <--> SHEETS
+    IOM --> GMAIL
+    CDS --> HUNTER
+    CVS --> ZB
+    QB <--> SHEETS
+    APOLLO --> RESEARCH --> SHEETS
+    GMAIL --> REVIEW
+
+    classDef planned stroke-dasharray: 5 5,fill:#fff8e1,stroke:#c9a227,color:#333;
+    class RRF,CDS,CVS,QB planned
+```
+
+---
+
 ## Phase 0: Discovery + Manual Setup ✅ 🏠
 
 Architecture and tooling decisions are complete. The following manual setup must be done by the user **before Phase 1 Codex work begins**:

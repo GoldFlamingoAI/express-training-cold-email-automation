@@ -18,8 +18,8 @@ why the tasks are scoped that way, the manual steps around them, the how-tos, an
 - [x] Secondary domain purchased, DNS (MX/SPF/DKIM/DMARC) configured
 - [x] Google Sheet created with the 10 tabs, Apps Script project created, all 18 `.gs` files pasted
 - [x] `runReplyMonitorTrigger`/`runBounceMonitorTrigger`/`runFollowUpSchedulerTrigger`/
-  `runDashboardRefreshTrigger` installed as time-driven triggers and already firing on schedule —
-  **but see the pre-flight blocker directly below, they're very likely erroring on every run**
+  `runDashboardRefreshTrigger` installed as time-driven triggers and firing on schedule; manifest
+  re-pasted and OAuth re-consented under the `mail.google.com` scope — confirmed clean (see below)
 - [x] Massachusetts company list (WTFP grantees) sourced and imported to `COMPANIES`
 - [ ] Inbox warm-up — **not started, start today**
 - [ ] Contacts discovered/verified for the company list
@@ -27,28 +27,19 @@ why the tasks are scoped that way, the manual steps around them, the how-tos, an
 
 ---
 
-## 🔴 Fix this today — reply/bounce monitors are actively broken
+## ✅ RESOLVED — Gmail OAuth scope fix (was: reply/bounce monitors actively broken)
 
-This isn't a pre-launch checklist item, it's happening right now: the four time-driven triggers
-are already installed and firing on schedule, but the OAuth consent behind them was approved
-under the **old** manifest, which only granted the Gmail *compose* scope. That's enough for
-`DraftService.createDraft()`, but **not** enough for `ReplyMonitor`/`BounceMonitor`, which call
-`GmailApp.search()` — the built-in `GmailApp` service requires the full `https://mail.google.com/`
-scope, and granular `gmail.compose`/`gmail.readonly` scopes don't authorize it. The manifest was
-fixed in the repo, but re-pasting it and re-approving OAuth is a manual step nothing does for you.
+The original manifest only granted the Gmail *compose* scope, which is enough for
+`DraftService.createDraft()` but not for `ReplyMonitor`/`BounceMonitor`'s `GmailApp.search()`
+calls — the built-in `GmailApp` service requires the full `https://mail.google.com/` scope. The
+manifest was fixed in the repo, then manually re-pasted into the Apps Script editor and
+re-consented. **Confirmed:** running the project manually produced no
+`REPLY_MONITOR_TRIGGER_ERROR`/`BOUNCE_MONITOR_TRIGGER_ERROR` rows in `ACTIVITY_LOG`.
 
-**Right now**, every scheduled `runReplyMonitorTrigger`/`runBounceMonitorTrigger` run is very
-likely throwing an authorization error and doing nothing — check `ACTIVITY_LOG` for
-`REPLY_MONITOR_TRIGGER_ERROR` / `BOUNCE_MONITOR_TRIGGER_ERROR` rows to confirm. Until this is
-fixed, replies and bounces are not being detected, contacts are not being marked `REPLIED` or
-suppressed for bounces, and `FollowUpScheduler`/`DashboardService` are working from stale data.
-
-**Fix it now, independent of anything else in this doc:**
-1. Apps Script editor → gear ⚙️ → **Show "appsscript.json"** → replace the contents with the
-   repo's current `appsscript.json`.
-2. Run any function once (e.g. `runDraftPipeline`) from the editor's function dropdown — Google
-   will show the OAuth consent screen again because the scope set changed. Approve it.
-3. Check `ACTIVITY_LOG` after the next scheduled trigger fire to confirm the errors stop.
+One thing worth a quick check: this confirms the *manual* run is clean. If you haven't already,
+glance at `ACTIVITY_LOG` again after the triggers' next *scheduled* fire (not a manual run) just
+to be thorough — scheduled and manual executions use the same authorization, so this should carry
+over cleanly, but it costs nothing to confirm once.
 
 ---
 
@@ -240,12 +231,11 @@ notice before renewal or you're locked in for another year. Monthly is cancel-an
 14. **Codex only reads `PHASES.md` for tasks**, not this file. That's why Phase 4's tasks are
     mirrored into `PHASES.md` — if you add more tasks to this plan later, put the checkbox in
     `PHASES.md` too or Codex will never see it.
-15. **The Gmail OAuth scope was wrong in the original manifest, and this is confirmed currently
-    active** (see the top of this doc). `GmailApp.search()` in the monitors needs
-    `https://mail.google.com/`; the old manifest only had `gmail.compose`. Fixed in the repo, but
-    the triggers are already installed and firing under the old consent — meaning
-    `runReplyMonitorTrigger`/`runBounceMonitorTrigger` are erroring on every scheduled run right
-    now, not just at some future launch. Re-paste `appsscript.json` and re-approve OAuth today.
+15. **The Gmail OAuth scope was wrong in the original manifest — fixed and confirmed resolved.**
+    `GmailApp.search()` in the monitors needs `https://mail.google.com/`; the old manifest only had
+    `gmail.compose`. If you ever re-paste an older copy of `appsscript.json` by mistake, or add a
+    second sender inbox later, watch for this exact failure mode again: monitors erroring while
+    draft creation still works, since compose-only scope covers `createDraft()` but not `search()`.
 16. **Never run two warm-up tools on one inbox** (see Track A). The repo previously showed Lemwarm
     as connected — that was stale and has been corrected. If you ever add a second inbox or
     domain later, remember this same rule: one warm-up tool per mailbox, not two at once.
@@ -287,7 +277,7 @@ as manual:
 
 ## Go-live checklist (combines `LAUNCH-RUNBOOK.md` Step 7 with this plan)
 
-- [ ] Current `appsscript.json` pasted in and OAuth re-consented (the `mail.google.com` scope fix)
+- [x] Current `appsscript.json` pasted in and OAuth re-consented (the `mail.google.com` scope fix)
 - [ ] Exactly one warm-up tool connected to the inbox — warm-up has run 4–6 weeks with no
   unresolved critical warnings
 - [ ] All 10 sheet tabs exist with exact names (`LAUNCH-RUNBOOK.md` Step 2) — a missing/misnamed

@@ -8,18 +8,18 @@ Legend: 🏠 = you do it by hand · ⏱️ = has a waiting period · ⚙️ = co
 
 ---
 
-## Step 1 — 🏠⏱️ Domain & inbox infrastructure (start NOW, ~3–4 weeks)
+## Step 1 — ✅ DONE — 🏠⏱️ Domain & inbox infrastructure
 
 This is Phase 0 from `PHASES.md` — none of it is code, and the warm-up can't be rushed.
 
-1. Buy a **secondary** cold-outreach domain (not your primary business domain).
-2. Create an **isolated Google Workspace Business Starter** tenant on that domain (separate
-   from your main account).
-3. Configure **DNS**: MX records, SPF, DKIM, and DMARC (start at `p=none` monitoring mode).
-4. Create the **sender identity**: real name, photo, signature, physical mailing address.
-5. Connect **Lemwarm Essential** to the inbox and let it warm for **3–4 weeks before the
-   first real send**. ⏱️ This is the long pole — do it first.
-6. Set up **Google Postmaster Tools** for the domain to watch reputation.
+- [x] Buy a **secondary** cold-outreach domain (not your primary business domain).
+- [x] Create an **isolated Google Workspace Business Starter** tenant on that domain (separate
+  from your main account).
+- [x] Configure **DNS**: MX records, SPF, DKIM, and DMARC (start at `p=none` monitoring mode).
+- [x] Create the **sender identity**: real name, photo, signature, physical mailing address.
+- [x] Connect **Lemwarm Essential** to the inbox and let it warm for **3–4 weeks before the
+  first real send**. ⏱️ This is the long pole — do it first.
+- [x] Set up **Google Postmaster Tools** for the domain to watch reputation.
 
 ---
 
@@ -33,7 +33,7 @@ was added.
 > **Placeholder used below:** replace `newdomain.com` with the real cold-outreach domain you buy.
 > Do **not** use the primary business domain for this pilot.
 
-### 0.1 Buy the secondary cold-outreach domain
+### 0.1 ✅ DONE — Buy the secondary cold-outreach domain
 
 Official / vendor links:
 - Domain search examples: [Namecheap](https://www.namecheap.com/domains/), [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/), [GoDaddy](https://www.godaddy.com/domains), [Squarespace Domains](https://domains.squarespace.com/).
@@ -58,7 +58,7 @@ Beginner steps:
 
 Done when: you can log into the registrar and see the DNS records page for `newdomain.com`.
 
-### 0.2 Create the isolated Google Workspace Business Starter tenant
+### 0.2 ✅ DONE — Create the isolated Google Workspace Business Starter tenant
 
 Official links:
 - [Google Workspace pricing](https://workspace.google.com/pricing.html)
@@ -91,7 +91,7 @@ Beginner steps:
 Done when: `newdomain.com` is verified in Google Workspace and you can log into Gmail for the
 sender inbox at <https://mail.google.com/>.
 
-### 0.3 Configure DNS for Google Workspace Gmail delivery
+### 0.3 ✅ DONE — Configure DNS for Google Workspace Gmail delivery
 
 Official links:
 - [Set up MX records for Google Workspace](https://support.google.com/a/answer/140034)
@@ -102,7 +102,7 @@ Official links:
 
 You will add four kinds of DNS records: MX, SPF, DKIM, and DMARC.
 
-#### 0.3.1 Add Google MX records
+#### 0.3.1 ✅ DONE — Add Google MX records
 
 MX records tell the internet that mail for `newdomain.com` should go to Gmail.
 
@@ -130,7 +130,7 @@ MX records tell the internet that mail for `newdomain.com` should go to Gmail.
 
 Done when: the sender inbox can receive external email.
 
-#### 0.3.2 Add SPF
+#### 0.3.2 ✅ DONE — Add SPF
 
 SPF tells receiving mail servers that Google is allowed to send mail for `newdomain.com`.
 
@@ -156,7 +156,7 @@ SPF tells receiving mail servers that Google is allowed to send mail for `newdom
 
 Done when: the domain has exactly one root SPF record and it includes Google.
 
-#### 0.3.3 Add DKIM
+#### 0.3.3 ✅ DONE — Add DKIM
 
 DKIM signs outgoing mail so recipients can verify Google really sent it for your domain.
 
@@ -195,7 +195,7 @@ DKIM signs outgoing mail so recipients can verify Google really sent it for your
 Done when: Google Admin says DKIM is authenticating and a real received test message shows DKIM
 `PASS`.
 
-#### 0.3.4 Add DMARC in monitoring mode
+#### 0.3.4 ✅ DONE — Add DMARC in monitoring mode
 
 DMARC tells recipients what to do when mail fails authentication. Start with `p=none` so nothing is
 blocked while you are still verifying the setup.
@@ -224,7 +224,7 @@ blocked while you are still verifying the setup.
 
 Done when: `_dmarc.newdomain.com` publishes a TXT record beginning with `v=DMARC1; p=none`.
 
-### 0.4 Create the sender identity in Gmail
+### 0.4 ✅ DONE — Create the sender identity in Gmail
 
 Official links:
 - [Create a Gmail signature](https://support.google.com/mail/answer/8395)
@@ -249,7 +249,7 @@ Beginner steps:
 Done when: a real external recipient sees the intended sender name, profile, and signature, and
 replies work.
 
-### 0.5 Connect Lemwarm Essential and run warm-up
+### 0.5 ✅ DONE — Connect Lemwarm Essential and run warm-up
 
 Official / vendor links:
 - [Lemwarm](https://www.lemwarm.com/)
@@ -276,7 +276,7 @@ Beginner steps:
 Done when: Lemwarm has run for 3–4 weeks, no critical technical warnings remain, and the inbox has
 normal send/receive behavior.
 
-### 0.6 Configure Google Postmaster Tools for the new domain
+### 0.6 ✅ DONE — Configure Google Postmaster Tools for the new domain
 
 Official links:
 - [Google Postmaster Tools](https://postmaster.google.com/)
@@ -314,25 +314,32 @@ Beginner steps:
 
 Done when: `newdomain.com` is verified in Postmaster Tools and visible on the domains page.
 
-### 0.7 Final Phase 0 acceptance checklist before moving on
+### 0.7 ✅ DONE — Final Phase 0 acceptance checklist before moving on
 
 Do not start Phase 1 live deployment or send smoke-test cold emails until every item below is true:
 
-- [ ] Secondary domain purchased and DNS access confirmed.
-- [ ] Separate Google Workspace tenant exists for the new domain.
-- [ ] Sender inbox exists and can send and receive external email.
-- [ ] MX points to Google Workspace.
-- [ ] SPF TXT record exists and includes Google.
-- [ ] DKIM is enabled and a received test message shows DKIM `PASS`.
-- [ ] DMARC exists at `_dmarc.newdomain.com` with `p=none`.
-- [ ] Sender profile photo, display name, signature, and physical mailing address are present.
-- [ ] Lemwarm is connected and warming the inbox.
-- [ ] Google Postmaster Tools is verified for the domain.
-- [ ] The warm-up start date is written down.
+- [x] Secondary domain purchased and DNS access confirmed.
+- [x] Separate Google Workspace tenant exists for the new domain.
+- [x] Sender inbox exists and can send and receive external email.
+- [x] MX points to Google Workspace.
+- [x] SPF TXT record exists and includes Google.
+- [x] DKIM is enabled and a received test message shows DKIM `PASS`.
+- [x] DMARC exists at `_dmarc.newdomain.com` with `p=none`.
+- [x] Sender profile photo, display name, signature, and physical mailing address are present.
+- [x] Lemwarm is connected and warming the inbox.
+- [x] Google Postmaster Tools is verified for the domain.
+- [x] The warm-up start date is written down.
 
 ---
 
-## Step 2 — 🏠 Create the Google Sheet (this IS the database)
+## Step 2 — ✅ DONE — 🏠 Create the Google Sheet (this IS the database)
+
+Status checklist:
+
+- [x] Google Sheets file created.
+- [x] All 10 required tabs created with exact names.
+- [x] Header rows added for the MVP tabs.
+- [x] Spreadsheet ID copied for Step 4.
 
 Create one Google Sheets file. Add **10 tabs with these exact names**:
 

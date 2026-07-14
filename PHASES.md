@@ -18,14 +18,14 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] MVP architecture spec reviewed and approved (`starting-architecture/`)
 - [x] Stack chosen: Apps Script + Sheets + Gmail + Lemwarm + Apollo/Hunter/ZeroBounce free tiers
 - [x] Lean phasing decided: core draft loop first, monitors second, API clients optional
-- [ ] 🏠 **Buy secondary cold-outreach domain** (not the primary business domain)
-- [ ] 🏠 **Create isolated Google Workspace Business Starter tenant** (separate from primary account)
-- [ ] 🏠 **Configure DNS:** MX records, SPF, DKIM, DMARC (`p=none` monitoring mode first)
-- [ ] 🏠 **Create sender identity:** real name, profile photo, signature, physical address
-- [ ] 🏠 **Connect Lemwarm Essential** to the isolated inbox; run 3–4 weeks before first send
-- [ ] 🏠 **Configure Google Postmaster Tools** for the new domain
-- [ ] 🏠 **Create the Google Sheets file** with the 10 required tabs: SETTINGS, COMPANIES, CONTACTS, CAMPAIGNS, QUEUE, SUPPRESSION, ACTIVITY_LOG, DASHBOARD, TEMPLATES, PLAYBOOK_REQUESTS
-- [ ] 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
+- [x] ✅ 🏠 **Buy secondary cold-outreach domain** (not the primary business domain)
+- [x] ✅ 🏠 **Create isolated Google Workspace Business Starter tenant** (separate from primary account)
+- [x] ✅ 🏠 **Configure DNS:** MX records, SPF, DKIM, DMARC (`p=none` monitoring mode first)
+- [x] ✅ 🏠 **Create sender identity:** real name, profile photo, signature, physical address
+- [x] ✅ 🏠 **Connect Lemwarm Essential** to the isolated inbox; run 3–4 weeks before first send
+- [x] ✅ 🏠 **Configure Google Postmaster Tools** for the new domain
+- [x] ✅ 🏠 **Create the Google Sheets file** with the 10 required tabs: SETTINGS, COMPANIES, CONTACTS, CAMPAIGNS, QUEUE, SUPPRESSION, ACTIVITY_LOG, DASHBOARD, TEMPLATES, PLAYBOOK_REQUESTS
+- [x] ✅ 🏠 **Create a new Google Apps Script project** bound to the Sheets file; note the script ID
 - [ ] 🏠 **Obtain Massachusetts source company list** (CSV) — WTFP grantees and other MA employers
 - [ ] 🏠 **Connect Codex to this GitHub repo** (GitHub OAuth, write access to `codex/*` branches only)
 

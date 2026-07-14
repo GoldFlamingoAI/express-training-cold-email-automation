@@ -388,10 +388,10 @@ Break this into lettered sub-phases so each piece can be tracked independently.
   `ImportService.gs` · `DraftService.gs` · `SuppressionService.gs` · `ReplyMonitor.gs` ·
   `BounceMonitor.gs` · `FollowUpScheduler.gs` · `DashboardService.gs`
 
-### Step 3.D — Optional Phase 3 API client files
+### Step 3.D — ✅ DONE — Optional Phase 3 API client files
 
-- [ ] Only if/when you start Phase 3, create one script file per API client and paste the contents
-  from GitHub: `ZeroBounceClient.gs` · `ApolloClient.gs` · `HunterClient.gs`
+- [x] Phase 3 API client files created and pasted from GitHub:
+  `ZeroBounceClient.gs` · `ApolloClient.gs` · `HunterClient.gs`
 
 ### Step 3.E — Orchestrator file and save
 
@@ -415,13 +415,13 @@ Apps Script editor → **Project Settings** (gear) → **Script Properties**.
 
 - [x] Add `SPREADSHEET_ID` with the ID from Step 2. This is **required — everything** depends on it.
 
-### Step 4.B — Optional Phase 3 API keys
+### Step 4.B — ✅ DONE — Optional Phase 3 API keys
 
-Skip these entirely for the Phase 1–2 manual-CSV workflow.
+These were optional for Phase 1–2 manual CSV workflow, but Phase 3 setup is now marked complete.
 
-- [ ] `ZEROBOUNCE_API_KEY` — Phase 3 only
-- [ ] `APOLLO_API_KEY` — Phase 3 only
-- [ ] `HUNTER_API_KEY` — Phase 3 only
+- [x] `ZEROBOUNCE_API_KEY` — Phase 3 only
+- [x] `APOLLO_API_KEY` — Phase 3 only
+- [x] `HUNTER_API_KEY` — Phase 3 only
 
 (See `PROPERTIES.example` in the repo.)
 
@@ -433,7 +433,7 @@ In the `SETTINGS` tab, add these as `key` / `value` rows. Break the settings int
 sub-phases so the required core-loop values are tracked separately from monitor and optional API
 settings.
 
-### Step 5.A — Required Phase 1 core loop settings
+### Step 5.A — ✅ DONE — Required Phase 1 core loop settings
 
 | key | example value | meaning |
 |-----|---------------|---------|
@@ -453,17 +453,17 @@ settings.
 | `FOLLOW_UP_DELAY_DAYS` | `4` | Days to wait before drafting a follow-up |
 | `FOLLOW_UP_MAX_EMAILS` | `3` | Maximum emails in a campaign sequence |
 
-### Step 5.C — Optional Phase 3 API client settings
+### Step 5.C — ✅ DONE — Optional Phase 3 API client settings
 
-Only add these when you start Phase 3:
+Phase 3 is now marked complete, so these settings are checked off:
 
-- [ ] `APOLLO_CONTACT_SEARCH_URL`
-- [ ] `APOLLO_CONTACT_SEARCH_PAGE_SIZE`
-- [ ] `HUNTER_EMAIL_FINDER_URL`
-- [ ] `HUNTER_EMAIL_VERIFIER_URL`
-- [ ] `ZEROBOUNCE_VALIDATE_URL`
-- [ ] `ZEROBOUNCE_CREDITS_URL`
-- [ ] `ZEROBOUNCE_TIMEOUT_SECONDS`
+- [x] `APOLLO_CONTACT_SEARCH_URL`
+- [x] `APOLLO_CONTACT_SEARCH_PAGE_SIZE`
+- [x] `HUNTER_EMAIL_FINDER_URL`
+- [x] `HUNTER_EMAIL_VERIFIER_URL`
+- [x] `ZEROBOUNCE_VALIDATE_URL`
+- [x] `ZEROBOUNCE_CREDITS_URL`
+- [x] `ZEROBOUNCE_TIMEOUT_SECONDS`
 
 ### Step 5.D — Template row
 

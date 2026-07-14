@@ -16,6 +16,10 @@ function auditLog(stage, action, contactId, details, status) {
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     const sheet = spreadsheet.getSheetByName('ACTIVITY_LOG');
 
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['timestamp', 'stage', 'action', 'contactId', 'details', 'status']);
+    }
+
     sheet.appendRow(row);
   } catch (error) {
     Logger.log(JSON.stringify(row));

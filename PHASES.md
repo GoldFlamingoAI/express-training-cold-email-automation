@@ -11,6 +11,82 @@ merged PR list. Codex doesn't edit it. Current task = the first unchecked `- [ ]
 
 ---
 
+## Project Stack — high-level overview
+
+Everything below is one project end to end: infrastructure you set up once, the code
+Codex/Claude/you ship into it, what actually runs the campaign, and the external services and
+humans that feed it. Dashed amber boxes are Phase 4 — planned in `PHASES.md`/`COLD-EMAIL-MONDAY.md`
+but not yet built.
+
+```mermaid
+graph TD
+    subgraph L1["Infrastructure & Deliverability — Phase 0 (one-time)"]
+        Domain["Secondary domain"]
+        DNS["DNS: MX / SPF / DKIM / DMARC"]
+        WS["Google Workspace<br/>Business Starter tenant"]
+        PM["Google Postmaster Tools"]
+    end
+
+    subgraph L2["Inbox Warm-Up — 4-6 weeks, runs in parallel"]
+        WU["Warmup Inbox<br/>synthetic send/receive"]
+    end
+
+    subgraph L3["Dev & Deploy Workflow"]
+        CX["Codex<br/>writes PRs"]
+        GH["GitHub + CI<br/>codex-guard.yml"]
+        CC["Claude Code<br/>reviews PRs"]
+        UM["User<br/>merges"]
+        ASE["Apps Script editor<br/>manual paste (no CI deploy)"]
+    end
+
+    subgraph L4["Application Runtime — Google Apps Script (V8)"]
+        ORCH["Code.gs<br/>orchestrator + trigger entry points"]
+        PURE["Pure logic modules<br/>Cleaner · Deduplicator · MassachusettsFilter<br/>LeadScorer · TemplateEngine · ApprovalGate"]
+        IOM["I/O modules (built)<br/>ImportService · DraftService · SuppressionService<br/>ReplyMonitor · BounceMonitor · FollowUpScheduler · DashboardService"]
+        SHEETS[("Google Sheets<br/>10 tabs = database")]
+        GMAIL["GmailApp<br/>drafts + reply/bounce search"]
+    end
+
+    subgraph L4b["Phase 4 — Contact Enrichment (planned, not yet built)"]
+        RRF["RoleRelevanceFilter"]
+        CDS["ContactDiscoveryService"]
+        CVS["ContactVerificationService"]
+        QB["QueueBuilder"]
+    end
+
+    subgraph L5["External Contact-Data APIs"]
+        HUNTER["Hunter.io API<br/>email discovery"]
+        ZB["ZeroBounce API<br/>email verification"]
+        APOLLO["Apollo.io<br/>manual web UI, no API"]
+    end
+
+    subgraph L6["Human in the Loop"]
+        RESEARCH["Manual research<br/>Apollo lookups + personalization"]
+        REVIEW["Review & send drafts<br/>3-5/day"]
+    end
+
+    Domain --> DNS --> WS --> PM
+    WS --> WU
+    WU -. warms .-> GMAIL
+
+    CX --> GH --> CC --> UM --> ASE --> ORCH
+
+    ORCH --> PURE
+    ORCH --> IOM
+    IOM <--> SHEETS
+    IOM --> GMAIL
+    CDS --> HUNTER
+    CVS --> ZB
+    QB <--> SHEETS
+    APOLLO --> RESEARCH --> SHEETS
+    GMAIL --> REVIEW
+
+    classDef planned stroke-dasharray: 5 5,fill:#fff8e1,stroke:#c9a227,color:#333;
+    class RRF,CDS,CVS,QB planned
+```
+
+---
+
 ## Phase 0: Discovery + Manual Setup ✅ 🏠
 
 Architecture and tooling decisions are complete. The following manual setup must be done by the user **before Phase 1 Codex work begins**:
@@ -75,6 +151,56 @@ Architecture and tooling decisions are complete. The following manual setup must
 - [x] ✅ **Task 3.2** ApolloClient module: `src/ApolloClient.gs` — Apollo contact search API (1 PR)
 - [x] ✅ **Task 3.3** HunterClient module: `src/HunterClient.gs` — Hunter email finder/verifier API (1 PR)
 - [x] ✅ **CHECKPOINT** 🏠 PHASE_READY → Claude Code audit
+
+---
+
+## Phase 4: Contact Enrichment Pipeline 🤖
+*Goal: close the gap between a raw `COMPANIES` list and a `QUEUE` ready to draft. Full plan,
+timeline, and setup how-tos live in `COLD-EMAIL-MONDAY.md` — this section is the Codex-buildable
+task list only.*
+
+*Workflow this pipeline supports: human manually finds a name/title per company in Apollo's web
+UI (free, no API) and adds a `CONTACTS` row (company, firstName, lastName, title, linkedinUrl —
+email left blank) → Task 4.2 fills in the email via Hunter → Task 4.3 verifies it via ZeroBounce →
+Task 4.4 promotes verified, approved contacts into `QUEUE`.*
+
+- [ ] **Task 4.1** RoleRelevanceFilter module: `src/RoleRelevanceFilter.gs` — pure function
+  `isRelevantRole(title, keywordsCsv)`; case-insensitive substring match against a comma-separated
+  keyword list (e.g. `SETTINGS.RELEVANT_TITLE_KEYWORDS`). No Sheets/API access — same shape as
+  `MassachusettsFilter.gs`. (1 PR)
+- [ ] **Task 4.2** ContactDiscoveryService module: `src/ContactDiscoveryService.gs` — I/O module,
+  `runContactDiscovery()`. Reads `CONTACTS` rows with a blank `email`, looks up the matching
+  `COMPANIES` row by company name for the domain, calls `findEmailWithHunter()` (existing
+  `HunterClient.gs`, do not modify), and writes back `email`, `catchAll` (derive from Hunter's
+  `score`, e.g. `score < 50` → catch-all-risk true), `roleIsRelevant` (via
+  `isRelevantRole(title, settings.RELEVANT_TITLE_KEYWORDS)`), `maConfirmed` = `TRUE` (companies in
+  `COMPANIES` already passed `isMassachusetts()` at import), `wtfpRelevance` (copy through from the
+  `COMPANIES` row), `employeeSizeFit` = `TRUE`, `industryFit` = `TRUE` (MVP default — WTFP source
+  list is pre-qualified, no filter logic needed). **Must** read
+  `SETTINGS.CONTACT_DISCOVERY_BATCH_SIZE` and process at most that many rows per run (Apps Script
+  6-minute execution cap — do not attempt the whole sheet in one call). Every row processed or
+  skipped logs via `auditLog('ContactDiscoveryService', ...)`. Add `runContactDiscoveryTrigger()`
+  to `Code.gs` (manual-run, not a time trigger — Hunter credits are budget-limited). (1 PR)
+- [ ] **Task 4.3** ContactVerificationService module: `src/ContactVerificationService.gs` — I/O
+  module, `runContactVerification()`. Reads `CONTACTS` rows with a non-blank `email` and blank
+  `verificationResult`, calls `verifyEmailWithZeroBounce()` (existing `ZeroBounceClient.gs`, do not
+  modify), writes back `verificationResult` (ZeroBounce `status`) and `catchAll` (`TRUE` when
+  ZeroBounce `subStatus` indicates a catch-all domain). **Must** read
+  `SETTINGS.CONTACT_VERIFICATION_BATCH_SIZE` and cap rows processed per run, same reasoning as Task
+  4.2. Every row logs via `auditLog('ContactVerificationService', ...)`. Add
+  `runContactVerificationTrigger()` to `Code.gs` (manual-run). (1 PR)
+- [ ] **Task 4.4** QueueBuilder module: `src/QueueBuilder.gs` — I/O module, `buildInitialQueue()`.
+  Reads `CONTACTS` rows where `verificationResult === 'valid'`, `roleIsRelevant` is true,
+  `maConfirmed` is true, `catchAll` is not true, `emailsSent` is 0/blank, and `isSuppressed(email)`
+  (existing `SuppressionService.gs`) is false; skips any contact already present in `QUEUE` (dedupe
+  by `contactId`/`email`, same key pattern as `FollowUpScheduler.gs`'s
+  `buildFollowUpSchedulerQueueKey_`); appends eligible rows to `QUEUE` with `status = 'QUEUED'`.
+  Does **not** re-check `personalizationLine` or daily limits — that is `ApprovalGate`'s job at
+  draft time, kept separate on purpose. Add `runQueueBuilderTrigger()` to `Code.gs`, plus a
+  convenience `runEnrichmentPipeline()` that chains `runContactDiscovery()` →
+  `runContactVerification()` → `buildInitialQueue()` (same pattern as the existing
+  `runFullPipeline()`). (1 PR)
+- [ ] **CHECKPOINT** 🏠 PHASE_READY audit
 
 ---
 

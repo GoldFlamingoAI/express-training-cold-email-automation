@@ -24,6 +24,22 @@ why the tasks are scoped that way, the manual steps around them, the how-tos, an
 
 ---
 
+## ⚠️ Pre-flight blocker — re-paste the manifest
+
+Before the reply/bounce monitors will run at all, you need the current `appsscript.json`. The
+original manifest requested only the Gmail *compose* scope, which is enough to create drafts but
+**not** enough for `ReplyMonitor`/`BounceMonitor`, which call `GmailApp.search()` — the built-in
+`GmailApp` service requires the full `https://mail.google.com/` scope, and the granular
+`gmail.compose`/`gmail.readonly` scopes don't authorize it. This was fixed in the repo manifest.
+
+To apply it: Apps Script editor → gear ⚙️ → **Show "appsscript.json"** → paste the repo's current
+`appsscript.json`. The next time you Run any function, Google will show the OAuth consent screen
+again (because the scope set changed) — approve it. Until you do, the monitor triggers throw an
+authorization error. Draft creation may appear to work on the old scope, but re-consent on the
+new manifest is required for the full pipeline.
+
+---
+
 ## Time horizon — what to start when
 
 Warm-up is the fixed clock everything else fits around: **4–6 weeks, cannot be rushed by
@@ -43,6 +59,15 @@ warm-up window, not the start (see Gotcha #4 below on why).
 ---
 
 ## Track A — Warm-Up Inbox how-to
+
+> **Pick ONE warm-up tool per inbox.** The repo's older docs (`PHASES.md` Phase 0,
+> `docs/LAUNCH-RUNBOOK.md` Step 1) name **Lemwarm**; you've chosen **Warmup Inbox**. Either works —
+> but **never run two warm-up services on the same mailbox at once.** They both inject automated
+> send/receive traffic; running both doubles that traffic, muddies your reputation signals, and can
+> trip spam heuristics — the exact opposite of the goal. If `PHASES.md` shows "Connect Lemwarm" as
+> already done, confirm whether Lemwarm is actually connected before adding Warmup Inbox; if it is,
+> either stick with Lemwarm or disconnect it first. (The Lemwarm/Warmup Inbox naming across the
+> repo docs is just cosmetic drift — the mechanics below are identical for both.)
 
 Setup takes a few minutes; the *waiting* is 4–6 weeks. Start this before anything else today.
 
@@ -106,7 +131,10 @@ For each company in `COMPANIES` without a `CONTACTS` row yet:
 2. Look for a contact matching one of your target titles: **Owner / Founder / CEO**,
    **Operations Manager / Director**, or **L&D / Training Manager**.
 3. Add a row to `CONTACTS`: `company`, `firstName`, `lastName`, `title`, `linkedinUrl`. Leave
-   `email` blank — Task 4.2 fills that in.
+   `email` blank — Task 4.2 fills that in. **Copy the `company` value verbatim from the
+   `COMPANIES` tab** — discovery finds the domain by matching this name back to `COMPANIES`, so a
+   typo or a "Inc." mismatch means Hunter never gets a domain to search (see Gotcha #17).
+   `contactId` is optional — leave it blank and the pipeline falls back to `email` as the row key.
 4. While you're there, jot down one specific, real personalization fact (a recent post, a program
    they run, something in their company profile) somewhere you can find it later — you'll need it
    for `personalizationLine` before this contact can ever be drafted.
@@ -120,6 +148,15 @@ For each company in `COMPANIES` without a `CONTACTS` row yet:
 - [ ] In `SETTINGS`, add `CONTACT_VERIFICATION_BATCH_SIZE` = `25`
 - [ ] Confirm `HUNTER_API_KEY` and `ZEROBOUNCE_API_KEY` are set in Script Properties (see
   `PROPERTIES.example`)
+- [ ] Confirm the **core Phase 1 `SETTINGS`** exist (these gate drafting, not enrichment — see
+  `LAUNCH-RUNBOOK.md` Step 5): `DRAFT_ONLY=TRUE`, `DAILY_LIMIT` (e.g. `10`), `APPROVAL_THRESHOLD`
+  (e.g. `75`), `SENDER_NAME`. Missing `DAILY_LIMIT` blocks every draft ("daily limit reached");
+  missing `APPROVAL_THRESHOLD` now defaults to 75 in code, but set it explicitly so it's visible.
+- [ ] **Write your actual cold email** in the `TEMPLATES` tab — one row with a `subject` and a
+  `body`. Nothing sends without it, and `readTemplate()` reads the first row only. The body may use
+  `{{firstName}}`, `{{company}}`, `{{personalizationLine}}`, `{{senderName}}` — any placeholder
+  whose merge value is blank is left as-is, so don't ship a template that depends on a field you're
+  not filling. Include a plain-language opt-out line (see Gotcha #18).
 
 ---
 
@@ -194,6 +231,27 @@ notice before renewal or you're locked in for another year. Monthly is cancel-an
 14. **Codex only reads `PHASES.md` for tasks**, not this file. That's why Phase 4's tasks are
     mirrored into `PHASES.md` — if you add more tasks to this plan later, put the checkbox in
     `PHASES.md` too or Codex will never see it.
+15. **The Gmail OAuth scope was wrong in the original manifest** (see the Pre-flight blocker at the
+    top). `GmailApp.search()` in the monitors needs `https://mail.google.com/`; the old manifest
+    only had `gmail.compose`. Fixed in the repo — but you must re-paste `appsscript.json` and
+    re-approve the OAuth consent screen, or `runReplyMonitorTrigger`/`runBounceMonitorTrigger`
+    fail with an authorization error. This is the single most likely thing to silently break the
+    tracking half of the pipeline.
+16. **Never run two warm-up tools on one inbox** (see Track A). Lemwarm (repo docs) and Warmup
+    Inbox (your choice) do the same job — pick one. Two at once doubles synthetic traffic and hurts
+    the reputation you're trying to build.
+17. **Manual `CONTACTS` rows must match `COMPANIES` on the company name.** Discovery resolves the
+    email domain by joining `CONTACTS.company` back to a `COMPANIES` row. `COMPANIES` names were
+    normalized by `Cleaner` at import; a hand-typed `CONTACTS` name that differs ("Acme" vs "Acme
+    Inc.") won't join, and that contact gets skipped at discovery with no email. Copy the name
+    verbatim from `COMPANIES`, or expect to fix misses by hand.
+18. **US cold email is regulated (CAN-SPAM), and MA has its own consumer-protection rules.** This
+    isn't legal advice, but the baseline everyone follows: a truthful `From`/subject, a physical
+    mailing address in the message (your Gmail signature already carries this per
+    `LAUNCH-RUNBOOK.md` 0.4), and a clear, honored opt-out. At this manual 3–5/day volume the
+    common pattern is a plain "reply STOP / let me know if you'd rather not hear from me" line in
+    the template body, with opt-outs logged to `SUPPRESSION` via `addSuppression()` and honored on
+    the next run. Build the opt-out line into your `TEMPLATES` body now, not later.
 
 ---
 
@@ -220,8 +278,14 @@ as manual:
 
 ## Go-live checklist (combines `LAUNCH-RUNBOOK.md` Step 7 with this plan)
 
-- [ ] Warm-up has run 4–6 weeks with no unresolved critical warnings
-- [ ] `DRAFT_ONLY` = `TRUE` in `SETTINGS`
+- [ ] Current `appsscript.json` pasted in and OAuth re-consented (the `mail.google.com` scope fix)
+- [ ] Exactly one warm-up tool connected to the inbox — warm-up has run 4–6 weeks with no
+  unresolved critical warnings
+- [ ] All 10 sheet tabs exist with exact names (`LAUNCH-RUNBOOK.md` Step 2) — a missing/misnamed
+  tab throws a null error mid-run
+- [ ] `DRAFT_ONLY` = `TRUE`, plus `DAILY_LIMIT` / `APPROVAL_THRESHOLD` / `SENDER_NAME` set in
+  `SETTINGS`
+- [ ] `TEMPLATES` has a `subject` + `body` row, including a plain-language opt-out line
 - [ ] Phase 4 code merged, reviewed, and pasted into Apps Script
 - [ ] `CONTACTS` populated via the Apollo → Hunter discovery loop
 - [ ] Verification burst run near the end of warm-up (freshness intact)

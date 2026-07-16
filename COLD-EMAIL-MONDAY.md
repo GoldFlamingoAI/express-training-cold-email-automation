@@ -1,5 +1,57 @@
 # Cold Email Monday — Warm-Up, Enrichment & Launch Plan
 
+## NEW-GO-LIVE: Manual deploy checklist (Apps Script)
+
+**Do this first.** The Hostinger migration is merged but not yet deployed to the live Apps Script
+project.
+
+There's one GAS project — the one bound to your campaign spreadsheet. Open it via the Sheet →
+Extensions → Apps Script.
+
+1. Copy these files from `src/` into the editor, pasting over the same-named file (create the one
+   new file):
+
+   - `Code.gs`
+   - `DraftService.gs`
+   - `ReplyMonitor.gs`
+   - `BounceMonitor.gs`
+   - `CampaignStateService.gs` ← new file, add it (＋ → Script)
+   - `ApprovalGate.gs`
+   - `DashboardService.gs`
+   - `FollowUpScheduler.gs`
+   - `SuppressionService.gs`
+   - `AuditLogger.gs`
+
+2. Replace the manifest — `appsscript.json` (Project Settings → "Show appsscript.json" must be
+   enabled). The Gmail scope `https://mail.google.com/` is intentionally gone; pasting this drops
+   it.
+
+   The remaining `.gs` files were untouched by the migration but are safe to re-copy if you want a
+   guaranteed match: `ImportService`, `Cleaner`, `Deduplicator`, `MassachusettsFilter`,
+   `LeadScorer`, `TemplateEngine`, `HunterClient`, `ApolloClient`, `ZeroBounceClient`,
+   `ImportService`, `AuditLogger`.
+
+3. Save. Because the Gmail scope was removed, the next run will prompt you to re-authorize with
+   the reduced scope set — accept it.
+
+4. Reload the spreadsheet so the new Cold Email menu appears, then run **Cold Email → Set up
+   Hostinger columns** once (adds `sequenceStep`, `subject`, `body`, `preparedAt`, `sentAt` to
+   `QUEUE` and `status`, `emailsSent`, `lastSentAt` to `CONTACTS`).
+
+5. Delete the two retired triggers (clock icon → Triggers):
+
+   - `runReplyMonitorTrigger`
+   - `runBounceMonitorTrigger`
+
+   Keep `runFollowUpSchedulerTrigger` and `runDashboardRefreshTrigger` (daily is fine).
+
+6. Optional cleanup: the `DRAFT_ONLY` row and any `REPLY_MONITOR_*` / `BOUNCE_MONITOR_*` rows in
+   the SETTINGS tab are now ignored — you can delete them.
+
+7. Smoke test per `docs/HOSTINGER-RUNBOOK.md` (§ Smoke Test): prepare one owned test contact →
+   confirm `PREPARED` → send via Hostinger → Mark selected email sent → confirm QUEUE + CONTACTS
+   update → refresh dashboard.
+
 > **Architecture update (2026-07-16):** The sender mailbox now lives entirely on Hostinger and
 > Warmup Inbox connects through Hostinger SMTP/IMAP. Gmail drafts, Gmail reply monitoring, Google
 > App Passwords, and Google Workspace sender setup in this historical plan are retired. Follow

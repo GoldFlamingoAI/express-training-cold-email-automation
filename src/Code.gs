@@ -76,7 +76,7 @@ function runImportPipeline(rawRows) {
 
 /**
  * Prepares approved QUEUE rows for manual sending through Hostinger Webmail.
- * @returns {{processed: number, prepared: number, drafted: number, skipped: number}}
+ * @returns {{processed: number, prepared: number, skipped: number}}
  */
 function runPreparationPipeline() {
   try {
@@ -129,19 +129,11 @@ function runPreparationPipeline() {
       }
     });
 
-    return { processed: processed, prepared: prepared, drafted: 0, skipped: skipped };
+    return { processed: processed, prepared: prepared, skipped: skipped };
   } catch (error) {
     auditLog('Orchestrator', 'PREPARATION_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
-}
-
-/**
- * Backward-compatible entry point retained for existing operator habits.
- * @returns {{processed: number, prepared: number, drafted: number, skipped: number}}
- */
-function runDraftPipeline() {
-  return runPreparationPipeline();
 }
 
 /**
@@ -309,7 +301,6 @@ function readSettings(spreadsheet) {
   settings.dailyLimit = Number(settings.dailyLimit || settings.DAILY_LIMIT || 0);
   const threshold = Number(settings.approvalThreshold || settings.APPROVAL_THRESHOLD);
   settings.approvalThreshold = Number.isFinite(threshold) && threshold > 0 ? threshold : 75;
-  settings.draftOnly = String(settings.draftOnly || settings.DRAFT_ONLY || 'TRUE').toUpperCase() !== 'FALSE';
   settings.senderName = settings.senderName || settings.SENDER_NAME || '';
 
   return settings;

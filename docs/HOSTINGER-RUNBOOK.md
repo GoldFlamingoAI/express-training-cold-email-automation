@@ -62,9 +62,6 @@ status, emailsSent, lastSentAt
 Marking a send is idempotent. It records `EMAIL_SENT`, sets `QUEUE.status=SENT`, sets `sentAt`,
 increments `CONTACTS.emailsSent` to the sequence step, and sets `CONTACTS.lastSentAt`.
 
-The old `runDraftPipeline()` name is retained for operator compatibility, but it now performs the
-same preparation behavior as `runPreparationPipeline()` and creates no Gmail draft.
-
 ## Record Inbox Outcomes
 
 Review Hostinger Webmail daily. Select the matching row in `QUEUE` or `CONTACTS`, then use:

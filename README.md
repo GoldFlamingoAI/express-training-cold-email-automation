@@ -24,8 +24,9 @@ current by Claude/the user from the merged PR list, not touched by every branch.
 
 ## Going live
 
-To deploy the merged code into Apps Script and start the campaign, follow
-**`docs/LAUNCH-RUNBOOK.md`** (sheet setup → paste .gs files → properties → triggers → smoke test).
+To deploy the merged code into Apps Script and operate the Hostinger manual-send campaign, follow
+**`docs/HOSTINGER-RUNBOOK.md`**. `docs/LAUNCH-RUNBOOK.md` is retained as historical context for
+the retired Gmail architecture.
 
 ---
 

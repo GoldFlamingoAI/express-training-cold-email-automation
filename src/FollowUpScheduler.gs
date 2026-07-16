@@ -26,6 +26,7 @@ function scheduleFollowUps() {
     const settings = getFollowUpSchedulerSettings_(spreadsheet);
     const contactsSheet = getFollowUpSchedulerSheet_(spreadsheet, FOLLOW_UP_SCHEDULER_CONTACTS_SHEET);
     const queueSheet = getFollowUpSchedulerSheet_(spreadsheet, FOLLOW_UP_SCHEDULER_QUEUE_SHEET);
+    ensureFollowUpSchedulerQueueColumns_(queueSheet);
     const contactsTable = getFollowUpSchedulerTable_(contactsSheet, FOLLOW_UP_SCHEDULER_CONTACTS_SHEET);
     const queueTable = getFollowUpSchedulerTable_(queueSheet, FOLLOW_UP_SCHEDULER_QUEUE_SHEET);
     const queuedKeys = getFollowUpSchedulerQueuedKeys_(queueTable);
@@ -51,7 +52,7 @@ function scheduleFollowUps() {
       }
 
       summary.eligible += 1;
-      const queueRow = buildFollowUpSchedulerQueueRow_(queueTable.headers, contactsTable.headers, row, queueStatusColumn);
+      const queueRow = buildFollowUpSchedulerQueueRow_(queueTable.headers, contactsTable.headers, row, queueStatusColumn, eligibility.sequenceStep);
       queueSheet.appendRow(queueRow);
       queuedKeys.push(eligibility.queueKey);
       summary.queued += 1;
@@ -59,6 +60,7 @@ function scheduleFollowUps() {
         email: email,
         emailsSent: eligibility.emailsSent,
         daysSinceLastSent: eligibility.daysSinceLastSent,
+        sequenceStep: eligibility.sequenceStep,
       }), 'OK');
     }
 
@@ -196,10 +198,12 @@ function normalizeFollowUpSchedulerHeader_(header) {
 function getFollowUpSchedulerQueuedKeys_(queueTable) {
   const emailColumn = findFollowUpSchedulerOptionalColumn_(queueTable.headers, ['email', 'emailAddress', 'contactEmail']);
   const contactIdColumn = findFollowUpSchedulerOptionalColumn_(queueTable.headers, ['contactId', 'id']);
+  const sequenceStepColumn = findFollowUpSchedulerOptionalColumn_(queueTable.headers, ['sequenceStep', 'step']);
   const keys = [];
 
   queueTable.rows.forEach(function(row) {
-    const key = buildFollowUpSchedulerQueueKey_(row, contactIdColumn, emailColumn);
+    const sequenceStep = parseFollowUpSchedulerPositiveInteger_(sequenceStepColumn === -1 ? 1 : row[sequenceStepColumn]) || 1;
+    const key = buildFollowUpSchedulerQueueKey_(row, contactIdColumn, emailColumn, sequenceStep);
     if (key && keys.indexOf(key) === -1) {
       keys.push(key);
     }
@@ -215,39 +219,40 @@ function getFollowUpSchedulerQueuedKeys_(queueTable) {
  * @param {{delayDays: number, maxEmails: number}} settings Scheduler settings.
  * @param {string[]} queuedKeys Existing queue keys.
  * @param {Date} now Current scheduler time.
- * @returns {{eligible: boolean, reason: string, queueKey: string, emailsSent: number, daysSinceLastSent: number}}
+ * @returns {{eligible: boolean, reason: string, queueKey: string, emailsSent: number, daysSinceLastSent: number, sequenceStep: number}}
  */
 function getFollowUpSchedulerEligibility_(row, columns, settings, queuedKeys, now) {
   const email = String(row[columns.emailColumn] || '').trim();
   const status = String(row[columns.statusColumn] || '').trim().toUpperCase();
   const emailsSent = Number(row[columns.emailsSentColumn] || 0);
+  const sequenceStep = Math.max(Math.floor(Number.isFinite(emailsSent) ? emailsSent : 0) + 1, 1);
   const lastSentAt = parseFollowUpSchedulerDate_(row[columns.lastSentColumn]);
-  const queueKey = buildFollowUpSchedulerQueueKey_(row, columns.contactIdColumn, columns.emailColumn);
+  const queueKey = buildFollowUpSchedulerQueueKey_(row, columns.contactIdColumn, columns.emailColumn, sequenceStep);
   const daysSinceLastSent = lastSentAt ? Math.floor((now.getTime() - lastSentAt.getTime()) / 86400000) : -1;
 
   if (!email) {
-    return { eligible: false, reason: 'missing_email', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'missing_email', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (status === FOLLOW_UP_SCHEDULER_REPLIED_STATUS || status === FOLLOW_UP_SCHEDULER_BOUNCED_STATUS || status === FOLLOW_UP_SCHEDULER_UNSUBSCRIBED_STATUS) {
-    return { eligible: false, reason: 'terminal_status', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'terminal_status', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (emailsSent < 1) {
-    return { eligible: false, reason: 'no_initial_email_sent', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'no_initial_email_sent', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (settings.maxEmails > 0 && emailsSent >= settings.maxEmails) {
-    return { eligible: false, reason: 'max_emails_reached', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'max_emails_reached', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (!lastSentAt) {
-    return { eligible: false, reason: 'missing_last_sent_at', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'missing_last_sent_at', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (settings.delayDays > 0 && daysSinceLastSent < settings.delayDays) {
-    return { eligible: false, reason: 'delay_not_elapsed', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'delay_not_elapsed', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
   if (queuedKeys.indexOf(queueKey) !== -1) {
-    return { eligible: false, reason: 'already_queued', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+    return { eligible: false, reason: 'already_queued', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
   }
 
-  return { eligible: true, reason: '', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent };
+  return { eligible: true, reason: '', queueKey: queueKey, emailsSent: emailsSent, daysSinceLastSent: daysSinceLastSent, sequenceStep: sequenceStep };
 }
 
 /**
@@ -256,12 +261,19 @@ function getFollowUpSchedulerEligibility_(row, columns, settings, queuedKeys, no
  * @param {string[]} contactHeaders Normalized CONTACTS headers.
  * @param {Object[]} contactRow CONTACTS row values.
  * @param {number} queueStatusColumn Optional QUEUE status column index.
+ * @param {number} sequenceStep Sequence step being queued.
  * @returns {Object[]} QUEUE append row.
  */
-function buildFollowUpSchedulerQueueRow_(queueHeaders, contactHeaders, contactRow, queueStatusColumn) {
+function buildFollowUpSchedulerQueueRow_(queueHeaders, contactHeaders, contactRow, queueStatusColumn, sequenceStep) {
   return queueHeaders.map(function(queueHeader, index) {
     if (index === queueStatusColumn) {
       return FOLLOW_UP_SCHEDULER_QUEUED_STATUS;
+    }
+    if (queueHeader === normalizeFollowUpSchedulerHeader_('sequenceStep')) {
+      return sequenceStep;
+    }
+    if (['subject', 'body', 'preparedat', 'sentat'].indexOf(queueHeader) !== -1) {
+      return '';
     }
 
     const contactColumn = contactHeaders.indexOf(queueHeader);
@@ -277,24 +289,47 @@ function buildFollowUpSchedulerQueueRow_(queueHeaders, contactHeaders, contactRo
  * @param {Object[]} row Sheet row values.
  * @param {number} contactIdColumn Optional contact ID column index.
  * @param {number} emailColumn Optional email column index.
- * @returns {string} Stable lowercased key.
+ * @param {number} sequenceStep Sequence step.
+ * @returns {string} Stable lowercased key including sequence step.
  */
-function buildFollowUpSchedulerQueueKey_(row, contactIdColumn, emailColumn) {
+function buildFollowUpSchedulerQueueKey_(row, contactIdColumn, emailColumn, sequenceStep) {
+  let identity = '';
   if (contactIdColumn !== -1) {
     const contactId = String(row[contactIdColumn] || '').trim().toLowerCase();
     if (contactId) {
-      return 'id:' + contactId;
+      identity = 'id:' + contactId;
     }
   }
 
-  if (emailColumn !== -1) {
+  if (!identity && emailColumn !== -1) {
     const email = String(row[emailColumn] || '').trim().toLowerCase();
     if (email) {
-      return 'email:' + email;
+      identity = 'email:' + email;
     }
   }
 
-  return '';
+  return identity ? identity + '|step:' + sequenceStep : '';
+}
+
+/**
+ * Ensures follow-up queue rows can track sequence and manual-send state.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet QUEUE sheet.
+ * @returns {void}
+ */
+function ensureFollowUpSchedulerQueueColumns_(sheet) {
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const normalizedHeaders = headers.map(normalizeFollowUpSchedulerHeader_);
+  ['sequenceStep', 'subject', 'body', 'preparedAt', 'sentAt'].forEach(function(header) {
+    const normalized = normalizeFollowUpSchedulerHeader_(header);
+    if (normalizedHeaders.indexOf(normalized) === -1) {
+      headers.push(header);
+      normalizedHeaders.push(normalized);
+    }
+  });
+  if (headers.length > lastColumn) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
 }
 
 /**

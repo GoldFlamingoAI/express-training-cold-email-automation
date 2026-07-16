@@ -23,9 +23,10 @@ Claude reads this on every PR review.
 - `AuditLogger`         — ACTIVITY_LOG writes
 - `TemplateEngine`      — template merge (pure)
 - `ApprovalGate`        — pre-send condition checks (pure)
-- `DraftService`        — Gmail draft creation
-- `ReplyMonitor`        — Gmail reply detection [Phase 2]
-- `BounceMonitor`       — Gmail NDR bounce detection [Phase 2]
+- `EmailPreparationService` — QUEUE subject/body preparation for Hostinger
+- `CampaignStateService` — manual send/reply/bounce/opt-out state updates
+- `ReplyMonitor`        — disabled compatibility entry point (Hostinger migration)
+- `BounceMonitor`       — disabled compatibility entry point (Hostinger migration)
 - `SuppressionService`  — SUPPRESSION tab reads/writes [Phase 2]
 - `FollowUpScheduler`   — follow-up eligibility [Phase 2]
 - `DashboardService`    — DASHBOARD tab metrics [Phase 2]
@@ -36,4 +37,10 @@ Claude reads this on every PR review.
 
 ---
 
-(empty — first entry will be logged on first failed run)
+[2026-07-16] ERROR: Stage ReplyMonitor/BounceMonitor | architecture mismatch | Gmail time triggers
+  continued running after the sender mailbox moved to Hostinger.
+  Tried: Gmail monitors searched the retired Google mailbox and also rejected an empty CONTACTS tab.
+  Resolved: yes — legacy trigger entry points now return disabled summaries; reply/bounce state is
+  recorded manually through CampaignStateService.
+  Task: HOSTINGER_MIGRATION
+  PR: pending

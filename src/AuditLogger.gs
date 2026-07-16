@@ -1,7 +1,7 @@
 /**
  * Writes one structured log entry to the ACTIVITY_LOG tab.
  * @param {string} stage - Calling module name (e.g. 'ImportService').
- * @param {string} action - What happened (e.g. 'IMPORT', 'DRAFT_CREATED', 'ERROR').
+ * @param {string} action - What happened (e.g. 'IMPORT', 'EMAIL_PREPARED', 'EMAIL_SENT').
  * @param {string} contactId - Row ID from CONTACTS tab, or '' if not contact-specific.
  * @param {string} details - Human-readable detail string.
  * @param {string} status - 'OK' | 'ERROR' | 'SKIP' | 'WARN'.

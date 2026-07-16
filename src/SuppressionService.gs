@@ -39,6 +39,13 @@ function addSuppression(email, reason, source) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
 
   try {
+    if (!normalizedEmail) {
+      throw new Error('Suppression email is required.');
+    }
+    if (isSuppressed(normalizedEmail)) {
+      auditLog('SuppressionService', 'SUPPRESSION_ALREADY_EXISTS', '', normalizedEmail, 'SKIP');
+      return;
+    }
     const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     const sheet = spreadsheet.getSheetByName('SUPPRESSION');

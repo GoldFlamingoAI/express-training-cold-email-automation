@@ -1,5 +1,5 @@
 /**
- * Checks all pre-send conditions before a Gmail draft may be created.
+ * Checks all pre-send conditions before an email may be prepared for Hostinger.
  * @param {Object} contact - Full contact record from CONTACTS tab.
  * @param {Object} settings - Campaign settings from SETTINGS tab.
  * @param {number} dailySentCount - Number of campaign emails sent today.
@@ -16,6 +16,9 @@ function checkApproval(contact, settings, dailySentCount, isSuppressed) {
   const maConfirmed = contact.maConfirmed === true || contact.maConfirmed === 'TRUE';
   const roleIsRelevant = contact.roleIsRelevant === true || contact.roleIsRelevant === 'TRUE';
   const catchAll = contact.catchAll === true || contact.catchAll === 'TRUE';
+  const status = String(contact.status || '').trim().toUpperCase();
+  const explicitSequenceStep = Number(contact.sequenceStep || 1);
+  const sequenceStep = Number.isInteger(explicitSequenceStep) && explicitSequenceStep > 0 ? explicitSequenceStep : 1;
 
   if (!maConfirmed) {
     failedChecks.push('Company is not confirmed in Massachusetts');
@@ -41,12 +44,12 @@ function checkApproval(contact, settings, dailySentCount, isSuppressed) {
     failedChecks.push('Contact is suppressed');
   }
 
-  if (contact.status === 'REPLIED') {
-    failedChecks.push('Contact has already replied');
+  if (['REPLIED', 'BOUNCED', 'UNSUBSCRIBED'].indexOf(status) !== -1) {
+    failedChecks.push('Contact is in terminal status ' + status);
   }
 
-  if (emailsSent >= 1) {
-    failedChecks.push('Contact has already received this campaign');
+  if (emailsSent >= sequenceStep) {
+    failedChecks.push('Contact has already received sequence step ' + sequenceStep);
   }
 
   if (!String(contact.personalizationLine || '').trim()) {

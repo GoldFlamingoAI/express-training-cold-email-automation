@@ -1,5 +1,9 @@
 # Launch Runbook — Zero to Running Campaign
 
+> **Archived Gmail runbook:** The campaign sender moved to Hostinger on 2026-07-16. Do not use the
+> Gmail/Google Workspace mail-routing, draft, OAuth, or monitor instructions below for the live
+> campaign. Use `docs/HOSTINGER-RUNBOOK.md`. This file remains only as migration history.
+
 Everything to take the merged code live, in order. The code is done; this is the manual
 deployment. Steps 1–2 take **weeks** (domain warm-up) — start them first and do
 Steps 3–7 in parallel.

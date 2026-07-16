@@ -6,7 +6,7 @@ Codex reads this file at every session start. Claude Code reads it during review
 - Runtime: Google Apps Script (V8 engine)
 - Architecture: cloud-only, single-user, runs on Google's infrastructure
 - Database: Google Sheets (10 named tabs — see Sheet Tabs below)
-- Email: GmailApp (draft creation and thread search only — human approves and sends every email)
+- Email: Hostinger Webmail (human sends every email); Apps Script prepares QUEUE subject/body only
 - Secrets: `PropertiesService.getScriptProperties()` — never sheet cells, never hardcoded
 
 ## File Structure
@@ -22,17 +22,20 @@ Codex reads this file at every session start. Claude Code reads it during review
 
 **Pure vs I/O — the central rule.** Every module is either pure (accepts args, returns a
 result, zero side effects — Cleaner, Deduplicator, MassachusettsFilter, LeadScorer,
-TemplateEngine, ApprovalGate) or I/O (the only modules touching Sheets/GmailApp/
+TemplateEngine, ApprovalGate) or I/O (the only modules touching Sheets/
 UrlFetchApp/PropertiesService). Never mix.
 
-- Gmail: draft creation only via `DraftService.createDraft()`; thread/reply search only
-  in `ReplyMonitor.gs` / `BounceMonitor.gs`. No `GmailApp` calls anywhere else.
+- Email preparation: `DraftService.gs` writes approved subject/body content to `QUEUE`; it never
+  sends mail or creates provider drafts. `CampaignStateService.gs` records manual Hostinger sends,
+  replies, bounces, and opt-outs. `ReplyMonitor.gs`/`BounceMonitor.gs` are compatibility no-ops.
+- No `GmailApp` calls or Gmail OAuth scopes. Direct Hostinger SMTP/IMAP access requires an external
+  HTTPS bridge and is outside the current manual-send MVP.
 - External APIs (ZeroBounce/Apollo/Hunter): only via their named client module, never
   inline `UrlFetchApp`. Don't call Phase 3 clients from Phase 1/2 code.
 - Logging: all production logging via `auditLog(stage, action, contactId, details, status)`
   — `details` must be a string (use `JSON.stringify` for objects). No `console.log`
   (unavailable in V8). No leftover `Logger.log` debug calls when a PR is ready.
-- Config: daily limits, score thresholds, `DRAFT_ONLY` — always read from `SETTINGS`,
+- Config: daily limits and score thresholds — always read from `SETTINGS`,
   never hardcoded.
 - Secrets: `PropertiesService` only, documented in `PROPERTIES.example`. Never hardcoded,
   never in sheet cells.

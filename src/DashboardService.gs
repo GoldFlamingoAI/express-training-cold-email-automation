@@ -114,25 +114,27 @@ function getDashboardServiceTable_(sheet) {
 function buildDashboardServiceMetrics_(contactsTable, queueTable, activityTable, suppressionTable, settings) {
   const contactStatusCounts = countDashboardServiceStatuses_(contactsTable);
   const queueStatusCounts = countDashboardServiceStatuses_(queueTable);
-  const draftCount = countDashboardServiceActivity_(activityTable, ['draftcreated']);
-  const todayDraftCount = countDashboardServiceTodayActivity_(activityTable, ['draftcreated']);
+  const preparedCount = countDashboardServiceActivity_(activityTable, ['emailprepared']);
+  const sentCount = countDashboardServiceActivity_(activityTable, ['emailsent']);
+  const todaySentCount = countDashboardServiceTodayActivity_(activityTable, ['emailsent']);
   const replyCount = contactStatusCounts.REPLIED || 0;
   const bounceCount = contactStatusCounts.BOUNCED || 0;
-  const sentOrDraftedCount = Math.max(draftCount, Number(contactStatusCounts.SENT || 0) + Number(contactStatusCounts.DRAFTED || 0));
 
   return [
     { name: 'contacts_total', value: contactsTable.rows.length },
     { name: 'queue_total', value: queueTable.rows.length },
     { name: 'queue_queued', value: queueStatusCounts.QUEUED || 0 },
-    { name: 'drafts_created_total', value: draftCount },
-    { name: 'drafts_created_today', value: todayDraftCount },
+    { name: 'queue_prepared', value: queueStatusCounts.PREPARED || 0 },
+    { name: 'emails_prepared_total', value: preparedCount },
+    { name: 'emails_sent_total', value: sentCount },
+    { name: 'emails_sent_today', value: todaySentCount },
     { name: 'daily_limit', value: settings.dailyLimit },
-    { name: 'daily_remaining', value: Math.max(Number(settings.dailyLimit || 0) - todayDraftCount, 0) },
+    { name: 'daily_remaining', value: Math.max(Number(settings.dailyLimit || 0) - todaySentCount, 0) },
     { name: 'replies_total', value: replyCount },
     { name: 'bounces_total', value: bounceCount },
     { name: 'suppression_total', value: suppressionTable.rows.length },
-    { name: 'reply_rate', value: calculateDashboardServiceRate_(replyCount, sentOrDraftedCount) },
-    { name: 'bounce_rate', value: calculateDashboardServiceRate_(bounceCount, sentOrDraftedCount) },
+    { name: 'reply_rate', value: calculateDashboardServiceRate_(replyCount, sentCount) },
+    { name: 'bounce_rate', value: calculateDashboardServiceRate_(bounceCount, sentCount) },
   ];
 }
 

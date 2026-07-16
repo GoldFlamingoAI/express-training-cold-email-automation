@@ -12,10 +12,10 @@
  * - AuditLogger: writes structured ACTIVITY_LOG entries.
  * - TemplateEngine: merges approved templates with contact fields.
  * - ApprovalGate: checks all pre-send requirements.
- * - DraftService: creates Gmail drafts for human review.
+ * - DraftService: prepares approved subject/body rows for manual Hostinger sends.
  * - SuppressionService: tracks opt-outs, bounces, and exclusions.
- * - ReplyMonitor: detects replies through Gmail search.
- * - BounceMonitor: detects NDR bounce messages through Gmail search.
+ * - CampaignStateService: records manual sends, replies, bounces, and opt-outs.
+ * - ReplyMonitor/BounceMonitor: compatibility no-ops after the Hostinger migration.
  * - FollowUpScheduler: identifies follow-up eligible contacts.
  * - DashboardService: calculates campaign metrics.
  * - ZeroBounceClient: verifies emails through ZeroBounce.
@@ -75,21 +75,25 @@ function runImportPipeline(rawRows) {
 }
 
 /**
- * Runs the draft pipeline entry point.
- * @returns {{processed: number, drafted: number, skipped: number}}
+ * Prepares approved QUEUE rows for manual sending through Hostinger Webmail.
+ * @returns {{processed: number, prepared: number, drafted: number, skipped: number}}
  */
-function runDraftPipeline() {
+function runPreparationPipeline() {
   try {
     const spreadsheet = openCampaignSpreadsheet();
     const settings = readSettings(spreadsheet);
-    const dailySentCount = countTodayActivity(spreadsheet, 'DRAFT_CREATED');
+    const dailySentCount = countTodayActivity(spreadsheet, 'EMAIL_SENT');
     const template = readTemplate(spreadsheet);
     const contacts = readRecords(spreadsheet, 'QUEUE');
     let processed = 0;
-    let drafted = 0;
+    let prepared = 0;
     let skipped = 0;
 
     contacts.forEach(function(contact) {
+      const status = String(contact.status || '').trim().toUpperCase();
+      if (status && status !== 'QUEUED') {
+        return;
+      }
       processed += 1;
       const score = scoreLead({
         maConfirmed: contact.maConfirmed === true || contact.maConfirmed === 'TRUE',
@@ -100,11 +104,11 @@ function runDraftPipeline() {
         industryFit: contact.industryFit === true || contact.industryFit === 'TRUE',
         hasPersonalizationFact: Boolean(String(contact.personalizationLine || '').trim())
       }, Number(settings.approvalThreshold));
-      const approval = checkApproval(contact, settings, dailySentCount + drafted, isContactSuppressed_(contact));
+      const approval = checkApproval(contact, settings, dailySentCount + prepared, isContactSuppressed_(contact));
 
       if (!score.approved || !approval.approved) {
         skipped += 1;
-        auditLog('Orchestrator', 'DRAFT_SKIPPED', contact.contactId || '', 'Score approved: ' + score.approved + '; failed checks: ' + approval.failedChecks.join(', '), 'SKIP');
+        auditLog('Orchestrator', 'EMAIL_PREPARATION_SKIPPED', contact.contactId || '', 'Score approved: ' + score.approved + '; failed checks: ' + approval.failedChecks.join(', '), 'SKIP');
         return;
       }
 
@@ -114,33 +118,43 @@ function runDraftPipeline() {
         personalizationLine: contact.personalizationLine || '',
         senderName: settings.senderName || ''
       });
-      const draftResult = createDraft(contact.email, template.subject, body, contact.contactId || '', settings);
+      const preparationResult = prepareEmailForHostinger(contact, template.subject, body, settings);
 
-      if (draftResult.success) {
-        drafted += 1;
-      } else {
+      if (preparationResult.success && preparationResult.prepared) {
+        prepared += 1;
+      } else if (!preparationResult.success) {
         skipped += 1;
+      } else {
+        auditLog('Orchestrator', 'EMAIL_ALREADY_PREPARED', contact.contactId || '', String(contact.email || ''), 'SKIP');
       }
     });
 
-    return { processed: processed, drafted: drafted, skipped: skipped };
+    return { processed: processed, prepared: prepared, drafted: 0, skipped: skipped };
   } catch (error) {
-    auditLog('Orchestrator', 'DRAFT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    auditLog('Orchestrator', 'PREPARATION_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
   }
 }
 
 /**
+ * Backward-compatible entry point retained for existing operator habits.
+ * @returns {{processed: number, prepared: number, drafted: number, skipped: number}}
+ */
+function runDraftPipeline() {
+  return runPreparationPipeline();
+}
+
+/**
  * Runs the full pipeline entry point.
  * @param {Array<Array<string>>} rawRows - Raw company rows from CSV paste or caller-provided staging data.
- * @returns {{importResult: Object, draftResult: Object}}
+ * @returns {{importResult: Object, preparationResult: Object}}
  */
 function runFullPipeline(rawRows) {
   try {
     const importResult = runImportPipeline(rawRows);
-    const draftResult = runDraftPipeline();
+    const preparationResult = runPreparationPipeline();
 
-    return { importResult: importResult, draftResult: draftResult };
+    return { importResult: importResult, preparationResult: preparationResult };
   } catch (error) {
     auditLog('Orchestrator', 'FULL_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
     throw error;
@@ -148,13 +162,13 @@ function runFullPipeline(rawRows) {
 }
 
 /**
- * Runs reply and bounce monitors, schedules follow-ups, and refreshes dashboard metrics.
+ * Schedules follow-ups and refreshes dashboard metrics.
  * @returns {{replyResult: Object, bounceResult: Object, followUpResult: Object, dashboardResult: Object}}
  */
 function runTrackingPipeline() {
   try {
-    const replyResult = monitorReplies();
-    const bounceResult = monitorBounces();
+    const replyResult = getReplyMonitorDisabledSummary_();
+    const bounceResult = getBounceMonitorDisabledSummary_();
     const followUpResult = scheduleFollowUps();
     const dashboardResult = refreshDashboard();
 
@@ -171,29 +185,19 @@ function runTrackingPipeline() {
 }
 
 /**
- * Time-driven trigger entry point for reply monitoring.
+ * Compatibility trigger entry point retained so an installed legacy trigger does not fail.
  * @returns {{scanned: number, repliesDetected: number, updated: number}}
  */
 function runReplyMonitorTrigger() {
-  try {
-    return monitorReplies();
-  } catch (error) {
-    auditLog('Orchestrator', 'REPLY_MONITOR_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
-    throw error;
-  }
+  return getReplyMonitorDisabledSummary_();
 }
 
 /**
- * Time-driven trigger entry point for bounce monitoring.
+ * Compatibility trigger entry point retained so an installed legacy trigger does not fail.
  * @returns {{scanned: number, bouncesDetected: number, updated: number}}
  */
 function runBounceMonitorTrigger() {
-  try {
-    return monitorBounces();
-  } catch (error) {
-    auditLog('Orchestrator', 'BOUNCE_MONITOR_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
-    throw error;
-  }
+  return getBounceMonitorDisabledSummary_();
 }
 
 /**
@@ -259,7 +263,8 @@ const CANONICAL_RECORD_HEADERS = [
   'firstName', 'lastName', 'title', 'email', 'linkedinUrl', 'contactId',
   'maConfirmed', 'roleIsRelevant', 'verificationResult', 'catchAll', 'status',
   'personalizationLine', 'emailsSent', 'employeeSizeFit', 'industryFit', 'isSuppressed',
-  'subject', 'body', 'template', 'templateBody', 'senderName', 'lastSentAt'
+  'subject', 'body', 'template', 'templateBody', 'senderName', 'lastSentAt',
+  'sequenceStep', 'preparedAt', 'sentAt'
 ];
 
 /**
@@ -331,8 +336,8 @@ function readRecords(spreadsheet, tabName) {
     return canonicalMap[normalized] || trimmed;
   });
 
-  return values.slice(1).map(function(row) {
-    const record = {};
+  return values.slice(1).map(function(row, rowIndex) {
+    const record = { _rowNumber: rowIndex + 2 };
 
     headers.forEach(function(header, index) {
       if (header) {

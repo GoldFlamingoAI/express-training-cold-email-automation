@@ -15,12 +15,14 @@ does too much" — this targets that specifically.
 - `auditLog(stage, action, contactId, details, status)`
 - `checkApproval(contact, settings, dailySentCount, isSuppressed)` → `{approved, failedChecks[]}`
 - `scoreLead(lead, approvalThreshold)` → `{score, breakdown, approved}`
-- `createDraft(toEmail, subject, body, contactId, settings)` → `{success, draftId, error}`
+- `prepareEmailForHostinger(contact, subject, body, settings)` →
+  `{success, prepared, queueRow, error}`
+- `markQueueEmailSent(queueRowNumber, sentAt)` is idempotent and updates QUEUE plus CONTACTS
 - Sheet tab column sets (ACTIVITY_LOG: `[timestamp, stage, action, contactId, details, status]`)
 
 **Pure vs I/O boundary** — the core rule:
-- Sheets/GmailApp/UrlFetchApp/PropertiesService in a pure module = **blocker**
-- `GmailApp` outside `DraftService`/`ReplyMonitor`/`BounceMonitor` = **blocker**
+- Sheets/UrlFetchApp/PropertiesService in a pure module = **blocker**
+- Any `GmailApp` call or Gmail OAuth scope = **blocker**
 - `UrlFetchApp` outside the named API client modules = **blocker**
 
 **Logging/config:**

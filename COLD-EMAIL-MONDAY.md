@@ -1,5 +1,11 @@
 # Cold Email Monday — Warm-Up, Enrichment & Launch Plan
 
+> **Architecture update (2026-07-16):** The sender mailbox now lives entirely on Hostinger and
+> Warmup Inbox connects through Hostinger SMTP/IMAP. Gmail drafts, Gmail reply monitoring, Google
+> App Passwords, and Google Workspace sender setup in this historical plan are retired. Follow
+> `docs/HOSTINGER-RUNBOOK.md` for deployment and operation. The contact-enrichment guidance below
+> remains applicable.
+
 Companion to `docs/LAUNCH-RUNBOOK.md`. That doc covers Phase 0 (domain/DNS/Workspace) and the
 mechanical deploy steps (paste code, set properties, install triggers). This doc picks up from
 **"domain and DNS are done, sheet and Apps Script code are pasted in, a Massachusetts company

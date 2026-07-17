@@ -28,6 +28,13 @@ To deploy the merged code into Apps Script and operate the Hostinger manual-send
 **`docs/HOSTINGER-RUNBOOK.md`**. `docs/LAUNCH-RUNBOOK.md` is retained as historical context for
 the retired Gmail architecture.
 
+## Domain warm-up layer
+
+**`manual-email-warmup-gmail/`** is a separate, standalone Apps Script project that warms the
+outreach domain (Hostinger API sends to an owned Gmail seed pool with automated opens/replies).
+It shares nothing with the campaign runtime above — different script project, spreadsheet,
+Google Cloud project, and credentials. See its own `README.md` for setup and sequencing.
+
 ---
 
 ## Repo File Map

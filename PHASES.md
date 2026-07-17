@@ -204,6 +204,27 @@ Task 4.4 promotes verified, approved contacts into `QUEUE`.*
 
 ---
 
+## Phase W: Manual Warm-Up Layer (standalone — `manual-email-warmup-gmail/`)
+*Goal: supplement Warmup Inbox during the 6–8 week domain ramp with real-engagement warm-up:
+Hostinger API sends Gemini-varied emails to 8 owned Gmail seed accounts, which open and reply on
+randomized, ramped schedules. Built by Claude directly (not a Codex task). Fully isolated from
+the campaign runtime — separate Apps Script project, spreadsheet, Cloud project, credentials.
+Strategy source: `Manual_Email_Warmup` research doc (2026-07-17).*
+
+- [x] ✅ **Task W.1** WarmupScheduler: pure ramp/skip/delay/hash math
+- [x] ✅ **Task W.2** HostingerMailClient: Email API sends via `UrlFetchApp` (bearer token)
+- [x] ✅ **Task W.3** SeedAccountService: per-account Gmail REST access via OAuth refresh tokens
+- [x] ✅ **Task W.4** ContentVariationService: Gemini variation with pure local fallbacks
+- [x] ✅ **Task W.5** Warmup orchestrator: send/engagement triggers, ENGAGEMENT state, WARMUP_LOG, DAILY_SUMMARY
+- [x] ✅ **Task W.6** Tests: `manual-email-warmup-gmail/tests/warmup-logic.test.js`
+- [ ] 🏠 **Setup W.a** Warm-up Google Cloud project on a seed Gmail; enable Gmail API; OAuth client
+- [ ] 🏠 **Setup W.b** Generate 8 seed-account refresh tokens; store as script properties
+- [ ] 🏠 **Setup W.c** Hostinger Email API token; verify send endpoint + test send (headers/DKIM check)
+- [ ] 🏠 **Setup W.d** Create warm-up Sheet + Apps Script project; paste files; run `setupWarmupSheet()`; install triggers
+- [ ] 🏠 **Setup W.e** Start manual layer in week 2–3 of the Warmup Inbox ramp (see subdir README)
+
+---
+
 ## Upgrade Triggers (human decides, not Codex)
 
 | Signal | Action |

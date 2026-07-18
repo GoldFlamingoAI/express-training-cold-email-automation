@@ -83,7 +83,7 @@ function runPreparationPipeline() {
     const spreadsheet = openCampaignSpreadsheet();
     const settings = readSettings(spreadsheet);
     const dailySentCount = countTodayActivity(spreadsheet, 'EMAIL_SENT');
-    const template = readTemplate(spreadsheet);
+    const templates = readTemplates(spreadsheet);
     const contacts = readRecords(spreadsheet, 'QUEUE');
     let processed = 0;
     let prepared = 0;
@@ -109,6 +109,14 @@ function runPreparationPipeline() {
       if (!score.approved || !approval.approved) {
         skipped += 1;
         auditLog('Orchestrator', 'EMAIL_PREPARATION_SKIPPED', contact.contactId || '', 'Score approved: ' + score.approved + '; failed checks: ' + approval.failedChecks.join(', '), 'SKIP');
+        return;
+      }
+
+      const sequenceStep = parsePipelineSequenceStep_(contact);
+      const template = selectTemplateForStep(templates, sequenceStep);
+      if (!template) {
+        skipped += 1;
+        auditLog('Orchestrator', 'FOLLOW_UP_TEMPLATE_MISSING', contact.contactId || '', 'No TEMPLATES row for sequenceStep ' + sequenceStep + '; add one before this follow-up can be prepared.', 'SKIP');
         return;
       }
 
@@ -193,6 +201,20 @@ function runBounceMonitorTrigger() {
 }
 
 /**
+ * Manual-run entry point: drafts Gemini personalization lines for contacts
+ * missing one. Human reviews each draft and promotes it to personalizationLine.
+ * @returns {{processed: number, drafted: number, skipped: number}}
+ */
+function runPersonalizationDraftTrigger() {
+  try {
+    return runPersonalizationDrafts();
+  } catch (error) {
+    auditLog('Orchestrator', 'PERSONALIZATION_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
  * Time-driven trigger entry point for follow-up scheduling.
  * @returns {{scanned: number, eligible: number, queued: number, skipped: number}}
  */
@@ -256,7 +278,7 @@ const CANONICAL_RECORD_HEADERS = [
   'maConfirmed', 'roleIsRelevant', 'verificationResult', 'catchAll', 'status',
   'personalizationLine', 'emailsSent', 'employeeSizeFit', 'industryFit', 'isSuppressed',
   'subject', 'body', 'template', 'templateBody', 'senderName', 'lastSentAt',
-  'sequenceStep', 'preparedAt', 'sentAt'
+  'sequenceStep', 'preparedAt', 'sentAt', 'source', 'personalizationDraft'
 ];
 
 /**
@@ -361,13 +383,56 @@ function readColumnValues(spreadsheet, tabName, headerName) {
  * @returns {{subject: string, body: string}}
  */
 function readTemplate(spreadsheet) {
-  const templates = readRecords(spreadsheet, 'TEMPLATES');
-  const template = templates[0] || {};
+  return selectTemplateForStep(readTemplates(spreadsheet), 1) || { subject: '', body: '' };
+}
 
-  return {
-    subject: template.subject || '',
-    body: template.body || template.template || template.templateBody || ''
-  };
+/**
+ * Reads every TEMPLATES row into normalized template records.
+ * @param {SpreadsheetApp.Spreadsheet} spreadsheet - Campaign spreadsheet.
+ * @returns {Array<{subject: string, body: string, sequenceStep: number|null}>}
+ */
+function readTemplates(spreadsheet) {
+  return readRecords(spreadsheet, 'TEMPLATES').map(function(record) {
+    const step = Number(record.sequenceStep);
+    return {
+      subject: record.subject || '',
+      body: record.body || record.template || record.templateBody || '',
+      sequenceStep: Number.isInteger(step) && step > 0 ? step : null
+    };
+  });
+}
+
+/**
+ * Selects the template for a sequence step. A template with a blank sequenceStep
+ * serves as the step-1 default; follow-up steps require an explicit match so a
+ * follow-up can never silently reuse the initial email's content.
+ * @param {Array<{subject: string, body: string, sequenceStep: number|null}>} templates - TEMPLATES records.
+ * @param {number} sequenceStep - Sequence step being prepared.
+ * @returns {{subject: string, body: string, sequenceStep: number|null}|null}
+ */
+function selectTemplateForStep(templates, sequenceStep) {
+  const exact = templates.filter(function(template) {
+    return template.sequenceStep === sequenceStep;
+  })[0];
+  if (exact) {
+    return exact;
+  }
+  if (sequenceStep === 1) {
+    return templates.filter(function(template) {
+      return template.sequenceStep === null;
+    })[0] || null;
+  }
+  return null;
+}
+
+/**
+ * Returns a QUEUE contact's positive sequence step, defaulting to 1.
+ * @param {Object} contact - QUEUE record.
+ * @returns {number}
+ */
+function parsePipelineSequenceStep_(contact) {
+  const step = Number(contact.sequenceStep);
+  return Number.isInteger(step) && step > 0 ? step : 1;
 }
 
 /**

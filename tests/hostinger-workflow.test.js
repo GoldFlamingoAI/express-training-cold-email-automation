@@ -99,6 +99,38 @@ assert.equal(metricMap.emails_sent_today, 1);
 assert.equal(metricMap.daily_remaining, 4);
 assert.equal(metricMap.reply_rate, 1);
 
+// Per-step template selection: exact match wins, blank step is the step-1 default,
+// and a follow-up step without its own template returns null (preparation skips it).
+const templates = [
+  { subject: 'Intro', body: 'intro body', sequenceStep: null },
+  { subject: 'Follow up', body: 'follow-up body', sequenceStep: 2 },
+];
+assert.equal(context.selectTemplateForStep(templates, 1).subject, 'Intro');
+assert.equal(context.selectTemplateForStep(templates, 2).subject, 'Follow up');
+assert.equal(context.selectTemplateForStep(templates, 3), null);
+assert.equal(context.selectTemplateForStep([{ subject: 'Only', body: 'b', sequenceStep: 1 }], 1).subject, 'Only');
+
+// Personalization pure helpers.
+const stripped = context.stripPersonalizationHtml('<html><style>x{}</style><script>bad()</script><h1>Forklift &amp; Safety Training</h1><p>Serving  Worcester</p></html>');
+assert.equal(stripped, 'Forklift & Safety Training Serving Worcester');
+const prompt = context.buildPersonalizationPrompt('Acme Corp', 'Owner', 'site text here');
+assert.ok(prompt.includes('Acme Corp') && prompt.includes('Owner') && prompt.includes('site text here'));
+
+// Per-source bounce metrics appear when CONTACTS has a source column, and are absent otherwise.
+const sourcedMetrics = context.buildDashboardServiceMetrics_(
+  { headers: ['status', 'source'], rows: [['BOUNCED', 'scraper'], ['SENT', 'scraper'], ['SENT', 'hunter']] },
+  { headers: ['status'], rows: [] },
+  { headers: ['timestamp', 'action'], rows: [] },
+  { headers: ['timestamp', 'email'], rows: [] },
+  { dailyLimit: 5 },
+);
+const sourcedMap = Object.fromEntries(sourcedMetrics.map((metric) => [metric.name, metric.value]));
+assert.equal(sourcedMap.source_scraper_contacts, 2);
+assert.equal(sourcedMap.source_scraper_bounce_rate, 0.5);
+assert.equal(sourcedMap.source_hunter_contacts, 1);
+assert.equal(sourcedMap.source_hunter_bounce_rate, 0);
+assert.equal(Object.keys(sourcedMap).some((name) => name.startsWith('source_')), true);
+
 assert.deepEqual(
   JSON.parse(JSON.stringify(context.runReplyMonitorTrigger())),
   { disabled: true, provider: 'Hostinger', scanned: 0, repliesDetected: 0, updated: 0 },

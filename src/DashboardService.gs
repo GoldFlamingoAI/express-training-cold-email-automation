@@ -135,7 +135,44 @@ function buildDashboardServiceMetrics_(contactsTable, queueTable, activityTable,
     { name: 'suppression_total', value: suppressionTable.rows.length },
     { name: 'reply_rate', value: calculateDashboardServiceRate_(replyCount, sentCount) },
     { name: 'bounce_rate', value: calculateDashboardServiceRate_(bounceCount, sentCount) },
-  ];
+  ].concat(buildDashboardServiceSourceMetrics_(contactsTable));
+}
+
+/**
+ * Builds per-source contact counts and bounce rates so a low-quality email
+ * source (scraper, pattern guess, Hunter) is visible before it hurts the domain.
+ * Returns no metrics when CONTACTS has no source column.
+ * @param {{headers: string[], rows: Object[][]}} contactsTable CONTACTS table data.
+ * @returns {{name: string, value: *}[]} Per-source metric rows.
+ */
+function buildDashboardServiceSourceMetrics_(contactsTable) {
+  const sourceColumn = findDashboardServiceOptionalColumn_(contactsTable.headers, ['source']);
+  const statusColumn = findDashboardServiceOptionalColumn_(contactsTable.headers, ['status']);
+  if (sourceColumn === -1) {
+    return [];
+  }
+
+  const bySource = {};
+  contactsTable.rows.forEach(function(row) {
+    const source = String(row[sourceColumn] || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    if (!source) {
+      return;
+    }
+    if (!bySource[source]) {
+      bySource[source] = { total: 0, bounced: 0 };
+    }
+    bySource[source].total += 1;
+    if (statusColumn !== -1 && String(row[statusColumn] || '').trim().toUpperCase() === 'BOUNCED') {
+      bySource[source].bounced += 1;
+    }
+  });
+
+  const metrics = [];
+  Object.keys(bySource).sort().forEach(function(source) {
+    metrics.push({ name: 'source_' + source + '_contacts', value: bySource[source].total });
+    metrics.push({ name: 'source_' + source + '_bounce_rate', value: calculateDashboardServiceRate_(bySource[source].bounced, bySource[source].total) });
+  });
+  return metrics;
 }
 
 /**

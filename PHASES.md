@@ -204,6 +204,22 @@ Task 4.4 promotes verified, approved contacts into `QUEUE`.*
 
 ---
 
+## Gap Closure — 2026-07-18 (Claude-built) ✅
+*Pre-launch gap sweep of the full funnel. All items merged in one PR.*
+
+- [x] ✅ Per-sequence-step templates: `readTemplates`/`selectTemplateForStep` in `Code.gs`; a
+  follow-up step with no matching TEMPLATES row is skipped (`FOLLOW_UP_TEMPLATE_MISSING`),
+  never silently sent with step-1 content
+- [x] ✅ `GeminiClient.gs` (named API client) + `PersonalizationDraftService.gs`: drafts a
+  personalization line from the company website into `personalizationDraft` for human review —
+  closes the sourced-leads-blocked-by-ApprovalGate deadlock without removing the human gate
+- [x] ✅ Per-source bounce metrics in `DashboardService.gs` (`source_*_contacts`,
+  `source_*_bounce_rate`) so a bad email source is visible before it hurts the domain
+- [x] ✅ Runbook: After a Reply triage, Weekly Deliverability Checklist, Sheet Backup,
+  CAN-SPAM template audit, personalization-draft workflow, warm-up taper mechanism
+
+---
+
 ## Phase W: Manual Warm-Up Layer (standalone — `manual-email-warmup-gmail/`)
 *Goal: supplement Warmup Inbox during the 6–8 week domain ramp with real-engagement warm-up:
 Hostinger API sends Gemini-varied emails to 8 owned Gmail seed accounts, which open and reply on

@@ -23,7 +23,8 @@ does too much" — this targets that specifically.
 **Pure vs I/O boundary** — the core rule:
 - Sheets/UrlFetchApp/PropertiesService in a pure module = **blocker**
 - Any `GmailApp` call or Gmail OAuth scope = **blocker**
-- `UrlFetchApp` outside the named API client modules = **blocker**
+- `UrlFetchApp` outside the named API client modules = **blocker** (named: ZeroBounce/Apollo/
+  Hunter/Gemini clients, plus `PersonalizationDraftService`'s company-website fetch)
 
 **Logging/config:**
 - Non-`auditLog` production logging, or `details` passed as a non-string = **blocker**

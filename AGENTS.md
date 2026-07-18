@@ -30,8 +30,10 @@ UrlFetchApp/PropertiesService). Never mix.
   replies, bounces, and opt-outs. `ReplyMonitor.gs`/`BounceMonitor.gs` are compatibility no-ops.
 - No `GmailApp` calls or Gmail OAuth scopes. Direct Hostinger SMTP/IMAP access requires an external
   HTTPS bridge and is outside the current manual-send MVP.
-- External APIs (ZeroBounce/Apollo/Hunter): only via their named client module, never
-  inline `UrlFetchApp`. Don't call Phase 3 clients from Phase 1/2 code.
+- External APIs (ZeroBounce/Apollo/Hunter/Gemini): only via their named client module, never
+  inline `UrlFetchApp`. Don't call Phase 3 clients from Phase 1/2 code. One named exception:
+  `PersonalizationDraftService.gs` fetches company websites directly (it is the site-fetch
+  module, not an API wrapper).
 - Logging: all production logging via `auditLog(stage, action, contactId, details, status)`
   — `details` must be a string (use `JSON.stringify` for objects). No `console.log`
   (unavailable in V8). No leftover `Logger.log` debug calls when a PR is ready.

@@ -70,7 +70,10 @@ default path in `HostingerMailClient.gs` is overridable via `HOSTINGER_SEND_ENDP
 1. Warmup Inbox subscription runs from day one and never fully stops.
 2. This manual layer joins **week 2–3**, once the automated tool has baseline activity.
 3. Cold sending begins only after the full 6–8 week window with clean logs.
-4. At launch, taper this layer's volume down as real campaign volume ramps up.
+4. At launch, taper this layer's volume down as real campaign volume ramps up. Mechanism:
+   lower the `WARMUP_MAX_PER_DAY` and `WARMUP_START_PER_DAY` script properties (e.g. to 1)
+   rather than deleting triggers — some baseline engagement should continue under the real
+   campaign traffic. Never stop abruptly.
 
 ## Files
 

@@ -24,9 +24,10 @@ current by Claude/the user from the merged PR list, not touched by every branch.
 
 ## Going live
 
-To deploy the merged code into Apps Script and operate the Hostinger manual-send campaign, follow
-**`docs/HOSTINGER-RUNBOOK.md`**. `docs/LAUNCH-RUNBOOK.md` is retained as historical context for
-the retired Gmail architecture.
+**`COLD-EMAIL-MONDAY.md` is the master go-live document** — the single start-to-finish
+walkthrough (roadmap table + every step inline, in order). Work it top to bottom.
+`docs/HOSTINGER-RUNBOOK.md` holds operational depth behind it; `docs/LAUNCH-RUNBOOK.md` is
+retained only as historical context for the retired Gmail architecture.
 
 ## Domain warm-up layer
 

@@ -114,7 +114,7 @@ warm-up window, not the start (see Gotcha #4 below on why).
 | **Week 1** | Check dashboard + Postmaster Tools weekly | Phase 4 code merged/reviewed/pasted into Apps Script; run `runContactDiscoveryTrigger()` in small batches as you add Apollo-sourced names | optional: buy Hunter Starter for one month if your list is bigger than ~50 companies (free tier's 50 credits/mo) |
 | **Weeks 2–3** | Keep checking weekly; use the inbox like a human occasionally | Keep discovering; **do not run verification yet** — save freshness for later | none |
 | **Week 4 (or week 4–5 of a 6-week warm-up)** | Continue | Run the ZeroBounce verification burst now — buy a pay-as-you-go credit pack; run `runContactVerificationTrigger()` across everything discovered; run `runQueueBuilderTrigger()` to fill `QUEUE`; fill in `personalizationLine` per contact (manual) | ZeroBounce PAYG pack purchase happens here |
-| **End of warm-up (week 5–6)** | Confirm no critical warnings remain | Smoke test: `runDraftPipeline`, check `ACTIVITY_LOG`/Gmail Drafts/`DASHBOARD` | — |
+| **End of warm-up (week 5–6)** | Confirm no critical warnings remain | Smoke test: `runPreparationPipeline`, check `ACTIVITY_LOG`/`QUEUE` prepared rows/`DASHBOARD` | — |
 | **After smoke test** | Warm-up can continue in the background at low intensity | Send 3–5 drafts/day by hand; ramp only as Postmaster stays green | — |
 
 ---
@@ -172,8 +172,8 @@ CONTACTS row updated: verificationResult
    ↓ human: write a real personalizationLine per contact (not automatable — see Gotcha #10)
    ↓ Task 4.4: runQueueBuilderTrigger()  — promotes verified + approved rows
 QUEUE row created, status = QUEUED
-   ↓ existing: runDraftPipeline()  — ApprovalGate does the final 10-point check
-Gmail draft created, human reviews and sends
+   ↓ existing: runPreparationPipeline()  — ApprovalGate does the final 10-point check
+QUEUE row prepared (subject/body), human copies into Hostinger Webmail and sends
 ```
 
 Why Apollo is manual and not API-driven: see the free-tier discussion below — Apollo's free API
@@ -280,7 +280,7 @@ notice before renewal or you're locked in for another year. Monthly is cancel-an
     address.** Never skip the ZeroBounce step even for a high-score Hunter result — Hunter fills
     `email`, only ZeroBounce is allowed to set `verificationResult`.
 12. **`DAILY_LIMIT` in `SETTINGS` still applies once `QUEUE` is full.** Even with hundreds of
-    verified, approved contacts queued, `runDraftPipeline()` only drafts up to that day's limit —
+    verified, approved contacts queued, `runPreparationPipeline()` only prepares up to that day's limit —
     the rest wait for tomorrow's run. This is intentional (protects a young domain from an
     accidental burst) — don't raise it just to clear a backlog faster.
 13. **`employeeSizeFit`/`industryFit` are hardcoded `TRUE`** per your call that the WTFP source
@@ -348,7 +348,7 @@ as manual:
 - [ ] Verification burst run near the end of warm-up (freshness intact)
 - [ ] `personalizationLine` filled in for every contact you intend to queue
 - [ ] `QUEUE` populated via `runQueueBuilderTrigger()`
-- [ ] Smoke test: `runDraftPipeline()` run manually, `ACTIVITY_LOG` fills, Gmail Drafts populated,
+- [ ] Smoke test: `runPreparationPipeline()` run manually, `ACTIVITY_LOG` fills, `QUEUE` rows show `PREPARED`,
   `DASHBOARD` shows metrics after `runDashboardRefreshTrigger()`
 - [ ] Send 3–5 drafts/day by hand, never bulk, while the domain is young
 - [ ] Ramp volume only as Postmaster reputation stays green

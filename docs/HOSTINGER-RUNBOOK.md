@@ -44,6 +44,14 @@ Keep the ten existing tabs. `QUEUE` gains these additive columns automatically:
 sequenceStep, subject, body, preparedAt, sentAt
 ```
 
+**QUEUE must also mirror the CONTACTS columns used by scoring and approval** —
+`contactId, email, firstName, lastName, company, title, maConfirmed, roleIsRelevant,
+verificationResult, catchAll, wtfpRelevance, employeeSizeFit, industryFit, personalizationLine,
+emailsSent, status`. QueueBuilder and FollowUpScheduler copy contact values into QUEUE by
+matching header names: a column missing from QUEUE arrives blank, and ApprovalGate/LeadScorer
+then skip every prepared row with confusing failed checks. Add any missing headers to QUEUE
+before the first `runQueueBuilderTrigger()` run.
+
 `CONTACTS` must contain:
 
 ```text

@@ -47,7 +47,7 @@ graph TD
         GMAIL["GmailApp<br/>drafts + reply/bounce search"]
     end
 
-    subgraph L4b["Phase 4 — Contact Enrichment (planned, not yet built)"]
+    subgraph L4b["Phase 4 — Contact Enrichment (built 2026-07-19)"]
         RRF["RoleRelevanceFilter"]
         CDS["ContactDiscoveryService"]
         CVS["ContactVerificationService"]
@@ -82,7 +82,6 @@ graph TD
     GMAIL --> REVIEW
 
     classDef planned stroke-dasharray: 5 5,fill:#fff8e1,stroke:#c9a227,color:#333;
-    class RRF,CDS,CVS,QB planned
 ```
 
 ---
@@ -154,7 +153,7 @@ Architecture and tooling decisions are complete. The following manual setup must
 
 ---
 
-## Phase 4: Contact Enrichment Pipeline 🤖
+## Phase 4: Contact Enrichment Pipeline ✅ (built by Claude, 2026-07-19)
 *Goal: close the gap between a raw `COMPANIES` list and a `QUEUE` ready to draft. Full plan,
 timeline, and setup how-tos live in `COLD-EMAIL-MONDAY.md` — this section is the Codex-buildable
 task list only.*
@@ -164,11 +163,11 @@ UI (free, no API) and adds a `CONTACTS` row (company, firstName, lastName, title
 email left blank) → Task 4.2 fills in the email via Hunter → Task 4.3 verifies it via ZeroBounce →
 Task 4.4 promotes verified, approved contacts into `QUEUE`.*
 
-- [ ] **Task 4.1** RoleRelevanceFilter module: `src/RoleRelevanceFilter.gs` — pure function
+- [x] ✅ **Task 4.1** RoleRelevanceFilter module: `src/RoleRelevanceFilter.gs` — pure function
   `isRelevantRole(title, keywordsCsv)`; case-insensitive substring match against a comma-separated
   keyword list (e.g. `SETTINGS.RELEVANT_TITLE_KEYWORDS`). No Sheets/API access — same shape as
   `MassachusettsFilter.gs`. (1 PR)
-- [ ] **Task 4.2** ContactDiscoveryService module: `src/ContactDiscoveryService.gs` — I/O module,
+- [x] ✅ **Task 4.2** ContactDiscoveryService module: `src/ContactDiscoveryService.gs` — I/O module,
   `runContactDiscovery()`. Reads `CONTACTS` rows with a blank `email`, looks up the matching
   `COMPANIES` row by company name for the domain, calls `findEmailWithHunter()` (existing
   `HunterClient.gs`, do not modify), and writes back `email`, `catchAll` (derive from Hunter's
@@ -181,7 +180,7 @@ Task 4.4 promotes verified, approved contacts into `QUEUE`.*
   6-minute execution cap — do not attempt the whole sheet in one call). Every row processed or
   skipped logs via `auditLog('ContactDiscoveryService', ...)`. Add `runContactDiscoveryTrigger()`
   to `Code.gs` (manual-run, not a time trigger — Hunter credits are budget-limited). (1 PR)
-- [ ] **Task 4.3** ContactVerificationService module: `src/ContactVerificationService.gs` — I/O
+- [x] ✅ **Task 4.3** ContactVerificationService module: `src/ContactVerificationService.gs` — I/O
   module, `runContactVerification()`. Reads `CONTACTS` rows with a non-blank `email` and blank
   `verificationResult`, calls `verifyEmailWithZeroBounce()` (existing `ZeroBounceClient.gs`, do not
   modify), writes back `verificationResult` (ZeroBounce `status`) and `catchAll` (`TRUE` when
@@ -189,7 +188,7 @@ Task 4.4 promotes verified, approved contacts into `QUEUE`.*
   `SETTINGS.CONTACT_VERIFICATION_BATCH_SIZE` and cap rows processed per run, same reasoning as Task
   4.2. Every row logs via `auditLog('ContactVerificationService', ...)`. Add
   `runContactVerificationTrigger()` to `Code.gs` (manual-run). (1 PR)
-- [ ] **Task 4.4** QueueBuilder module: `src/QueueBuilder.gs` — I/O module, `buildInitialQueue()`.
+- [x] ✅ **Task 4.4** QueueBuilder module: `src/QueueBuilder.gs` — I/O module, `buildInitialQueue()`.
   Reads `CONTACTS` rows where `verificationResult === 'valid'`, `roleIsRelevant` is true,
   `maConfirmed` is true, `catchAll` is not true, `emailsSent` is 0/blank, and `isSuppressed(email)`
   (existing `SuppressionService.gs`) is false; skips any contact already present in `QUEUE` (dedupe

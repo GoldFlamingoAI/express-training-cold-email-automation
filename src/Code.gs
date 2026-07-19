@@ -215,6 +215,62 @@ function runPersonalizationDraftTrigger() {
 }
 
 /**
+ * Manual-run entry point for Hunter email discovery (credit-limited — never a time trigger).
+ * @returns {{processed: number, discovered: number, skipped: number}}
+ */
+function runContactDiscoveryTrigger() {
+  try {
+    return runContactDiscovery();
+  } catch (error) {
+    auditLog('Orchestrator', 'CONTACT_DISCOVERY_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Manual-run entry point for ZeroBounce verification (credit-limited — never a time trigger).
+ * @returns {{processed: number, verified: number, skipped: number}}
+ */
+function runContactVerificationTrigger() {
+  try {
+    return runContactVerification();
+  } catch (error) {
+    auditLog('Orchestrator', 'CONTACT_VERIFICATION_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Manual-run entry point for promoting verified contacts into QUEUE.
+ * @returns {{evaluated: number, queued: number, skipped: number, skipReasons: Object}}
+ */
+function runQueueBuilderTrigger() {
+  try {
+    return buildInitialQueue();
+  } catch (error) {
+    auditLog('Orchestrator', 'QUEUE_BUILDER_TRIGGER_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
+ * Chains discovery, verification, and queue building in one manual run.
+ * @returns {{discoveryResult: Object, verificationResult: Object, queueResult: Object}}
+ */
+function runEnrichmentPipeline() {
+  try {
+    const discoveryResult = runContactDiscovery();
+    const verificationResult = runContactVerification();
+    const queueResult = buildInitialQueue();
+
+    return { discoveryResult: discoveryResult, verificationResult: verificationResult, queueResult: queueResult };
+  } catch (error) {
+    auditLog('Orchestrator', 'ENRICHMENT_PIPELINE_ERROR', '', error && error.message ? error.message : String(error), 'ERROR');
+    throw error;
+  }
+}
+
+/**
  * Time-driven trigger entry point for follow-up scheduling.
  * @returns {{scanned: number, eligible: number, queued: number, skipped: number}}
  */

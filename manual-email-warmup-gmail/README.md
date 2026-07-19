@@ -34,8 +34,13 @@ content hashes logged so repeating Gemini output can be audited.
 ### 1. Google Cloud project (NOT your business account)
 1. Log into `console.cloud.google.com` as the designated low-activity seed Gmail.
 2. Create project `warmup-infra`; enable the **Gmail API**.
-3. Create an OAuth client (Desktop or Web) → note Client ID + Secret.
-4. Configure the consent screen; add all 8 seed Gmails as test users.
+3. Create an OAuth client (type **Web application**, redirect URI
+   `https://developers.google.com/oauthplayground`) → note Client ID + Secret.
+4. Configure the consent screen (External); add all 8 seed Gmails as test users.
+5. **Publish the app to Production** (unverified is fine). Refresh tokens minted while the
+   app is in *Testing* status silently expire after 7 days, which would stop the warm-up
+   loop mid-ramp. Published-unverified tokens do not expire; the only cost is an extra
+   "unverified app" warning during each account's one-time consent flow.
 
 ### 2. Refresh token per seed account (8×)
 For each seed Gmail, run the OAuth consent flow once with scope

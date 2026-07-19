@@ -96,7 +96,28 @@ SENDER_NAME=Adam Graney
 FOLLOW_UP_DELAY_DAYS=4
 FOLLOW_UP_MAX_EMAILS=3
 PERSONALIZATION_BATCH_SIZE=10
+CONTACT_DISCOVERY_BATCH_SIZE=10
+CONTACT_VERIFICATION_BATCH_SIZE=25
+RELEVANT_TITLE_KEYWORDS=owner, president, ceo, coo, operations, hr, human resources, training, general manager
 ```
+
+## Enrichment Pipeline (Phase 4)
+
+For CONTACTS rows added manually (name/title from Apollo's web UI, email left blank):
+
+1. `runContactDiscoveryTrigger()` — Hunter fills blank emails (uses the matching COMPANIES
+   row's website for the domain) and stamps `roleIsRelevant`, `catchAll`, `maConfirmed`,
+   `wtfpRelevance`, and `source=hunter`. Manual-run only — each call spends Hunter credits.
+2. `runContactVerificationTrigger()` — ZeroBounce writes `verificationResult`; failed API
+   calls stay blank and retry next run. Manual-run only — spends ZeroBounce credits.
+3. `runQueueBuilderTrigger()` — promotes rows that are verified `valid`, role-relevant,
+   MA-confirmed, not catch-all, never emailed, and not suppressed into QUEUE as `QUEUED`.
+4. Or run all three in order with `runEnrichmentPipeline()`.
+
+All three are batch-capped by the SETTINGS values above (Apps Script 6-minute limit +
+credit budgets). Queue promotion does not check `personalizationLine` — draft and approve
+personalization (previous section) before or after promotion; ApprovalGate enforces it at
+preparation time either way.
 
 `DRAFT_ONLY` and Gmail monitor settings are ignored by the current runtime and may be removed from
 the SETTINGS tab after deployment.

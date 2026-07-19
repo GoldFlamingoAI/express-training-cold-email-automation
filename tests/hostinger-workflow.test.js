@@ -131,6 +131,45 @@ assert.equal(sourcedMap.source_hunter_contacts, 1);
 assert.equal(sourcedMap.source_hunter_bounce_rate, 0);
 assert.equal(Object.keys(sourcedMap).some((name) => name.startsWith('source_')), true);
 
+// Phase 4 pure logic: role relevance, domain extraction, catch-all detection, queue eligibility.
+assert.equal(context.isRelevantRole('Director of Operations', 'owner, operations, hr'), true);
+assert.equal(context.isRelevantRole('OWNER / Founder', 'owner'), true);
+assert.equal(context.isRelevantRole('Software Engineer', 'owner, operations, hr'), false);
+assert.equal(context.isRelevantRole('Owner', ''), false);
+assert.equal(context.isRelevantRole('', 'owner'), false);
+
+assert.equal(context.extractContactDiscoveryDomain_('https://www.Example.com/about?x=1'), 'example.com');
+assert.equal(context.extractContactDiscoveryDomain_('example.com'), 'example.com');
+assert.equal(context.extractContactDiscoveryDomain_('not-a-domain'), '');
+assert.equal(context.extractContactDiscoveryDomain_(''), '');
+
+assert.equal(context.isZeroBounceCatchAll('catch-all', ''), true);
+assert.equal(context.isZeroBounceCatchAll('valid', 'catch_all'), true);
+assert.equal(context.isZeroBounceCatchAll('valid', 'alternate'), false);
+
+const eligibleContact = {
+  email: 'owner@example.com',
+  verificationResult: 'valid',
+  roleIsRelevant: 'TRUE',
+  maConfirmed: 'TRUE',
+  catchAll: 'FALSE',
+  emailsSent: 0,
+};
+assert.equal(context.isQueueBuilderEligible(eligibleContact, false).eligible, true);
+assert.equal(context.isQueueBuilderEligible(Object.assign({}, eligibleContact, { verificationResult: 'invalid' }), false).reason, 'not_verified_valid');
+assert.equal(context.isQueueBuilderEligible(Object.assign({}, eligibleContact, { roleIsRelevant: 'FALSE' }), false).reason, 'role_not_relevant');
+assert.equal(context.isQueueBuilderEligible(Object.assign({}, eligibleContact, { catchAll: 'TRUE' }), false).reason, 'catch_all');
+assert.equal(context.isQueueBuilderEligible(Object.assign({}, eligibleContact, { emailsSent: 1 }), false).reason, 'already_emailed');
+assert.equal(context.isQueueBuilderEligible(eligibleContact, true).reason, 'suppressed');
+assert.equal(context.isQueueBuilderEligible(Object.assign({}, eligibleContact, { email: '' }), false).reason, 'missing_email');
+
+// Queue rows align contact values to QUEUE headers with status/step/prep fields set.
+const queueRow = context.buildQueueBuilderRow_(
+  ['contactid', 'email', 'status', 'sequencestep', 'subject', 'body', 'preparedat', 'sentat', 'company'],
+  { contactId: 'c9', email: 'owner@example.com', company: 'Acme', _rowNumber: 5 },
+);
+assert.deepEqual(queueRow, ['c9', 'owner@example.com', 'QUEUED', 1, '', '', '', '', 'Acme']);
+
 assert.deepEqual(
   JSON.parse(JSON.stringify(context.runReplyMonitorTrigger())),
   { disabled: true, provider: 'Hostinger', scanned: 0, repliesDetected: 0, updated: 0 },

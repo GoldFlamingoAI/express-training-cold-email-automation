@@ -1,354 +1,270 @@
-# Cold Email Monday — Warm-Up, Enrichment & Launch Plan
+# Cold Email Monday — The Master Go-Live Document
 
-## NEW-GO-LIVE: Manual deploy checklist (Apps Script)
+**This is the one document.** Work it top to bottom and the campaign goes from merged code to
+sending 3/day with a warmed domain, an enrichment pipeline, and free-tier lead mining. Detail
+references (`docs/HOSTINGER-RUNBOOK.md`, `manual-email-warmup-gmail/README.md`, `PHASES.md`)
+exist for depth, but every step you must *do* is written inline here, in order.
+`docs/LAUNCH-RUNBOOK.md` is the retired Gmail-era archive — never follow it.
 
-**Do this first.** The Hostinger migration is merged but not yet deployed to the live Apps Script
-project.
-
-There's one GAS project — the one bound to your campaign spreadsheet. Open it via the Sheet →
-Extensions → Apps Script.
-
-1. Copy these files from `src/` into the editor, pasting over the same-named file (create the one
-   new file):
-
-   - `Code.gs`
-   - `DraftService.gs`
-   - `ReplyMonitor.gs`
-   - `BounceMonitor.gs`
-   - `CampaignStateService.gs` ← new file, add it (＋ → Script)
-   - `ApprovalGate.gs`
-   - `DashboardService.gs`
-   - `FollowUpScheduler.gs`
-   - `SuppressionService.gs`
-   - `AuditLogger.gs`
-
-2. Replace the manifest — `appsscript.json` (Project Settings → "Show appsscript.json" must be
-   enabled). The Gmail scope `https://mail.google.com/` is intentionally gone; pasting this drops
-   it.
-
-   The remaining `.gs` files were untouched by the migration but are safe to re-copy if you want a
-   guaranteed match: `ImportService`, `Cleaner`, `Deduplicator`, `MassachusettsFilter`,
-   `LeadScorer`, `TemplateEngine`, `HunterClient`, `ApolloClient`, `ZeroBounceClient`,
-   `ImportService`, `AuditLogger`.
-
-3. Save. Because the Gmail scope was removed, the next run will prompt you to re-authorize with
-   the reduced scope set — accept it.
-
-4. Reload the spreadsheet so the new Cold Email menu appears, then run **Cold Email → Set up
-   Hostinger columns** once (adds `sequenceStep`, `subject`, `body`, `preparedAt`, `sentAt` to
-   `QUEUE` and `status`, `emailsSent`, `lastSentAt` to `CONTACTS`).
-
-5. Delete the two retired triggers (clock icon → Triggers):
-
-   - `runReplyMonitorTrigger`
-   - `runBounceMonitorTrigger`
-
-   Keep `runFollowUpSchedulerTrigger` and `runDashboardRefreshTrigger` (daily is fine).
-
-6. Optional cleanup: the `DRAFT_ONLY` row and any `REPLY_MONITOR_*` / `BOUNCE_MONITOR_*` rows in
-   the SETTINGS tab are now ignored — you can delete them.
-
-7. Smoke test per `docs/HOSTINGER-RUNBOOK.md` (§ Smoke Test): prepare one owned test contact →
-   confirm `PREPARED` → send via Hostinger → Mark selected email sent → confirm QUEUE + CONTACTS
-   update → refresh dashboard.
-
-> **Architecture update (2026-07-16):** The sender mailbox now lives entirely on Hostinger and
-> Warmup Inbox connects through Hostinger SMTP/IMAP. Gmail drafts, Gmail reply monitoring, Google
-> App Passwords, and Google Workspace sender setup in this historical plan are retired. Follow
-> `docs/HOSTINGER-RUNBOOK.md` for deployment and operation. The contact-enrichment guidance below
-> remains applicable.
-
-Companion to `docs/LAUNCH-RUNBOOK.md`. That doc covers Phase 0 (domain/DNS/Workspace) and the
-mechanical deploy steps (paste code, set properties, install triggers). This doc picks up from
-**"domain and DNS are done, sheet and Apps Script code are pasted in, a Massachusetts company
-list is loaded"** — your current state — and covers everything between here and your first sent
-email: inbox warm-up, turning that company list into verified contacts, and the actual go-live
-sequencing.
-
-The Codex-buildable tasks referenced below live in **`PHASES.md` → Phase 4** (mirrored there on
-purpose — Codex only scans `PHASES.md` for work, per `AGENTS.md`). This file is the narrative:
-why the tasks are scoped that way, the manual steps around them, the how-tos, and the timing.
+Status date: **2026-07-19**. All code through PR #68 is merged. The Warmup Inbox automated
+warm-up is **already running** — its start date is the clock the timeline below runs on.
 
 ---
 
-## Where you are right now
+## The Roadmap (the whole project on one table)
 
-- [x] Secondary domain purchased, DNS (MX/SPF/DKIM/DMARC) configured
-- [x] Google Sheet created with the 10 tabs, Apps Script project created, all 18 `.gs` files pasted
-- [x] `runReplyMonitorTrigger`/`runBounceMonitorTrigger`/`runFollowUpSchedulerTrigger`/
-  `runDashboardRefreshTrigger` installed as time-driven triggers and firing on schedule; manifest
-  re-pasted and OAuth re-consented under the `mail.google.com` scope — confirmed clean (see below)
-- [x] Massachusetts company list (WTFP grantees) sourced and imported to `COMPANIES`
-- [ ] Inbox warm-up — **not started, start today**
-- [ ] Contacts discovered/verified for the company list
-- [ ] `QUEUE` populated, first drafts created, smoke test run
+| # | Week | Item | Type | Owner | Status |
+|---|---|---|---|---|---|
+| **— GROUNDWORK —** |
+| 1 | 1 | Deploy all merged code to Apps Script (Part 1) | setup | You | ⬜ |
+| 2 | 1 | Upload the Express Training company list → `COMPANIES` (Part 2) | setup | You | ⬜ |
+| 3 | 1 | Templates (steps 1–3) + SETTINGS + script properties (Part 2) | setup | You | ⬜ |
+| 4 | 1 | Buy ZeroBounce PAYG credits ~$20 (never expire) | 💰 | You | ⬜ |
+| **— WARM-UP TRACK (clock already running) —** |
+| 5 | — | Warmup Inbox automated warm-up running | ops | You | ✅ running |
+| 6 | 1–2 | Manual warm-up layer setup (Part 3) — **join week 2–3 of the ramp** | setup | You | ⬜ deadline-sensitive |
+| 7 | 2–8 | Warm-up runs; weekly DAILY_SUMMARY glance | ops | You | ⬜ |
+| **— CODE (all Claude-built) —** |
+| 8 | done | Campaign runtime, Hostinger migration, gap closures (PRs #62–#66, #68) | code | Claude | ✅ merged |
+| 9 | done | Phase 4 enrichment chain: discovery → verification → queue (PR #67) | code | Claude | ✅ merged |
+| 10 | 2–3 | Phase 5 free sourcing funnel: data.mass.gov client, criteria filter, CANDIDATES staging + promotion, website scraper, pattern-guesser + MX check, Snov client | code | Claude | ⬜ **next build** |
+| **— ENRICHMENT & MINING OPS —** |
+| 11 | 1+ | Apollo manual research → CONTACTS rows (Part 4, continuous) | ops | You | ⬜ |
+| 12 | 2+ | Enrichment runs: discovery → verification → queue (Part 4) | ops | You | ⬜ |
+| 13 | 3+ | Personalization drafts + human review per batch (Part 4) | ops | You | ⬜ |
+| 14 | 3–8 | Monthly free-credit mining cycles (Hunter 25 + Snov 50 + scraper; Part 5) | ops | You | ⬜ after item 10 |
+| 15 | 5–6 | One Hunter paid month (~$40): batch the stocked backlog, then cancel | 💰 | You | ⬜ |
+| **— LAUNCH (week 6–8 from warm-up start) —** |
+| 16 | 4–5 | Verification burst near end of warm-up (freshness — Gotcha #3) | ops | You | ⬜ |
+| 17 | 6–8 | Smoke test, first sends at 3/day, taper warm-up layer (Part 6) | ops | You | ⬜ |
+| 18 | 6–8+ | Daily reply triage + weekly deliverability/backup routine (Part 7) | ops | You | ⬜ |
 
----
-
-## ✅ RESOLVED — Gmail OAuth scope fix (was: reply/bounce monitors actively broken)
-
-The original manifest only granted the Gmail *compose* scope, which is enough for
-`DraftService.createDraft()` but not for `ReplyMonitor`/`BounceMonitor`'s `GmailApp.search()`
-calls — the built-in `GmailApp` service requires the full `https://mail.google.com/` scope. The
-manifest was fixed in the repo, then manually re-pasted into the Apps Script editor and
-re-consented. **Confirmed:** running the project manually produced no
-`REPLY_MONITOR_TRIGGER_ERROR`/`BOUNCE_MONITOR_TRIGGER_ERROR` rows in `ACTIVITY_LOG`.
-
-One thing worth a quick check: this confirms the *manual* run is clean. If you haven't already,
-glance at `ACTIVITY_LOG` again after the triggers' next *scheduled* fire (not a manual run) just
-to be thorough — scheduled and manual executions use the same authorization, so this should carry
-over cleanly, but it costs nothing to confirm once.
-
----
-
-## Time horizon — what to start when
-
-Warm-up is the fixed clock everything else fits around: **4–6 weeks, cannot be rushed by
-paying more.** Contact enrichment has no such floor — it's bounded by your own time and API
-credits — so it runs in parallel, but verification specifically should land *near the end* of the
-warm-up window, not the start (see Gotcha #4 below on why).
-
-| When | Track A — Inbox warm-up | Track B — Contact enrichment | Track C — Money |
-|---|---|---|---|
-| **Week 0 (today)** | Sign up for Warmup Inbox, connect the sender inbox, start warm-up conservative | Give Codex the Phase 4 task briefs; start manual Apollo research on the company list | none required yet — free tiers cover early discovery |
-| **Week 1** | Check dashboard + Postmaster Tools weekly | Phase 4 code merged/reviewed/pasted into Apps Script; run `runContactDiscoveryTrigger()` in small batches as you add Apollo-sourced names | optional: buy Hunter Starter for one month if your list is bigger than ~50 companies (free tier's 50 credits/mo) |
-| **Weeks 2–3** | Keep checking weekly; use the inbox like a human occasionally | Keep discovering; **do not run verification yet** — save freshness for later | none |
-| **Week 4 (or week 4–5 of a 6-week warm-up)** | Continue | Run the ZeroBounce verification burst now — buy a pay-as-you-go credit pack; run `runContactVerificationTrigger()` across everything discovered; run `runQueueBuilderTrigger()` to fill `QUEUE`; fill in `personalizationLine` per contact (manual) | ZeroBounce PAYG pack purchase happens here |
-| **End of warm-up (week 5–6)** | Confirm no critical warnings remain | Smoke test: `runPreparationPipeline`, check `ACTIVITY_LOG`/`QUEUE` prepared rows/`DASHBOARD` | — |
-| **After smoke test** | Warm-up can continue in the background at low intensity | Send 3–5 drafts/day by hand; ramp only as Postmaster stays green | — |
+Total planned spend: **~$60** (ZeroBounce $20 one-time + one Hunter month ~$40). Everything
+else is free tier.
 
 ---
 
-## Track A — Warm-Up Inbox how-to
+## Part 1 — Deploy the code (one sitting)
 
-The repo previously referenced Lemwarm in `PHASES.md`/`docs/LAUNCH-RUNBOOK.md` as if it were
-already connected — that was stale/inaccurate. The repo is now standardized on **Warmup Inbox**,
-and those checkboxes have been corrected back to "not started." **Only ever run one warm-up tool
-per inbox** — running two at once doubles the automated send/receive traffic on the account,
-muddying the reputation signals the tool is supposed to build.
+One bound Apps Script project: open the campaign Sheet → Extensions → Apps Script.
 
-Setup takes a few minutes; the *waiting* is 4–6 weeks. Start this before anything else today.
-
-1. Go to [warmupinbox.com](https://www.warmupinbox.com/) and sign up for a plan.
-2. **Before connecting**, enable **2-Step Verification** on the Workspace sender account
-   (`firstname@newdomain.com`) if it isn't already on — Google Admin → Security → 2-Step
-   Verification, or from the account's own Google security settings.
-3. Generate an **App Password**: Google Account → Security → 2-Step Verification → App passwords
-   → create one named "Warmup Inbox." Copy it — Google shows it once.
-4. In Warmup Inbox, choose **Google Workspace** as the provider and connect using the sender
-   email + the **app password** (not your normal login password — the normal password will not
-   work once 2FA is on).
-5. Follow any in-app checklist Warmup Inbox shows about SPF/DKIM/DMARC — since DNS is already
-   configured per `LAUNCH-RUNBOOK.md` Step 1, this should come back clean. If it flags something,
-   fix DNS before proceeding rather than warming up an unauthenticated domain.
-6. Set warm-up intensity to **low/conservative** to start. Let it ramp automatically — don't
-   manually push volume up.
-7. **Let it run 4–6 weeks before your first real cold send.** During this window:
-   - Send a handful of genuine one-to-one emails from the inbox yourself.
-   - Reply to real messages that come in.
-   - Avoid attachments, bulk sends, or anything that looks automated from *you* (Warmup Inbox's
-     own synthetic traffic is fine — that's the point of the tool).
-8. Check the Warmup Inbox dashboard and [Google Postmaster Tools](https://postmaster.google.com/)
-   **at least weekly** for spam-rate or authentication warnings.
-9. Write down the warm-up start date — everything else in this doc's timeline is relative to it.
-
-**Done when:** 4–6 weeks have elapsed, Warmup Inbox shows no critical warnings, and Postmaster
-Tools shows a healthy domain/IP reputation.
+1. **Paste all 25 files from `src/`** over their same-named files; create any that don't exist
+   yet (＋ → Script). New since your last paste: `CampaignStateService`, `GeminiClient`,
+   `PersonalizationDraftService`, `RoleRelevanceFilter`, `ContactDiscoveryService`,
+   `ContactVerificationService`, `QueueBuilder`. Safest play: paste all 25 so the editor exactly
+   matches the repo.
+2. **Replace `appsscript.json`** (Project Settings → "Show appsscript.json"). The Gmail scope is
+   intentionally gone; pasting drops it.
+3. **Script properties** (Project Settings → Script Properties), per `PROPERTIES.example`:
+   `SPREADSHEET_ID`, `HUNTER_API_KEY`, `ZEROBOUNCE_API_KEY`, `GEMINI_API_KEY`
+   (free key from [aistudio.google.com](https://aistudio.google.com)). `APOLLO_API_KEY` only if
+   you ever use the dormant Apollo client.
+4. **Save and run any function once** → re-authorize with the reduced (Gmail-free) scope set.
+5. **Reload the spreadsheet** → menu **Cold Email → Set up Hostinger columns** (adds
+   `sequenceStep, subject, body, preparedAt, sentAt` to QUEUE and
+   `status, emailsSent, lastSentAt` to CONTACTS).
+6. **Triggers** (clock icon): delete `runReplyMonitorTrigger` and `runBounceMonitorTrigger`
+   if installed; keep/create `runFollowUpSchedulerTrigger` and `runDashboardRefreshTrigger`
+   (daily each). Everything else stays manual-run — the enrichment functions spend credits.
+7. **QUEUE header check (do not skip):** QUEUE must mirror the CONTACTS columns used by
+   scoring/approval — `contactId, email, firstName, lastName, company, title, maConfirmed,
+   roleIsRelevant, verificationResult, catchAll, wtfpRelevance, employeeSizeFit, industryFit,
+   personalizationLine, emailsSent, status`. Values are copied by header name; a missing QUEUE
+   column arrives blank and ApprovalGate then skips every row. Add missing headers now.
+8. Optional cleanup: delete `DRAFT_ONLY` and any `REPLY_MONITOR_*`/`BOUNCE_MONITOR_*` SETTINGS
+   rows — ignored by the current runtime.
 
 ---
 
-## Track B — Contact enrichment pipeline
+## Part 2 — Data foundation (same sitting)
 
-### The workflow, end to end
+**Upload the company list.** Paste the Express Training / WTFP company rows into the staging
+area and run `runImportPipeline(rawRows)` (or paste directly into `COMPANIES` matching its
+headers: `company, website, industry, city, state, employeeSize, sourceUrl, wtfpRelevance`).
+This must happen **before any mining** — `COMPANIES` is the dedupe baseline. If it's already
+imported, verify the row count and move on.
 
-```
-COMPANIES (already loaded)
-   ↓ human: search Apollo web UI by company domain + target title (free, no credits)
-CONTACTS row added by hand: company, firstName, lastName, title, linkedinUrl — email left blank
-   ↓ Task 4.2: runContactDiscoveryTrigger()  — Hunter finds/guesses the email
-CONTACTS row updated: email, catchAll, roleIsRelevant, maConfirmed, wtfpRelevance
-   ↓ Task 4.3: runContactVerificationTrigger()  — ZeroBounce verifies deliverability
-CONTACTS row updated: verificationResult
-   ↓ human: write a real personalizationLine per contact (not automatable — see Gotcha #10)
-   ↓ Task 4.4: runQueueBuilderTrigger()  — promotes verified + approved rows
-QUEUE row created, status = QUEUED
-   ↓ existing: runPreparationPipeline()  — ApprovalGate does the final 10-point check
-QUEUE row prepared (subject/body), human copies into Hostinger Webmail and sends
+**Templates — one row per sequence step.** In `TEMPLATES`, add a `sequenceStep` column and
+write your emails: step 1 (initial), step 2, step 3 (follow-ups). A blank `sequenceStep` row is
+the step-1 default; **a follow-up step with no matching row is skipped** with
+`FOLLOW_UP_TEMPLATE_MISSING` — it will never silently resend step-1 content. Placeholders:
+`{{firstName}}`, `{{company}}`, `{{personalizationLine}}`, `{{senderName}}`. Every body must
+contain your physical mailing address and a plain opt-out line ("reply STOP / let me know if
+you'd rather not hear from me") — that's the CAN-SPAM baseline (Gotcha #12).
+
+**SETTINGS rows:**
+
+```text
+DAILY_LIMIT=5
+APPROVAL_THRESHOLD=75
+SENDER_NAME=Adam Graney
+FOLLOW_UP_DELAY_DAYS=4
+FOLLOW_UP_MAX_EMAILS=3
+PERSONALIZATION_BATCH_SIZE=10
+CONTACT_DISCOVERY_BATCH_SIZE=10
+CONTACT_VERIFICATION_BATCH_SIZE=25
+RELEVANT_TITLE_KEYWORDS=owner, founder, ceo, president, coo, general manager, operations, hr, human resources, training, learning and development
 ```
 
-Why Apollo is manual and not API-driven: see the free-tier discussion below — Apollo's free API
-access is thin/disputed, but **searching and viewing profiles in Apollo's web UI costs no
-credits at all** (only *revealing* an email/phone does, and you don't need Apollo to reveal
-anything since Hunter + ZeroBounce already do discovery and verification). This also means
-`ApolloClient.gs` stays dormant/unused for this workflow — nothing needs to change there.
+**Sheet columns to add by hand (additive, safe):** `lastName` on CONTACTS and QUEUE (Hunter is
+meaningfully more accurate with a full name), and use `linkedinUrl` (not `linkedin`) — that's
+the header the code reads.
 
-### Manual step: Apollo research (do this continuously, no rush)
-
-For each company in `COMPANIES` without a `CONTACTS` row yet:
-1. Search Apollo's web app for the company (by name or domain).
-2. Look for a contact matching one of your target titles: **Owner / Founder / CEO**,
-   **Operations Manager / Director**, or **L&D / Training Manager**.
-3. Add a row to `CONTACTS`: `company`, `firstName`, `lastName`, `title`, `linkedinUrl`. Leave
-   `email` blank — Task 4.2 fills that in. **Copy the `company` value verbatim from the
-   `COMPANIES` tab** — discovery finds the domain by matching this name back to `COMPANIES`, so a
-   typo or a "Inc." mismatch means Hunter never gets a domain to search (see Gotcha #17).
-   `contactId` is optional — leave it blank and the pipeline falls back to `email` as the row key.
-4. While you're there, jot down one specific, real personalization fact (a recent post, a program
-   they run, something in their company profile) somewhere you can find it later — you'll need it
-   for `personalizationLine` before this contact can ever be drafted.
-
-### Setup checklist for Phase 4 (sheet changes you make by hand — not code)
-
-- [ ] Add a **`lastName`** header column to both `CONTACTS` and `QUEUE` (see Gotcha #7 — the
-  documented schema only has `firstName`, which hurts Hunter's match accuracy).
-- [ ] In `SETTINGS`, add `RELEVANT_TITLE_KEYWORDS` = `owner,founder,ceo,president,operations manager,operations director,l&d,learning and development,training manager`
-- [ ] In `SETTINGS`, add `CONTACT_DISCOVERY_BATCH_SIZE` = `25`
-- [ ] In `SETTINGS`, add `CONTACT_VERIFICATION_BATCH_SIZE` = `25`
-- [ ] Confirm `HUNTER_API_KEY` and `ZEROBOUNCE_API_KEY` are set in Script Properties (see
-  `PROPERTIES.example`)
-- [ ] Confirm the **core Phase 1 `SETTINGS`** exist (these gate drafting, not enrichment — see
-  `LAUNCH-RUNBOOK.md` Step 5): `DRAFT_ONLY=TRUE`, `DAILY_LIMIT` (e.g. `10`), `APPROVAL_THRESHOLD`
-  (e.g. `75`), `SENDER_NAME`. Missing `DAILY_LIMIT` blocks every draft ("daily limit reached");
-  missing `APPROVAL_THRESHOLD` now defaults to 75 in code, but set it explicitly so it's visible.
-- [ ] **Write your actual cold email** in the `TEMPLATES` tab — one row with a `subject` and a
-  `body`. Nothing sends without it, and `readTemplate()` reads the first row only. The body may use
-  `{{firstName}}`, `{{company}}`, `{{personalizationLine}}`, `{{senderName}}` — any placeholder
-  whose merge value is blank is left as-is, so don't ship a template that depends on a field you're
-  not filling. Include a plain-language opt-out line (see Gotcha #18).
+**Buy the ZeroBounce PAYG pack now** (~$20, ~2,000 credits, never expire, no subscription).
+Verification is what protects the warmed domain — never send to an unverified address.
 
 ---
 
-## Track C — Free tiers vs. paid credit bursts
+## Part 3 — Manual warm-up layer (deadline: week 2–3 of the running ramp)
 
-| Service | Free tier (API) | Paid option | Cancel-anytime? |
-|---|---|---|---|
-| **Hunter** (discovery — finder only, not verifier) | 50 credits/mo, confirmed API access | Starter $49/mo → 2,000 credits | Yes, **monthly only** — annual is discount but locks you in |
-| **ZeroBounce** (verification) | 100 validations/mo | **Pay-as-you-go**, not a subscription — buy a credit pack (2,000 credits ≈ $20–39), credits never expire | N/A — no subscription to cancel |
-| **Apollo** (manual web research only) | N/A — using the web UI, not the API | Not needed for this plan | N/A |
+The automated Warmup Inbox tool is already running through Hostinger SMTP/IMAP — leave it
+alone, never run a second warm-up tool on the same mailbox, and note its start date. This
+manual layer joins **week 2–3 of that ramp** and is a *separate, standalone* Apps Script
+project (full detail: `manual-email-warmup-gmail/README.md`). Condensed setup:
 
-If your company list is bigger than ~50, buy **Hunter Starter for one calendar month**, run
-discovery in bulk, then cancel before renewal (calendar-remind yourself). For ZeroBounce, just
-buy a pack — no subscription risk at all, so there's no reason to "burst and cancel" there; buy
-what you need, when you need it (ideally near the end of warm-up — see Gotcha #4).
-
-**Never choose annual billing for this strategy** — Apollo's annual plan requires 60 days' written
-notice before renewal or you're locked in for another year. Monthly is cancel-anytime.
-
----
-
-## Gotchas
-
-1. **Apollo's free-tier API access is disputed and thin** — public sources disagree on whether it
-   exists at all, and even optimistic estimates put it around ~10 export credits/month. Don't
-   build anything that depends on it. This plan uses Apollo's web UI manually instead (free,
-   unlimited for search/browse — only *revealing* contact info costs credits, which you don't
-   need since Hunter + ZeroBounce cover that).
-2. **ZeroBounce is pay-as-you-go, not a subscription.** Don't "subscribe and cancel" — just buy a
-   credit pack once. Credits don't expire.
-3. **Monthly billing only for Apollo/Hunter if you're doing the burst-and-cancel strategy.**
-   Annual billing on Apollo requires 60 days' notice before renewal — the opposite of what you
-   want.
-4. **Verification decays; discovery barely does.** Emails found by Hunter (name + domain) stay
-   roughly valid for months. ZeroBounce's *verified* status ages faster — people change jobs,
-   mailboxes close. Run discovery early (harmless if stale), but time your verification burst for
-   the last ~1 week before you actually start sending, so freshness lines up with send date. This
-   is also why the timeline table above puts verification at week 4–5, not week 0.
-5. **Apps Script has hard execution limits**: 6 minutes per single run, 90 minutes/day cumulative
-   across all triggers, and 20,000 `UrlFetchApp` calls/day on a consumer account. This is exactly
-   why Task 4.2 and 4.3 **must** respect `CONTACT_DISCOVERY_BATCH_SIZE` /
-   `CONTACT_VERIFICATION_BATCH_SIZE` and process a bounded number of rows per run — for a large
-   company list, you'll click the trigger function multiple times (or install a low-frequency
-   time trigger) rather than expecting one run to finish everything.
-6. **Warmup Inbox requires an App Password**, not your normal Google login password — you must
-   turn on 2-Step Verification on the Workspace sender account first, or the connection will
-   fail outright.
-7. **`CONTACTS`/`QUEUE` schema (per `LAUNCH-RUNBOOK.md`) has no `lastName` column** — only
-   `firstName`. Hunter's email-finder is meaningfully more accurate with a full name. Add the
-   column by hand (additive, safe — the code matches headers by name, so this won't break
-   anything already pasted in).
-8. **Naming mismatch to be aware of:** `LAUNCH-RUNBOOK.md`'s `CONTACTS` header table lists
-   `linkedin`, but `Cleaner.cleanContact()` in the code produces `linkedinUrl`. Use `linkedinUrl`
-   in your actual sheet to match the code — `linkedin` alone won't be read by anything.
-9. **Some small MA businesses may only have a Gmail/Yahoo address**, not a business-domain email.
-   `ApprovalGate.checkApproval()` hard-blocks personal email domains by design (correct behavior —
-   don't "fix" this). Expect some discovered contacts to silently fail at draft time with "Email
-   does not use a business domain" in `ACTIVITY_LOG` — that's the gate working, not a bug.
-10. **`personalizationLine` cannot be automated in this build** — nothing in the codebase
-    generates it, and `ApprovalGate` hard-blocks any contact with a blank one. Budget real human
-    time for this; it's the one genuinely manual, unavoidable step per contact.
-11. **Hunter's `findEmailWithHunter()` returns a *guess* with a confidence `score`, not a verified
-    address.** Never skip the ZeroBounce step even for a high-score Hunter result — Hunter fills
-    `email`, only ZeroBounce is allowed to set `verificationResult`.
-12. **`DAILY_LIMIT` in `SETTINGS` still applies once `QUEUE` is full.** Even with hundreds of
-    verified, approved contacts queued, `runPreparationPipeline()` only prepares up to that day's limit —
-    the rest wait for tomorrow's run. This is intentional (protects a young domain from an
-    accidental burst) — don't raise it just to clear a backlog faster.
-13. **`employeeSizeFit`/`industryFit` are hardcoded `TRUE`** per your call that the WTFP source
-    list is already pre-qualified. If you later pull companies from a broader, less-curated
-    source, revisit this — right now nothing is actually checking industry or company size.
-14. **Codex only reads `PHASES.md` for tasks**, not this file. That's why Phase 4's tasks are
-    mirrored into `PHASES.md` — if you add more tasks to this plan later, put the checkbox in
-    `PHASES.md` too or Codex will never see it.
-15. **The Gmail OAuth scope was wrong in the original manifest — fixed and confirmed resolved.**
-    `GmailApp.search()` in the monitors needs `https://mail.google.com/`; the old manifest only had
-    `gmail.compose`. If you ever re-paste an older copy of `appsscript.json` by mistake, or add a
-    second sender inbox later, watch for this exact failure mode again: monitors erroring while
-    draft creation still works, since compose-only scope covers `createDraft()` but not `search()`.
-16. **Never run two warm-up tools on one inbox** (see Track A). The repo previously showed Lemwarm
-    as connected — that was stale and has been corrected. If you ever add a second inbox or
-    domain later, remember this same rule: one warm-up tool per mailbox, not two at once.
-17. **Manual `CONTACTS` rows must match `COMPANIES` on the company name.** Discovery resolves the
-    email domain by joining `CONTACTS.company` back to a `COMPANIES` row. `COMPANIES` names were
-    normalized by `Cleaner` at import; a hand-typed `CONTACTS` name that differs ("Acme" vs "Acme
-    Inc.") won't join, and that contact gets skipped at discovery with no email. Copy the name
-    verbatim from `COMPANIES`, or expect to fix misses by hand.
-18. **US cold email is regulated (CAN-SPAM), and MA has its own consumer-protection rules.** This
-    isn't legal advice, but the baseline everyone follows: a truthful `From`/subject, a physical
-    mailing address in the message (your Gmail signature already carries this per
-    `LAUNCH-RUNBOOK.md` 0.4), and a clear, honored opt-out. At this manual 3–5/day volume the
-    common pattern is a plain "reply STOP / let me know if you'd rather not hear from me" line in
-    the template body, with opt-outs logged to `SUPPRESSION` via `addSuppression()` and honored on
-    the next run. Build the opt-out line into your `TEMPLATES` body now, not later.
+1. **Cloud project** — log into `console.cloud.google.com` as your designated low-activity seed
+   Gmail (never the business account). Create project `warmup-infra`, enable the **Gmail API**,
+   create an OAuth client, add all 8 seed Gmails as test users on the consent screen.
+2. **8 refresh tokens** — for each seed Gmail, run the consent flow once with scope
+   `https://mail.google.com/` (easiest: [OAuth Playground](https://developers.google.com/oauthplayground)
+   with "Use your own OAuth credentials" checked). Capture each refresh token.
+3. **Hostinger Email API token** — Hostinger Panel → Emails → API, scoped to the outreach
+   domain's order.
+4. **New Google Sheet** (warm-up command center) + **new standalone Apps Script project** under
+   the warm-up Google account. Paste the 5 files from `manual-email-warmup-gmail/src/` and its
+   `appsscript.json`. Fill script properties per `manual-email-warmup-gmail/PROPERTIES.example`
+   (sheet ID, `WARMUP_FROM_EMAIL`, `WARMUP_START_DATE`, Hostinger token, OAuth client ID/secret,
+   `SEED_TOKEN_1..8`, Gemini key).
+5. Run `setupWarmupSheet()` once → list the 8 seeds in `SEED_ACCOUNTS`
+   (`email | tokenPropertyKey | active`).
+6. Run `testHostingerConnection()`, then one real test send — open the received message →
+   Show original → confirm the `Received:` chain shows Hostinger (no google.com hop) and DKIM
+   `d=` is the outreach domain.
+7. **Triggers:** `runWarmupSendTrigger` daily (morning), `runWarmupEngagementTrigger` hourly,
+   `refreshWarmupSummary` daily (evening).
+8. Weekly: glance at `DAILY_SUMMARY`. At launch (Part 6): taper by lowering
+   `WARMUP_MAX_PER_DAY`/`WARMUP_START_PER_DAY` to 1 — never stop abruptly.
 
 ---
 
-## What's still missing / needs building
+## Part 4 — Enrichment: raw company → sendable contact
 
-Everything below is captured as a `PHASES.md` Phase 4 task (see task numbers) except where noted
-as manual:
+The full machine, end to end:
 
-- **Contact discovery from a bare company list** — nothing currently reads `COMPANIES` and
-  produces `CONTACTS` rows. Closed by Task 4.2, fed by the manual Apollo step above.
-- **Email verification wiring** — `ZeroBounceClient.gs` exists but nothing calls it in a loop over
-  `CONTACTS`. Closed by Task 4.3.
-- **Promotion from `CONTACTS` to `QUEUE`** — `FollowUpScheduler.gs` only appends *follow-up*
-  contacts to `QUEUE`; nothing promotes a contact's *first* touch. Closed by Task 4.4.
-  (This was a real gap in the original Phase 1–3 build, not something new to this plan.)
-- **Role-relevance filtering** — no code checks a contact's title against your target roles.
-  Closed by Task 4.1.
-- **`personalizationLine` generation** — intentionally **not** in scope for Codex; this stays a
-  manual step (Gotcha #10). If you want to revisit automating this later (e.g., summarizing a
-  scraped fact), that's a separate, larger conversation — flag it explicitly if you want to pursue
-  it, it is not implied by anything in this plan.
+```
+COMPANIES (loaded in Part 2)
+   ↓ you: Apollo web UI research (free — search/browse costs no credits)
+CONTACTS row: company, firstName, lastName, title, linkedinUrl — email blank
+   ↓ runContactDiscoveryTrigger()   — Hunter finds the email (spends credits)
+   ↓ runContactVerificationTrigger() — ZeroBounce verifies (spends credits)
+   ↓ runPersonalizationDraftTrigger() — Gemini drafts a line from the company site (free)
+   ↓ you: review/edit each draft → copy into personalizationLine
+   ↓ runQueueBuilderTrigger()       — promotes verified+approved rows to QUEUE
+   ↓ runPreparationPipeline()       — ApprovalGate final check; writes subject/body, PREPARED
+   ↓ you: copy into Hostinger Webmail, send, Cold Email → Mark selected email sent
+```
+
+`runEnrichmentPipeline()` chains discovery → verification → queue-build in one call. All
+enrichment functions are batch-capped (SETTINGS) and **manual-run only** — never time triggers.
+
+**Apollo research (continuous, no rush).** For each `COMPANIES` row without contacts: search
+Apollo's web app by company name/domain; find a contact matching your target titles
+(Owner/Founder/CEO, Operations, HR, Training/L&D); add the CONTACTS row with **the `company`
+value copied verbatim from COMPANIES** — discovery joins on that name to find the domain, and
+"Acme" vs "Acme Inc." means no join, no email (Gotcha #8). Email stays blank; leave `contactId`
+blank (falls back to email as key). Don't *reveal* emails in Apollo — Hunter does that cheaper.
+
+**Personalization.** Gemini drafts into `personalizationDraft`; **you approve every line** by
+editing/copying it into `personalizationLine`. ApprovalGate only reads the human-approved
+column. Rows with no website or a failed fetch are logged and skipped — write those by hand.
 
 ---
 
-## Go-live checklist (combines `LAUNCH-RUNBOOK.md` Step 7 with this plan)
+## Part 5 — Free-tier mining strategy (+ the two purchases)
 
-- [x] Current `appsscript.json` pasted in and OAuth re-consented (the `mail.google.com` scope fix)
-- [ ] Exactly one warm-up tool connected to the inbox — warm-up has run 4–6 weeks with no
-  unresolved critical warnings
-- [ ] All 10 sheet tabs exist with exact names (`LAUNCH-RUNBOOK.md` Step 2) — a missing/misnamed
-  tab throws a null error mid-run
-- [ ] `DRAFT_ONLY` = `TRUE`, plus `DAILY_LIMIT` / `APPROVAL_THRESHOLD` / `SENDER_NAME` set in
-  `SETTINGS`
-- [ ] `TEMPLATES` has a `subject` + `body` row, including a plain-language opt-out line
-- [ ] Phase 4 code merged, reviewed, and pasted into Apps Script
-- [ ] `CONTACTS` populated via the Apollo → Hunter discovery loop
-- [ ] Verification burst run near the end of warm-up (freshness intact)
-- [ ] `personalizationLine` filled in for every contact you intend to queue
-- [ ] `QUEUE` populated via `runQueueBuilderTrigger()`
-- [ ] Smoke test: `runPreparationPipeline()` run manually, `ACTIVITY_LOG` fills, `QUEUE` rows show `PREPARED`,
-  `DASHBOARD` shows metrics after `runDashboardRefreshTrigger()`
-- [ ] Send 3–5 drafts/day by hand, never bulk, while the domain is young
-- [ ] Ramp volume only as Postmaster reputation stays green
+| Service | Free tier | Role |
+|---|---|---|
+| data.mass.gov (Socrata) | Unlimited | Company sourcing (Phase 5 build — roadmap #10) |
+| Website scraper + Gemini | Unlimited | Email extraction from company sites (Phase 5) |
+| Pattern-guess + MX check | Unlimited | Free Hunter-bypass, verified by ZeroBounce (Phase 5) |
+| Hunter | 25 finds/mo | Fallback finder for the holdouts |
+| Snov | ~50 finds/mo | Second finder (Phase 5 client) |
+| ZeroBounce | PAYG pack | Verify **everything**, every source, always |
+
+Cadence math: 3 sends/day ≈ 65–90 contacts/month. Free tiers + scraper cover it once Phase 5
+lands. Bank credits monthly (they reset, don't roll over). **Week 5–6:** if the backlog is big,
+buy one Hunter Starter month (~$40 ≈ 500 finds ≈ 5–6 months runway), batch-process, cancel
+before renewal (calendar reminder — monthly billing only, never annual: Gotcha #4).
+
+**Verification freshness (Gotcha #3):** discovery barely decays; verification does. Discover
+early and continuously; run the big *verification* burst in the last 1–2 weeks before launch.
+
+---
+
+## Part 6 — Smoke test & launch (week 6–8 from warm-up start)
+
+Preconditions: warm-up window elapsed with no critical warnings (Warmup Inbox dashboard +
+Postmaster Tools), QUEUE populated, personalization lines human-approved, templates in place.
+
+1. Smoke test with one owned test contact: `runPreparationPipeline()` → row `PREPARED` with
+   rendered subject/body → send via Hostinger Webmail → **Mark selected email sent** → QUEUE +
+   CONTACTS both update → `runDashboardRefreshTrigger()` shows the metrics → received message
+   shows SPF/DKIM/DMARC `PASS`.
+2. Start real sends: **3/day by hand, never bulk.** `DAILY_LIMIT` enforces this — don't raise
+   it to clear a backlog (Gotcha #6).
+3. Taper the warm-up layer (`WARMUP_MAX_PER_DAY=1`) and let Warmup Inbox continue at low
+   intensity in the background. Never stop either abruptly.
+
+---
+
+## Part 7 — Ongoing operations
+
+**Daily — reply triage** (the system's job ends at REPLIED; yours begins):
+- Interested → personal reply from Hostinger Webmail same day; move off-template; propose one
+  concrete next step.
+- Not interested → nothing further prepares; don't re-pitch.
+- Opt-out language → **Mark selected contact unsubscribed** (suppression = the CAN-SPAM record).
+- Auto-reply/OOO → not a reply; reset status if mismarked so follow-ups resume.
+
+**Weekly — ~10 minutes:**
+1. Postmaster Tools: reputation + spam-complaint rate (< 0.1%).
+2. DMARC aggregate reports: SPF/DKIM aligned to the Hostinger path; investigate unknowns.
+3. One free blacklist check (MXToolbox).
+4. DASHBOARD: `bounce_rate` + `source_*_bounce_rate` — a source going bad gets benched.
+5. Sheet backup: File → Make a copy (dated) → Drive Backups folder. Extra copy before any bulk
+   edit.
+
+---
+
+## Gotchas (carried forward, current)
+
+1. **Apps Script limits:** 6 min/run, 90 min/day of triggers, 20k URL fetches/day — this is why
+   every enrichment function is batch-capped; click it multiple times for big lists.
+2. **Hunter returns a guess** with a confidence score, not a verified address. Never skip
+   ZeroBounce, even on high-score finds.
+3. **Verification decays, discovery doesn't** — burst-verify near launch, not at week 0.
+4. **Monthly billing only** on any subscription you plan to burst-and-cancel. ZeroBounce is
+   PAYG — buy once, no subscription exists.
+5. **Personal-domain contacts (gmail/yahoo) are hard-blocked** by ApprovalGate on purpose.
+   "Email does not use a business domain" in ACTIVITY_LOG is the gate working, not a bug.
+6. **DAILY_LIMIT applies even with a full QUEUE** — intentional young-domain protection.
+7. **`employeeSizeFit`/`industryFit` are stamped TRUE** on the pre-qualified WTFP list. The
+   Phase 5 criteria filter computes them for real on sourced leads — don't reuse the stamp for
+   broader sources.
+8. **CONTACTS.company must match COMPANIES.company verbatim** or discovery can't resolve the
+   domain and skips the contact.
+9. **One warm-up tool per mailbox.** The manual layer is engineered to coexist with Warmup
+   Inbox (different traffic shape); a second pool tool is not.
+10. **No `GmailApp` anywhere, ever** — the tests and CI enforce it. The campaign project's Gmail
+    era is over; the warm-up project talks to Gmail only via per-account OAuth REST calls.
+11. **Codex is retired from this repo's active work** — Claude builds directly; `PHASES.md` is
+    still the roadmap of record and gets updated with every merged PR.
+12. **CAN-SPAM baseline:** truthful From/subject, physical mailing address in the body, honored
+    opt-out logged to SUPPRESSION. Massachusetts consumer-protection rules exist on top — at
+    3/day with human review you're in the most defensible posture there is; keep it that way.
+
+---
+
+*Superseded references: `docs/LAUNCH-RUNBOOK.md` (Gmail-era archive). Depth references:
+`docs/HOSTINGER-RUNBOOK.md` (operational detail), `manual-email-warmup-gmail/README.md`
+(warm-up internals), `PHASES.md` (build history + Phase 5 specs when they land).*

@@ -118,45 +118,6 @@ function ensureEmailPreparationColumns_(sheet) {
 }
 
 /**
- * Finds the first unsent QUEUE row matching a contact ID or email.
- * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - QUEUE sheet.
- * @param {string} contactId - Contact ID.
- * @param {string} email - Contact email.
- * @returns {Object|null} Queue record with _rowNumber or null.
- */
-function findEmailPreparationQueueRecord_(sheet, contactId, email) {
-  const values = sheet.getDataRange().getValues();
-  if (values.length < 2) {
-    return null;
-  }
-
-  const headers = values[0].map(normalizeEmailPreparationHeader_);
-  const contactIdColumn = headers.indexOf('contactid');
-  const emailColumn = headers.indexOf('email');
-  const statusColumn = headers.indexOf('status');
-  const wantedContactId = String(contactId || '').trim().toLowerCase();
-  const wantedEmail = String(email || '').trim().toLowerCase();
-
-  for (let index = 1; index < values.length; index += 1) {
-    const row = values[index];
-    const rowContactId = contactIdColumn === -1 ? '' : String(row[contactIdColumn] || '').trim().toLowerCase();
-    const rowEmail = emailColumn === -1 ? '' : String(row[emailColumn] || '').trim().toLowerCase();
-    const rowStatus = statusColumn === -1 ? '' : String(row[statusColumn] || '').trim().toUpperCase();
-    const identityMatches = (wantedContactId && rowContactId === wantedContactId) || (wantedEmail && rowEmail === wantedEmail);
-    if (identityMatches && ['', 'QUEUED'].indexOf(rowStatus) !== -1) {
-      const record = { _rowNumber: index + 1 };
-      headers.forEach(function(header, columnIndex) {
-        record[header] = row[columnIndex];
-      });
-      record.contactId = contactIdColumn === -1 ? '' : row[contactIdColumn];
-      record.email = emailColumn === -1 ? '' : row[emailColumn];
-      return record;
-    }
-  }
-  return null;
-}
-
-/**
  * Returns the intended sequence step for a queue record.
  * @param {Object} contact - Queue record.
  * @returns {number} Positive sequence step.

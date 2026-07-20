@@ -1,0 +1,26 @@
+# Script properties for the warm-up Apps Script project (File > Project Settings > Script Properties).
+# Never commit real values. All Gmail access uses per-account OAuth refresh tokens over
+# UrlFetchApp — this project has NO Gmail OAuth scope of its own.
+
+WARMUP_SHEET_ID=<warm-up spreadsheet ID>
+WARMUP_FROM_EMAIL=<mailbox on the outreach domain, e.g. adam@example-outreach.com>
+WARMUP_START_DATE=<ISO date the manual layer begins, e.g. 2026-07-28>
+
+HOSTINGER_API_TOKEN=<bearer token from Hostinger Panel -> Emails -> API>
+# Optional overrides — verify the send path against https://api.mail.hostinger.com/ docs:
+# HOSTINGER_API_BASE_URL=https://api.mail.hostinger.com
+# HOSTINGER_SEND_ENDPOINT=<full URL if the documented send path differs>
+
+OAUTH_CLIENT_ID=<from the warm-up Google Cloud project>
+OAUTH_CLIENT_SECRET=<from the warm-up Google Cloud project>
+# One refresh token per seed Gmail; the property name goes in SEED_ACCOUNTS.tokenPropertyKey:
+SEED_TOKEN_1=<refresh token for seed account 1>
+SEED_TOKEN_2=<refresh token for seed account 2>
+# ... SEED_TOKEN_3 through SEED_TOKEN_8
+
+GEMINI_API_KEY=<Google AI Studio key; optional — local templates are the fallback>
+
+# Optional ramp overrides (defaults: 2/day -> 3/day over 21 days):
+# WARMUP_START_PER_DAY=2
+# WARMUP_MAX_PER_DAY=3
+# WARMUP_RAMP_DAYS=21

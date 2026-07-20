@@ -6,7 +6,7 @@ references (`docs/HOSTINGER-RUNBOOK.md`, `manual-email-warmup-gmail/README.md`, 
 exist for depth, but every step you must *do* is written inline here, in order.
 `docs/LAUNCH-RUNBOOK.md` is the retired Gmail-era archive — never follow it.
 
-Status date: **2026-07-19**. All code through PR #69 is merged. The Warmup Inbox automated
+Status date: **2026-07-19**. All code through PR #70 is merged. The Warmup Inbox automated
 warm-up is **already running** — its start date is the clock the timeline below runs on.
 
 Two Apps Script projects exist in this plan. When a step says to run a function, it names the
@@ -56,11 +56,42 @@ else is free tier.
 
 All steps in this Part happen in the **campaign project** (Sheet → Extensions → Apps Script).
 
-1. **Paste all 25 files from `src/`** over their same-named files; create any that don't exist
-   yet (＋ → Script). New since your last paste: `CampaignStateService`, `GeminiClient`,
-   `PersonalizationDraftService`, `RoleRelevanceFilter`, `ContactDiscoveryService`,
-   `ContactVerificationService`, `QueueBuilder`. Safest play: paste all 25 so the editor exactly
-   matches the repo.
+1. **Paste all 25 files from `src/`** over their same-named files in the Apps Script editor;
+   create any that don't exist yet (＋ → Script, then name it exactly as below, no `.gs`
+   needed — the editor adds it). The complete list, alphabetical:
+
+   ```text
+   ApolloClient.gs
+   ApprovalGate.gs
+   AuditLogger.gs
+   BounceMonitor.gs
+   CampaignStateService.gs        ← new file if not already present
+   Cleaner.gs
+   Code.gs
+   ContactDiscoveryService.gs     ← new file if not already present
+   ContactVerificationService.gs  ← new file if not already present
+   DashboardService.gs
+   Deduplicator.gs
+   DraftService.gs
+   FollowUpScheduler.gs
+   GeminiClient.gs                ← new file if not already present
+   HunterClient.gs
+   ImportService.gs
+   LeadScorer.gs
+   MassachusettsFilter.gs
+   PersonalizationDraftService.gs ← new file if not already present
+   QueueBuilder.gs                ← new file if not already present
+   ReplyMonitor.gs
+   RoleRelevanceFilter.gs         ← new file if not already present
+   SuppressionService.gs
+   TemplateEngine.gs
+   ZeroBounceClient.gs
+   ```
+
+   Safest play: paste all 25 (not just the ⟵ new ones) so the editor exactly matches the
+   repo, even if you think an older file is already up to date — cheap to re-paste, expensive
+   to debug a stale one later. After pasting, the editor's left file list should show exactly
+   these 25 filenames and nothing else; delete any leftover file not on this list.
 
 2. **Replace `appsscript.json`** (Project Settings → "Show appsscript.json"). The Gmail scope is
    intentionally gone; pasting drops it.
@@ -313,9 +344,20 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
 
 17. **Create the warm-up Sheet + Apps Script project** — new Google Sheet named
     `Warmup Command Center` under the warm-up account; [script.google.com](https://script.google.com)
-    → New project (standalone, same account) → paste the 5 files from
-    `manual-email-warmup-gmail/src/` + its `appsscript.json` → fill Script Properties per
-    `manual-email-warmup-gmail/PROPERTIES.example` (`WARMUP_SHEET_ID`, `WARMUP_FROM_EMAIL`,
+    → New project (standalone, same account) → paste these 5 files from
+    `manual-email-warmup-gmail/src/`, creating each as a new Script file (＋ → Script, name
+    it exactly as below):
+
+    ```text
+    ContentVariationService.gs
+    HostingerMailClient.gs
+    SeedAccountService.gs
+    Warmup.gs
+    WarmupScheduler.gs
+    ```
+
+    Plus its `appsscript.json` (Project Settings → "Show appsscript.json") → fill Script
+    Properties per `manual-email-warmup-gmail/PROPERTIES.example` (`WARMUP_SHEET_ID`, `WARMUP_FROM_EMAIL`,
     `WARMUP_START_DATE`, `HOSTINGER_API_TOKEN`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`,
     `SEED_TOKEN_1..8`, `GEMINI_API_KEY`).
 

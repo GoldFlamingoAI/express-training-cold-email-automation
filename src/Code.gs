@@ -284,8 +284,39 @@ function canonicalRecordHeaderMap_() {
  * @returns {SpreadsheetApp.Spreadsheet}
  */
 function openCampaignSpreadsheet() {
-  const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  const activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  if (activeSpreadsheet) {
+    return activeSpreadsheet;
+  }
+
+  const rawSpreadsheetId = String(
+    PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || ''
+  ).trim();
+  const urlMatch = rawSpreadsheetId.match(/\/spreadsheets\/d\/([A-Za-z0-9_-]+)/);
+  const spreadsheetId = urlMatch ? urlMatch[1] : rawSpreadsheetId;
+  if (!spreadsheetId) {
+    throw new Error('Missing script property: SPREADSHEET_ID');
+  }
+  if (!/^[A-Za-z0-9_-]+$/.test(spreadsheetId)) {
+    throw new Error('SPREADSHEET_ID contains an invalid or hidden character. Run repairCampaignSpreadsheetId() from the bound project.');
+  }
   return SpreadsheetApp.openById(spreadsheetId);
+}
+
+/**
+ * Replaces SPREADSHEET_ID with the canonical ID of the bound spreadsheet.
+ * Run manually once if a copied property value is rejected by openById().
+ * @returns {string} Canonical spreadsheet ID.
+ */
+function repairCampaignSpreadsheetId() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  if (!spreadsheet) {
+    throw new Error('No bound spreadsheet is active. Open Apps Script from the campaign Sheet, then run this function.');
+  }
+  const spreadsheetId = spreadsheet.getId();
+  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', spreadsheetId);
+  console.log('SPREADSHEET_ID repaired: ' + spreadsheetId);
+  return spreadsheetId;
 }
 
 /**

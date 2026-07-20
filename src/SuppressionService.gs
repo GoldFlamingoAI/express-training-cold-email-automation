@@ -7,8 +7,7 @@ function isSuppressed(email) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
 
   try {
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = openCampaignSpreadsheet();
     const sheet = spreadsheet.getSheetByName('SUPPRESSION');
     const values = sheet.getDataRange().getValues();
 
@@ -46,8 +45,7 @@ function addSuppression(email, reason, source) {
       auditLog('SuppressionService', 'SUPPRESSION_ALREADY_EXISTS', '', normalizedEmail, 'SKIP');
       return;
     }
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = openCampaignSpreadsheet();
     const sheet = spreadsheet.getSheetByName('SUPPRESSION');
 
     sheet.appendRow([new Date(), normalizedEmail, reason, source]);

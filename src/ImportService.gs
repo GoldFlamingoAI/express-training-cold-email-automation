@@ -9,8 +9,7 @@ function importCompanies(rows) {
   let skipped = 0;
 
   try {
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = openCampaignSpreadsheet();
     const sheet = spreadsheet.getSheetByName('COMPANIES');
 
     rows.forEach(function(row, index) {

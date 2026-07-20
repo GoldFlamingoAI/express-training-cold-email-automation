@@ -22,7 +22,7 @@ function scheduleFollowUps() {
   };
 
   try {
-    const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+    const spreadsheet = openCampaignSpreadsheet();
     const settings = getFollowUpSchedulerSettings_(spreadsheet);
     const contactsSheet = getFollowUpSchedulerSheet_(spreadsheet, FOLLOW_UP_SCHEDULER_CONTACTS_SHEET);
     const queueSheet = getFollowUpSchedulerSheet_(spreadsheet, FOLLOW_UP_SCHEDULER_QUEUE_SHEET);

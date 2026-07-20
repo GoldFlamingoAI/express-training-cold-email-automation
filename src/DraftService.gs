@@ -12,8 +12,7 @@ const EMAIL_PREPARATION_REQUIRED_COLUMNS = ['sequenceStep', 'subject', 'body', '
  */
 function prepareEmailForHostinger(contact, subject, body, settings) {
   try {
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = openCampaignSpreadsheet();
     const queueSheet = spreadsheet.getSheetByName(EMAIL_PREPARATION_QUEUE_SHEET);
     if (!queueSheet) {
       throw new Error('Missing required sheet: ' + EMAIL_PREPARATION_QUEUE_SHEET);
@@ -68,7 +67,7 @@ function prepareEmailForHostinger(contact, subject, body, settings) {
  */
 function createDraft(toEmail, subject, body, contactId, settings) {
   try {
-    const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+    const spreadsheet = openCampaignSpreadsheet();
     const queueSheet = spreadsheet.getSheetByName(EMAIL_PREPARATION_QUEUE_SHEET);
     if (!queueSheet) {
       throw new Error('Missing required sheet: ' + EMAIL_PREPARATION_QUEUE_SHEET);

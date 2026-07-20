@@ -16,7 +16,7 @@ function refreshDashboard() {
   };
 
   try {
-    const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+    const spreadsheet = openCampaignSpreadsheet();
     const settings = getDashboardServiceSettings_(spreadsheet);
     const contactsTable = getDashboardServiceTable_(getDashboardServiceSheet_(spreadsheet, DASHBOARD_SERVICE_CONTACTS_SHEET));
     const queueTable = getDashboardServiceTable_(getDashboardServiceSheet_(spreadsheet, DASHBOARD_SERVICE_QUEUE_SHEET));

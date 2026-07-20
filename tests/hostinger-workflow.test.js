@@ -195,21 +195,39 @@ const activitySheet = new FakeSheet('ACTIVITY_LOG', [
   ['timestamp', 'stage', 'action', 'contactId', 'details', 'status'],
 ]);
 const fakeSpreadsheet = {
+  getId() {
+    return 'canonical-spreadsheet-id';
+  },
   getSheetByName(name) {
     return { QUEUE: queueSheet, CONTACTS: contactsSheet, ACTIVITY_LOG: activitySheet }[name] || null;
   },
 };
+let storedSpreadsheetId = 'spreadsheet-id';
 context.PropertiesService = {
   getScriptProperties() {
-    return { getProperty() { return 'spreadsheet-id'; } };
+    return {
+      getProperty() {
+        return storedSpreadsheetId;
+      },
+      setProperty(name, value) {
+        if (name === 'SPREADSHEET_ID') storedSpreadsheetId = value;
+      },
+    };
   },
 };
 context.SpreadsheetApp = {
+  getActiveSpreadsheet() {
+    return fakeSpreadsheet;
+  },
   openById() {
     return fakeSpreadsheet;
   },
 };
 context.Logger = { log() {} };
+
+assert.equal(context.openCampaignSpreadsheet(), fakeSpreadsheet);
+assert.equal(context.repairCampaignSpreadsheetId(), 'canonical-spreadsheet-id');
+assert.equal(storedSpreadsheetId, 'canonical-spreadsheet-id');
 
 assert.deepEqual(
   JSON.parse(JSON.stringify(context.setupHostingerWorkflow())),

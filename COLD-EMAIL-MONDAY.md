@@ -63,6 +63,8 @@ else is free tier.
 - ✅ Retired Gmail-era SETTINGS keys were removed.
 - ✅ All nine current campaign SETTINGS rows were entered and verified.
 - ✅ All three email sequence templates were entered with sequence steps 1, 2, and 3.
+- ✅ `CONTACTS` and `QUEUE` use `lastName`; the legacy `linkedin` header was replaced with
+  `linkedinUrl`.
 - ⬜ Confirm all 25 campaign `.gs` files and `appsscript.json` exactly match current `main`.
 - ✅ The campaign Triggers page contains exactly the two required triggers, staggered as
   `runFollowUpSchedulerTrigger` at 8–9am and `runDashboardRefreshTrigger` at 6–7pm.
@@ -268,7 +270,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
        string in a single cell — edit the list to taste; a contact's title must contain at
        least one keyword (case-insensitive substring) to pass the role filter.
 
-12. **Add the `lastName` column + fix `linkedin` → `linkedinUrl`:**
+12. **✅ DONE — Add the `lastName` column + fix `linkedin` → `linkedinUrl`:**
     1. On **CONTACTS**: find the `firstName` header → right-click the column letter above it →
        **Insert 1 column right** → type `lastName` in the new header cell.
     2. Repeat the same on **QUEUE** (it's in the 16-header list from step 7 — skip if you

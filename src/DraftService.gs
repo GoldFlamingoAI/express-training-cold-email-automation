@@ -57,6 +57,35 @@ function prepareEmailForHostinger(contact, subject, body, settings) {
 }
 
 /**
+ * Backward-compatible replacement for the retired Gmail draft function.
+ * @param {string} toEmail - Recipient email.
+ * @param {string} subject - Rendered email subject.
+ * @param {string} body - Rendered plain-text email body.
+ * @param {string} contactId - Contact ID.
+ * @param {Object} settings - Campaign settings.
+ * @returns {{success: boolean, prepared: boolean, queueRow: number, error: string|null}}
+ */
+function createDraft(toEmail, subject, body, contactId, settings) {
+  try {
+    const spreadsheet = openCampaignSpreadsheet();
+    const queueSheet = spreadsheet.getSheetByName(EMAIL_PREPARATION_QUEUE_SHEET);
+    if (!queueSheet) {
+      throw new Error('Missing required sheet: ' + EMAIL_PREPARATION_QUEUE_SHEET);
+    }
+
+    const record = findEmailPreparationQueueRecord_(queueSheet, contactId, toEmail);
+    if (!record) {
+      throw new Error('No QUEUED row found for ' + String(contactId || toEmail || '').trim() + '.');
+    }
+    return prepareEmailForHostinger(record, subject, body, settings);
+  } catch (error) {
+    const message = error && error.message ? error.message : String(error);
+    auditLog(EMAIL_PREPARATION_STAGE, 'EMAIL_PREPARATION_FAILED', contactId || toEmail || '', message, 'ERROR');
+    return { success: false, prepared: false, queueRow: 0, error: message };
+  }
+}
+
+/**
  * Ensures QUEUE has the columns required by the manual-send workflow.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - QUEUE sheet.
  * @returns {Object} Normalized column-name to zero-based index map.

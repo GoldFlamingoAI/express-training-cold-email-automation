@@ -67,7 +67,7 @@ function searchApolloContacts(criteria) {
  * @returns {{searchUrl: string, pageSize: number}} Parsed settings.
  */
 function getApolloClientSettings_() {
-  const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+  const spreadsheet = openCampaignSpreadsheet();
   const sheet = spreadsheet.getSheetByName(APOLLO_CLIENT_SETTINGS_SHEET);
   if (!sheet) {
     throw new Error('Missing required sheet: ' + APOLLO_CLIENT_SETTINGS_SHEET);

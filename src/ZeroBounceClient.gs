@@ -117,7 +117,7 @@ function getZeroBounceCredits() {
  * @returns {{validateUrl: string, creditsUrl: string, timeoutSeconds: number}} Parsed settings.
  */
 function getZeroBounceClientSettings_() {
-  const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+  const spreadsheet = openCampaignSpreadsheet();
   const sheet = spreadsheet.getSheetByName(ZERO_BOUNCE_CLIENT_SETTINGS_SHEET);
   if (!sheet) {
     throw new Error('Missing required sheet: ' + ZERO_BOUNCE_CLIENT_SETTINGS_SHEET);

@@ -132,7 +132,7 @@ function verifyEmailWithHunter(email) {
  * @returns {{emailFinderUrl: string, emailVerifierUrl: string}} Parsed settings.
  */
 function getHunterClientSettings_() {
-  const spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+  const spreadsheet = openCampaignSpreadsheet();
   const sheet = spreadsheet.getSheetByName(HUNTER_CLIENT_SETTINGS_SHEET);
   if (!sheet) {
     throw new Error('Missing required sheet: ' + HUNTER_CLIENT_SETTINGS_SHEET);

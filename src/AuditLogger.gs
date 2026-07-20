@@ -12,8 +12,7 @@ function auditLog(stage, action, contactId, details, status) {
   const row = [timestamp, stage, action, contactId, details, status];
 
   try {
-    const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const spreadsheet = openCampaignSpreadsheet();
     const sheet = spreadsheet.getSheetByName('ACTIVITY_LOG');
 
     if (sheet.getLastRow() === 0) {

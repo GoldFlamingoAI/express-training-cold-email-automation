@@ -347,7 +347,7 @@ function parseCampaignStateSequenceStep_(record) {
  * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet} Campaign spreadsheet.
  */
 function getCampaignStateSpreadsheet_() {
-  return SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
+  return openCampaignSpreadsheet();
 }
 
 /**

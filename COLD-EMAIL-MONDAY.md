@@ -6,7 +6,7 @@ references (`docs/HOSTINGER-RUNBOOK.md`, `manual-email-warmup-gmail/README.md`, 
 exist for depth, but every step you must *do* is written inline here, in order.
 `docs/LAUNCH-RUNBOOK.md` is the retired Gmail-era archive — never follow it.
 
-Status date: **2026-07-19**. All code through PR #70 is merged. The Warmup Inbox automated
+Status date: **2026-07-20**. All code through PR #73 is merged. The Warmup Inbox automated
 warm-up is **already running** — its start date is the clock the timeline below runs on.
 
 Two Apps Script projects exist in this plan. When a step says to run a function, it names the
@@ -26,7 +26,7 @@ project and the file:
 | **— GROUNDWORK —** |
 | 1 | 1 | Deploy all merged code to Apps Script (Part 1) | setup | You | ⬜ |
 | 2 | 1 | Upload the Express Training company list → `COMPANIES` (Part 2) | setup | You | ⬜ |
-| 3 | 1 | Templates (steps 1–3) + SETTINGS + script properties (Part 2) | setup | You | ⬜ |
+| 3 | 1 | Templates (steps 1–3) + SETTINGS + script properties (Part 2) | setup | You | 🟨 templates + SETTINGS ✅; API properties pending |
 | 4 | 1 | Buy ZeroBounce PAYG credits ~$20 (never expire) | 💰 | You | ⬜ |
 | **— WARM-UP TRACK (clock already running) —** |
 | 5 | — | Warmup Inbox automated warm-up running | ops | You | ✅ running |
@@ -49,6 +49,25 @@ project and the file:
 
 Total planned spend: **~$60** (ZeroBounce $20 one-time + one Hunter month ~$40). Everything
 else is free tier.
+
+---
+
+## Verified Progress — 2026-07-20
+
+- ✅ Warmup Inbox automated warm-up is running.
+- ✅ `setupHostingerWorkflow()` completed without an error and added the Hostinger columns.
+- ✅ The bound spreadsheet displays the **Cold Email** menu.
+- ✅ `QUEUE` has the complete 21-column campaign + Hostinger header schema.
+- ✅ `ACTIVITY_LOG` has the correct six headers: `timestamp`, `stage`, `action`, `contactId`,
+  `details`, `status`.
+- ✅ Retired Gmail-era SETTINGS keys were removed.
+- ✅ All nine current campaign SETTINGS rows were entered and verified.
+- ✅ All three email sequence templates were entered with sequence steps 1, 2, and 3.
+- ⬜ Confirm all 25 campaign `.gs` files and `appsscript.json` exactly match current `main`.
+- ⬜ Confirm the campaign Triggers page contains exactly the two required triggers.
+- ⬜ Add `HUNTER_API_KEY`, `ZEROBOUNCE_API_KEY`, and `GEMINI_API_KEY` to Script Properties.
+- ⬜ Load the Express Training company list into `COMPANIES`.
+- ⬜ Add the first five researched decision-makers to `CONTACTS`.
 
 ---
 
@@ -101,7 +120,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
    (free key from [aistudio.google.com](https://aistudio.google.com)). `APOLLO_API_KEY` only if
    you ever use the dormant Apollo client.
 
-4. **Authorize the reduced scope set** by running one function:
+4. **✅ DONE — Authorize the reduced scope set** by running one function:
    1. In the campaign project's editor, open the file **`CampaignStateService.gs`** in the left
       file list.
    2. In the toolbar above the code, open the function dropdown (it sits between "Debug" and
@@ -114,7 +133,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
    4. When the run finishes, check the **Execution log** panel at the bottom: no red errors.
       This run also creates the Hostinger columns, which makes step 5 a verification.
 
-5. **Verify the Cold Email menu and columns:**
+5. **✅ DONE — Verify the Cold Email menu and columns:**
    1. Go back to the spreadsheet browser tab and **reload the page** (F5 / Cmd-R).
    2. Within ~5 seconds of loading, a **Cold Email** menu appears in the menu bar (right of
       "Help"). If it doesn't, the `onOpen` function isn't deployed — re-check that
@@ -144,20 +163,23 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
       enrichment functions spend paid API credits on every call.
    5. Final state check: the Triggers page lists exactly two triggers.
 
-7. **QUEUE header check (do not skip):**
+7. **✅ DONE — QUEUE header check (do not skip):**
    1. Open the **QUEUE** tab and read its header row (row 1).
-   2. It must contain **all 16** of these headers (any order, extra columns are fine):
+   2. It must contain these **16 campaign headers** (any order, extra columns are fine):
       `contactId`, `email`, `firstName`, `lastName`, `company`, `title`, `maConfirmed`,
       `roleIsRelevant`, `verificationResult`, `catchAll`, `wtfpRelevance`, `employeeSizeFit`,
       `industryFit`, `personalizationLine`, `emailsSent`, `status`.
-   3. For each one missing: click the first empty cell in row 1 and type the header exactly as
+   3. It must also contain the **five Hostinger columns** added in step 5:
+      `sequenceStep`, `subject`, `body`, `preparedAt`, `sentAt`. The authoritative final
+      `QUEUE` schema is therefore **21 required columns total**.
+   4. For each one missing: click the first empty cell in row 1 and type the header exactly as
       written above (camelCase; matching is case/space-insensitive but exact names keep the
       sheet readable).
-   4. Why this matters: QueueBuilder and FollowUpScheduler copy contact values into QUEUE **by
+   5. Why this matters: QueueBuilder and FollowUpScheduler copy contact values into QUEUE **by
       matching header names**. A missing QUEUE column arrives blank, and ApprovalGate then
       skips every prepared row with confusing failed checks.
 
-8. **SETTINGS cleanup (removes dead keys):**
+8. **✅ DONE — SETTINGS cleanup (removes dead keys):**
    1. Open the **SETTINGS** tab.
    2. Find any row whose key (column A) is `DRAFT_ONLY`, `REPLY_MONITOR_LOOKBACK_DAYS`,
       `REPLY_MONITOR_MAX_THREADS`, `BOUNCE_MONITOR_LOOKBACK_DAYS`, or
@@ -188,7 +210,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
    5. This must happen **before any mining** — `COMPANIES` is the dedupe baseline. If the list
      was already imported earlier, verify the row count matches your source and move on.
 
-10. **Templates — one row per sequence step.** Open the **TEMPLATES** tab:
+10. **✅ DONE — Templates — one row per sequence step.** Open the **TEMPLATES** tab:
     1. Header row 1 must read: `subject | body | sequenceStep`. Add the `sequenceStep` header
        if it's missing.
     2. **Row 2 = your initial email (step 1).** Fill `subject` and `body`; leave
@@ -224,7 +246,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
        If you'd rather not hear from me, just reply "stop" and I won't email again.
        ```
 
-11. **SETTINGS rows.** Open the **SETTINGS** tab:
+11. **✅ DONE — SETTINGS rows.** Open the **SETTINGS** tab:
     1. Header row 1 must read: `key | value` (lowercase is fine).
     2. Add one row per setting below — key in column A, value in column B, nothing else in
        the row:

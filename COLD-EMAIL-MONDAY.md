@@ -6,7 +6,7 @@ references (`docs/HOSTINGER-RUNBOOK.md`, `manual-email-warmup-gmail/README.md`, 
 exist for depth, but every step you must *do* is written inline here, in order.
 `docs/LAUNCH-RUNBOOK.md` is the retired Gmail-era archive — never follow it.
 
-Status date: **2026-07-20**. All code through PR #73 is merged. The Warmup Inbox automated
+Status date: **2026-07-20**. All setup progress through PR #76 is merged. The Warmup Inbox automated
 warm-up is **already running** — its start date is the clock the timeline below runs on.
 
 Two Apps Script projects exist in this plan. When a step says to run a function, it names the
@@ -25,7 +25,7 @@ project and the file:
 |---|---|---|---|---|---|
 | **— GROUNDWORK —** |
 | 1 | 1 | Deploy all merged code to Apps Script (Part 1) | setup | You | ⬜ |
-| 2 | 1 | Upload the Express Training company list → `COMPANIES` (Part 2) | setup | You | ⬜ |
+| 2 | 1+ | Research the staged company list, then load Ready rows → `COMPANIES` (Parts 2 + 4) | ops | You | ⬜ |
 | 3 | 1 | Templates (steps 1–3) + SETTINGS + script properties (Part 2) | setup | You | 🟨 templates + SETTINGS ✅; API properties pending |
 | 4 | 1 | Buy ZeroBounce PAYG credits ~$20 (never expire) | 💰 | You | ⬜ |
 | **— WARM-UP TRACK (clock already running) —** |
@@ -37,7 +37,7 @@ project and the file:
 | 9 | done | Phase 4 enrichment chain: discovery → verification → queue (PR #67) | code | Claude | ✅ merged |
 | 10 | 2–3 | Phase 5 free sourcing funnel: data.mass.gov client, criteria filter, CANDIDATES staging + promotion, website scraper, pattern-guesser + MX check, Snov client | code | Claude | ⬜ **next build** |
 | **— ENRICHMENT & MINING OPS —** |
-| 11 | 1+ | Apollo manual research → CONTACTS rows (Part 4, continuous) | ops | You | ⬜ |
+| 11 | 1+ | Segmented Apollo/Prospeo/Skrapp/Snov research → `COMPANIES` + `CONTACTS` (Part 4) | ops | You | ⬜ |
 | 12 | 2+ | Enrichment runs: discovery → verification → queue (Part 4) | ops | You | ⬜ |
 | 13 | 3+ | Personalization drafts + human review per batch (Part 4) | ops | You | ⬜ |
 | 14 | 3–8 | Monthly free-credit mining cycles (Hunter 25 + Snov 50 + scraper; Part 5) | ops | You | ⬜ after item 10 |
@@ -65,11 +65,14 @@ else is free tier.
 - ✅ All three email sequence templates were entered with sequence steps 1, 2, and 3.
 - ✅ `CONTACTS` and `QUEUE` use `lastName`; the legacy `linkedin` header was replaced with
   `linkedinUrl`.
+- ✅ The 258 source records are staged in `business-lists/Prospect_Research_Staging.xlsx`:
+  229 employer prospects have fixed tool assignments and 29 institution-led records are held
+  for manual review.
 - ⬜ Confirm all 25 campaign `.gs` files and `appsscript.json` exactly match current `main`.
 - ✅ The campaign Triggers page contains exactly the two required triggers, staggered as
   `runFollowUpSchedulerTrigger` at 8–9am and `runDashboardRefreshTrigger` at 6–7pm.
 - ⬜ Add `HUNTER_API_KEY`, `ZEROBOUNCE_API_KEY`, and `GEMINI_API_KEY` to Script Properties.
-- ⬜ Load the Express Training company list into `COMPANIES`.
+- ⬜ Research the 229 staged employer prospects and load only `Ready` rows into `COMPANIES`.
 - ⬜ Add the first five researched decision-makers to `CONTACTS`.
 
 ---
@@ -195,23 +198,56 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
 
 ## Part 2 — Data foundation (same sitting)
 
-9. **Upload the company list → `COMPANIES`.** The import function (`runImportPipeline`) takes
-   the rows as an argument, so it can't be run from the editor's Run button — paste directly
-   into the tab and apply its cleaning rules yourself:
-   1. Open the **COMPANIES** tab. Confirm header row 1 reads:
+9. **Use the staging workbook; do not paste the raw source lists into `COMPANIES`.** Open or
+   upload [`business-lists/Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx)
+   to Google Sheets. This is the single research source of truth built from `ChatGPT.docx` and
+   `Gemini.docx`:
+   1. The workbook contains **258 unique source records**. `MASTER_QUEUE` contains the 229
+      employer prospects to research. `HOLD_REVIEW_29` contains 10 schools and 19
+      institution-led records that stay out of this employer campaign unless you explicitly
+      review and promote them.
+   2. The exact, non-overlapping assignments are fixed in the workbook:
+
+      | Tool tab | Exact rows | Purpose |
+      |---|---:|---|
+      | `APOLLO_59` | 59 | All 59 records whose exported source retained a live official citation URL |
+      | `PROSPEO_70` | 70 | First 70 employer/grantee rows from `Gemini.docx` |
+      | `SKRAPP_50` | 50 | Next 50 employer/grantee rows from `Gemini.docx` |
+      | `SNOV_50` | 50 | Final 50 employer/grantee rows from `Gemini.docx` |
+      | `HOLD_REVIEW_29` | 29 | Education- or institution-led records; excluded by default |
+
+   3. **Edit only `MASTER_QUEUE`.** The four tool tabs are exact view-only queues whose status
+      cells follow the master. The first eight master columns already match the campaign
+      schema exactly: `company | website | industry | city | state | employeeSize | sourceUrl |
+      wtfpRelevance`. The research and decision-maker columns live to their right.
+   4. The 59 Apollo rows retained embedded official URLs. The 170 active Gemini rows retained
+      citation labels such as `[cite: 27]` but **not their live URLs**. Their `sourceUrl` cells
+      intentionally start blank; fill each with the best live evidence you confirm during
+      research (prefer an official grant record; otherwise use the official company page and
+      explain that substitution in `researchNotes`).
+   5. Work the exact process in Part 4 step 21. A row is not importable merely because its
+      company name exists. It becomes `Ready` only after the company, domain, source,
+      Massachusetts location, industry/size, and one relevant decision-maker are checked.
+   6. `IMPORT_READY` automatically exposes only the first eight campaign fields for rows whose
+      `reviewStatus` is `Ready`. Before importing, filter column A to **nonblank** so empty
+      formula rows are hidden.
+   7. Open the campaign spreadsheet's **COMPANIES** tab and confirm row 1 is exactly:
       `company | website | industry | city | state | employeeSize | sourceUrl | wtfpRelevance`.
-   2. In your source spreadsheet/CSV, arrange columns in exactly that order.
-   3. Normalize before pasting (this is what the import code would have done):
-      - **website**: lowercase, strip `http://`/`https://`, strip leading `www.`, strip any
-        trailing `/` — e.g. `https://www.AcmeCo.com/` becomes `acmeco.com`.
-      - **state**: `MA` for every row (this list is Massachusetts-only by definition).
-      - **wtfpRelevance**: `TRUE` for WTFP grantees, `FALSE` otherwise.
-      - **No duplicate websites** — in your source sheet, sort by the website column and delete
-        exact repeats. The `website` value is the dedupe key for all future mining.
-   4. Click cell **A2** of COMPANIES and paste. Spot-check a few rows landed in the right
-      columns.
-   5. This must happen **before any mining** — `COMPANIES` is the dedupe baseline. If the list
-     was already imported earlier, verify the row count matches your source and move on.
+      Copy visible nonblank rows **A:H** from `IMPORT_READY`, click **COMPANIES!A2**, and paste
+      **values only**. Never paste the formulas themselves into the campaign sheet.
+   8. Normalize before marking `Ready`:
+      - `website`: lowercase bare domain only; remove `http://`, `https://`, leading `www.`,
+        paths, and trailing `/` (`https://www.AcmeCo.com/about` → `acmeco.com`).
+      - `sourceUrl`: a full `https://...` audit URL, not a bare domain.
+      - `state`: `MA`; `wtfpRelevance`: Boolean `TRUE` for these prequalified grant-source rows.
+      - `employeeSize`: preserve the displayed research-tool band (`11-50`, `51-200`, etc.).
+      - No duplicate websites. The domain is the campaign's dedupe key; resolve duplicates in
+        `MASTER_QUEUE` before copying anything.
+   9. After pasting, copy each Ready row's decision-maker values from `MASTER_QUEUE` columns
+      `decisionMakerFirstName`, `decisionMakerLastName`, `title`, and `linkedinUrl` into a new
+      **CONTACTS** row. `CONTACTS.company` must be copied verbatim from `COMPANIES.company`.
+      If `discoveredEmail` is present, copy it too and preserve `emailSource`; otherwise leave
+      email blank for the campaign discovery step.
 
 10. **✅ DONE — Templates — one row per sequence step.** Open the **TEMPLATES** tab:
     1. Header row 1 must read: `subject | body | sequenceStep`. Add the `sequenceStep` header
@@ -449,9 +485,9 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
 The full machine, end to end:
 
 ```
-COMPANIES (loaded in Part 2)
-   ↓ you: Apollo web UI research (step 21)
-CONTACTS row: company, firstName, lastName, title, linkedinUrl — email blank
+Prospect_Research_Staging.xlsx (229 employer prospects, four exact tool queues)
+   ↓ you: company + decision-maker research (step 21)
+Ready row → COMPANIES + CONTACTS
    ↓ runContactDiscoveryTrigger()    — Hunter finds the email (spends credits)
    ↓ runContactVerificationTrigger() — ZeroBounce verifies (spends credits)
    ↓ runPersonalizationDraftTrigger() — Gemini drafts a line from the company site (free)
@@ -461,26 +497,90 @@ CONTACTS row: company, firstName, lastName, title, linkedinUrl — email blank
    ↓ you: copy into Hostinger Webmail, send, Cold Email → Mark selected email sent
 ```
 
-21. **Apollo research (continuous, no rush, completely free):**
-    1. Create a free account at [app.apollo.io](https://app.apollo.io) (no card needed).
-       Searching and viewing profiles costs nothing — only *revealing* an email/phone burns
-       credits, and you never do that (Hunter + ZeroBounce do it cheaper).
-    2. For each `COMPANIES` row that has no CONTACTS row yet: in Apollo, click **Search →
-       Companies**, paste the company's website domain into the search box (domain beats name
-       for exact matches), and open the company.
-    3. Click the **People** tab on the company page → filter or scan **Job Titles** for your
-       targets, in priority order: Owner / Founder / CEO / President → Operations
-       Manager/Director → HR Manager → Training/L&D Manager. Pick **one** contact per company
-       (the sequence logic emails one person per company at a time).
-    4. From the person's profile, copy: first name, last name, exact title, and LinkedIn URL
-       (right-click the LinkedIn icon → Copy link address). **Do not click "Access email."**
-    5. Add the row to **CONTACTS**: `company` — **copy the cell value verbatim from the
-       COMPANIES tab** (click the COMPANIES cell, Ctrl+C, paste — don't retype; discovery
-       joins CONTACTS→COMPANIES on this exact name to find the domain, and "Acme" vs "Acme
-       Inc." = no join = no email, Gotcha #8) — then `firstName`, `lastName`, `title`,
-       `linkedinUrl`. Leave `email` and `contactId` blank (email is the fallback row key).
-    6. While the profile is open, note anything personalization-worthy (a program they run, a
-       recent post) in a scratch column — it makes draft review (step 23) faster.
+21. **Run the four research lanes (continuous while warm-up runs):**
+
+    **One-time account setup — keep the outreach mailbox out of these tools:**
+    1. Create one legitimate free account at [Apollo](https://app.apollo.io),
+       [Prospeo](https://prospeo.io/sign-up), [Skrapp](https://skrapp.io), and
+       [Snov.io](https://snov.io). Use **`savetime@goldflamingoai.com`** for account ownership
+       and product notifications, not `adam@goldflamingoailabs.com`.
+    2. Do **not** connect either mailbox, import a sending list, create a sequence, enable a
+       warm-up feature, or send outreach from any research tool. Hostinger remains the only
+       campaign sender and Warmup Inbox remains the only automated warm-up service.
+    3. Use one account per service. Do not use aliases, VPNs, or duplicate free accounts to
+       evade limits. Free plans can be restricted for that behavior.
+    4. Current free allowances (checked 2026-07-20; confirm the account page before spending):
+       Apollo lists 900 annual credits granted monthly; Prospeo gives 100/month; Skrapp gives
+       50/month plus 10 people searches/day and 5 company searches/day; Snov's Trial gives
+       50/month. Research-tool verification never replaces the final ZeroBounce check.
+
+    **The same row-by-row process for every assigned tool:**
+    1. Open [`Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx) →
+       `MASTER_QUEUE`. Filter `assignedTool` to the tool you are working and `reviewStatus` to
+       `Not Started`. The matching named tool tab is the audit list; do not type research into
+       it.
+    2. Set the row to `In Progress`. Search the **exact legal company name + Massachusetts
+       city**. When you have a domain, rerun the search by domain; domain is stronger than a
+       name match.
+    3. Confirm at least three signals before accepting the company: legal/brand name, official
+       domain, Massachusetts location, matching industry, or matching LinkedIn company page.
+       A directory, social profile, franchise parent, similarly named company in another state,
+       or parked domain is not the official website.
+    4. In `MASTER_QUEUE`, enter `website` as a bare domain, `industry`, the displayed
+       `employeeSize` band, and a full `sourceUrl`. Preserve useful grant/source context already
+       present; do not overwrite it with tool marketing copy.
+    5. Search the matched company's people. Choose **one** person in this order:
+       Owner/Founder/CEO/President → COO/General Manager/Operations leader → HR/People leader →
+       Training/Learning & Development leader. Reject advisors, former employees, consultants,
+       generic inboxes, and people whose employer does not match.
+    6. Enter `decisionMakerFirstName`, `decisionMakerLastName`, exact `title`, and the person's
+       full `linkedinUrl`. Add a factual personalization lead in `researchNotes` if one appears;
+       do not invent one.
+    7. Email discovery is optional in this pass. If the assigned service can return one
+       business email within the lane's budget, reveal **one person only**, then enter
+       `discoveredEmail` and `emailSource`. Never use a personal Gmail/Yahoo/Outlook address.
+       Do not spend a second credit chasing another person at the same company.
+    8. Set `matchConfidence`: `High` only when company/domain/location and person/employer/title
+       all agree; `Medium` when a legal-name/brand or location mismatch is defensible and
+       explained; `Low` when anything material remains uncertain. Set `Needs Review` for Low.
+    9. Set `reviewStatus=Ready` only when `website`, `industry`, `employeeSize`, `sourceUrl`,
+       decision-maker first/last name, title, and `linkedinUrl` are complete and the match is
+       High or reviewed Medium. Use `Rejected` for a closed, duplicate, out-of-state, consumer-
+       only, or otherwise unusable company.
+
+    **Exact lane instructions and pacing:**
+    1. **Apollo — `APOLLO_59`, 59 rows:** work roughly 10 companies per session for six
+       sessions. Search **Companies** by exact name + city, confirm the company, open its
+       **People** view, and capture one decision-maker. Do not click **Access email** in this
+       first pass; preserve Apollo's monthly credits for hard cases. If Apollo has no reliable
+       company/person match, set `Needs Review` and explain why.
+    2. **Prospeo — `PROSPEO_70`, 70 rows:** use **Company Search**, inspect free visible
+       results, and enrich only an exact company match. Company enrichment costs one credit;
+       reserve **70 of the 100 monthly credits** for these rows and keep 30 for person/email
+       exceptions. Work 10–15 rows per session. Never select more than the exact assigned row
+       and never bulk-enrich the whole source list.
+    3. **Skrapp — `SKRAPP_50`, 50 rows:** use **Companies Search** for no more than **5 assigned
+       companies/day**, then **People Search** for no more than one chosen decision-maker per
+       company (the free cap is 10 people searches/day). Ten research days clears the queue.
+       Viewing searches is free; reveal/enrich at most one email per company and stop at the
+       50-credit monthly allowance.
+    4. **Snov — `SNOV_50`, 50 rows:** use **Database Search** to confirm the company, then
+       **Domain Search** or the company profile only for the one target person. Budget **one
+       credit per assigned company**; 10 companies/session over five sessions clears the
+       queue. Do not connect the Hostinger mailbox, use Snov campaigns, or activate Snov's
+       warm-up slot.
+    5. **GetProspect fallback — no preassigned rows:** create one free account only after a
+       primary lane produces `Needs Review` or finds the person but no usable email. Its free
+       plan currently includes 50 valid email finds and 100 verifications/month. Search the
+       exact domain + known name/title, reveal one result, record `emailSource=GetProspect`,
+       and return to the primary row. It is an exception queue, not a fifth copy of all 229
+       companies.
+
+    **Move completed rows into the campaign:** follow Part 2 step 9.6–9.9. Paste Ready A:H
+    values from `IMPORT_READY` into `COMPANIES`, then add the same row's person fields to
+    `CONTACTS`. `CONTACTS.company` must match `COMPANIES.company` verbatim; leave `contactId`
+    blank. If no email was found, leave `email` blank for Hunter. If one was found, copy it but
+    still run ZeroBounce before anything reaches QUEUE.
 
 22. **Run the enrichment functions** — all in the **campaign project**, all selected from the
     function dropdown with **`Code.gs` open**, all manual-run:
@@ -517,7 +617,7 @@ CONTACTS row: company, firstName, lastName, title, linkedinUrl — email blank
     5. **`runEnrichmentPipeline`** chains 1 → 2 → 4 in one click (personalization stays
        separate on purpose — it has a human step in the middle).
 
-23. **Personalization review** — fold into your Apollo/enrichment sessions: every contact you
+23. **Personalization review** — fold into your research/enrichment sessions: every contact you
     intend to queue needs a human-approved `personalizationLine` before `runPreparationPipeline`
     will pass it (ApprovalGate hard-blocks blanks).
 
@@ -525,17 +625,27 @@ CONTACTS row: company, firstName, lastName, title, linkedinUrl — email blank
 
 ## Part 5 — Free-tier mining strategy (+ the two purchases)
 
-| Service | Free tier | Role |
+Free-plan figures below were checked on **2026-07-20**; confirm each account page before a
+session because providers change quotas without preserving old documentation.
+
+| Service | Current free allowance | Role in this plan |
 |---|---|---|
 | data.mass.gov (Socrata) | Unlimited | Company sourcing (Phase 5 build — roadmap #10) |
 | Website scraper + Gemini | Unlimited | Email extraction from company sites (Phase 5) |
 | Pattern-guess + MX check | Unlimited | Free Hunter-bypass, verified by ZeroBounce (Phase 5) |
+| [Apollo](https://www.apollo.io/pricing) | 900 annual credits granted monthly | 59-company web research lane; avoid reveals in first pass |
+| [Prospeo](https://help.prospeo.io/en/article/how-to-create-an-account-on-prospeo-for-free-5inxir/) | 100 credits/month | 70-company lane; reserve 70 company credits + 30 exceptions |
+| [Skrapp](https://skrapp.io/pricing) | 50 credits/month; 10 people + 5 company searches/day | 50-company lane paced over 10 research days |
+| [Snov](https://snov.io/knowledgebase/pricing-plans-overview/) | 50 credits/month | 50-company lane; one credit maximum per company |
+| [GetProspect](https://getprospect.com/pricing) | 50 valid emails + 100 verifications/month | Fallback only after a primary lane fails |
 | Hunter | 25 finds/mo | Fallback finder for the holdouts |
-| Snov | ~50 finds/mo | Second finder (Phase 5 client) |
 | ZeroBounce | PAYG pack | Verify **everything**, every source, always |
 
-Cadence math: 3 sends/day ≈ 65–90 contacts/month. Free tiers + scraper cover it once Phase 5
-lands. Bank credits monthly (they reset, don't roll over). **Week 5–6:** if the backlog is big,
+Cadence math: 3 sends/day ≈ 65–90 contacts/month. The four exact workbook lanes can be
+researched during the remaining warm-up window without duplicating a company across services.
+Do not assume credits roll over: Prospeo/Snov reset; Skrapp's free plan does not advertise
+rollover; Apollo credits expire at the billing-cycle boundary. GetProspect is the exception and
+currently rolls unused credits up to one monthly allowance. **Week 5–6:** if the backlog is big,
 buy one Hunter Starter month (~$40 ≈ 500 finds ≈ 5–6 months runway), batch-process, cancel
 before renewal (calendar reminder — monthly billing only, never annual: Gotcha #4).
 

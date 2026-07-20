@@ -64,7 +64,8 @@ else is free tier.
 - ✅ All nine current campaign SETTINGS rows were entered and verified.
 - ✅ All three email sequence templates were entered with sequence steps 1, 2, and 3.
 - ⬜ Confirm all 25 campaign `.gs` files and `appsscript.json` exactly match current `main`.
-- ⬜ Confirm the campaign Triggers page contains exactly the two required triggers.
+- ✅ The campaign Triggers page contains exactly the two required triggers, staggered as
+  `runFollowUpSchedulerTrigger` at 8–9am and `runDashboardRefreshTrigger` at 6–7pm.
 - ⬜ Add `HUNTER_API_KEY`, `ZEROBOUNCE_API_KEY`, and `GEMINI_API_KEY` to Script Properties.
 - ⬜ Load the Express Training company list into `COMPANIES`.
 - ⬜ Add the first five researched decision-makers to `CONTACTS`.
@@ -144,7 +145,7 @@ All steps in this Part happen in the **campaign project** (Sheet → Extensions 
       `body`, `preparedAt`, `sentAt`; the **CONTACTS** tab's header row includes `status`,
       `emailsSent`, `lastSentAt`.
 
-6. **Triggers** — in the campaign project's editor, click the **clock icon (Triggers)** in the
+6. **✅ DONE — Triggers** — in the campaign project's editor, click the **clock icon (Triggers)** in the
    left icon rail:
    1. **Delete retired triggers:** for any row whose Function column says
       `runReplyMonitorTrigger` or `runBounceMonitorTrigger` → click the **⋮ (three-dot) menu**

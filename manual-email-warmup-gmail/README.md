@@ -49,11 +49,18 @@ content hashes logged so repeating Gemini output can be audited.
    loop mid-ramp. Published-unverified tokens do not expire; the only cost is an extra
    "unverified app" warning during each account's one-time consent flow.
 
+> ⚠️ **The verification banner is expected.** `https://mail.google.com/` is a restricted
+> scope. For four Gmail accounts you own, keep the app **External + In production**, do not
+> submit it for verification, and use **Advanced → Go to warmup-infra (unsafe)** during each
+> authorization. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
+
 ### 2. Refresh token per seed account (4×)
 For each seed Gmail, run the OAuth consent flow once with scope
 `https://mail.google.com/` and capture the refresh token — easiest via
 [OAuth Playground](https://developers.google.com/oauthplayground) with "Use your own
-OAuth credentials" checked. Store each token as a script property (`SEED_TOKEN_1`…`4`).
+OAuth credentials" checked. Store each token under a descriptive email-derived Script Property
+name, such as `SEED_TOKEN_SEED_ONE_GMAIL` for `seed.one@gmail.com`, then put that exact property
+name beside the address in `SEED_ACCOUNTS.tokenPropertyKey`.
 
 ### 3. Hostinger Email API token
 Hostinger Panel → Emails → API → generate a token scoped to the outreach domain's order.
@@ -71,6 +78,11 @@ default path in `HostingerMailClient.gs` is overridable via `HOSTINGER_SEND_ENDP
 7. Send one real test: `sendWarmupEmail('you@gmail.com', 'test', 'test')`, then open the
    received message → Show original → confirm the `Received:` chain shows Hostinger (no
    google.com hop) and DKIM `d=` is the outreach domain.
+
+Property naming rule: `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are hardcoded lookup keys and
+must not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional labels
+for humans and are ignored by the code. Seed-token property names are user-defined and are read
+dynamically from the Sheet.
 
 ### 5. Triggers
 - `runWarmupSendTrigger` — time-driven, daily, morning hours.

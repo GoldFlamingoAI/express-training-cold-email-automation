@@ -11,15 +11,20 @@ HOSTINGER_API_TOKEN=<bearer token from Hostinger Panel -> Emails -> API>
 # HOSTINGER_API_BASE_URL=https://api.mail.hostinger.com
 # HOSTINGER_SEND_ENDPOINT=<full URL if the documented send path differs>
 
+# Optional documentation-only labels. The code does not read these two properties.
+OAUTH_PROJECT_OWNER_EMAIL=<exact Gmail account that owns the warmup-infra Cloud project>
+OAUTH_CLOUD_PROJECT_ID=<exact Google Cloud project ID, not only its display name>
+
+# Required exact property names. SeedAccountService.gs reads these names literally.
 OAUTH_CLIENT_ID=<from the warm-up Google Cloud project>
 OAUTH_CLIENT_SECRET=<from the warm-up Google Cloud project>
-# One refresh token per seed Gmail; the property name goes in SEED_ACCOUNTS.tokenPropertyKey.
-# 4 seeds is the recommended count (see README) — add more SEED_TOKEN_N properties only if
-# you deliberately choose to run more than 4.
-SEED_TOKEN_1=<refresh token for seed account 1>
-SEED_TOKEN_2=<refresh token for seed account 2>
-SEED_TOKEN_3=<refresh token for seed account 3>
-SEED_TOKEN_4=<refresh token for seed account 4>
+
+# One refresh token per seed Gmail. These names are examples and may be renamed to match the
+# real accounts. Put each exact property name in that email's SEED_ACCOUNTS.tokenPropertyKey cell.
+SEED_TOKEN_SEED_ONE_GMAIL=<refresh token for seed.one@gmail.com>
+SEED_TOKEN_SEED_TWO_GMAIL=<refresh token for seed.two@gmail.com>
+SEED_TOKEN_SEED_THREE_GMAIL=<refresh token for seed.three@gmail.com>
+SEED_TOKEN_SEED_FOUR_GMAIL=<refresh token for seed.four@gmail.com>
 
 GEMINI_API_KEY=<Google AI Studio key; optional — local templates are the fallback>
 

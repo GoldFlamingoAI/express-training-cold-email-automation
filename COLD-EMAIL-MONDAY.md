@@ -591,16 +591,41 @@ Optional properties:
     > credentials grants the automation the full Gmail access represented by the restricted scope.
 
 18. **[HOSTINGER HPANEL → APPS SCRIPT] Create and store the sending API token:**
-    1. Open [Hostinger hPanel](https://hpanel.hostinger.com) in the regular browser → **Emails**
-       → select the outreach domain `goldflamingoailabs.com`, not the business domain.
-    2. Open the email management page's **API / Email API** section. If Hostinger has moved it,
-       open [Hostinger Mail API documentation](https://api.mail.hostinger.com) and follow its
-       current token-generation location.
-    3. Generate a token named `warmup-layer`. If Hostinger offers a scope, restrict it to the
-       outreach domain/mailbox. Copy the token immediately; it may be shown only once.
-    4. Switch to the regular Apps Script tab → **Project Settings → Script Properties → Edit
-       script properties → Add script property**. Property = `HOSTINGER_API_TOKEN`; Value = the
-       complete Hostinger token. Save. Never put it in the Sheet or source code.
+    1. In the regular browser, open [Hostinger hPanel](https://hpanel.hostinger.com) and sign
+       into the Hostinger account that owns the outreach email plan. This is not Hostinger
+       Webmail, Google Cloud, Apps Script, or OAuth Playground.
+    2. In hPanel's **left sidebar**, click **Emails**. Find and select the email plan/domain
+       `goldflamingoailabs.com`. Do not select the business domain `goldflamingoai.com`.
+    3. In the **secondary sidebar for `goldflamingoailabs.com`**, scroll down and click
+       **Agentic mail**. On the Agentic mail page, click **API**. Do not use hPanel's general
+       account, hosting, or VPS API page; this project needs a **Hostinger Mail API** token.
+    4. Click **Create API token** in the upper-right corner.
+    5. In **Token name**, enter `warmup-layer`.
+    6. Under **Mailbox access**, select **Selected mailboxes**, then check only
+       `adam@goldflamingoailabs.com`. Do not choose **All mailboxes**; the automation needs only
+       the outreach mailbox.
+    7. Review the displayed permissions. Hostinger currently grants **Manage all SMTP/IMAP
+       actions** and **Manage webhooks** together. This is a powerful token, which is why the
+       single-mailbox restriction in the previous substep matters.
+    8. Click **Create token**. Copy the complete token from the confirmation screen
+       immediately; Hostinger displays it only once. Do not put it in a screenshot, chat,
+       email, Google Sheet, source file, or GitHub.
+    9. **Switch websites:** return to the regular-browser `Manual Email Warmup` Apps Script
+       project at [script.google.com](https://script.google.com). Click **Project Settings**
+       (gear icon in the left rail) → scroll to **Script Properties** → **Edit script
+       properties** → **Add script property**.
+    10. In the left **Property** field, type exactly `HOSTINGER_API_TOKEN`. In the right
+        **Value** field, paste the complete token copied from Hostinger. Click **Save script
+        properties**. The property name is not the token; the secret belongs in Value.
+    11. Do not add the Hostinger API URL or a mailbox resource ID as a Script Property. The
+        official [Agentic Mail setup guide](https://www.hostinger.com/support/how-to-use-agentic-mail-in-hpanel/)
+        and [Hostinger Mail API reference](https://api.mail.hostinger.com/) are the sources of
+        truth if hPanel labels move later.
+
+    > ⚠️ **Treat `HOSTINGER_API_TOKEN` like an email password.** Anyone holding it can perform
+    > the mail actions allowed by its scope. If it is exposed, return to **hPanel → Emails →
+    > `goldflamingoailabs.com` → Agentic mail → API**, revoke/delete `warmup-layer`, create a
+    > replacement, and overwrite the Script Property Value before running anything again.
 
 19. **[APPS SCRIPT → GOOGLE SHEET → RECEIVING GMAIL] Test the complete send path:**
     1. In Apps Script → **Editor → `Warmup.gs`**. Select `validateWarmupConfiguration` in the

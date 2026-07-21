@@ -6,8 +6,9 @@ references (`docs/HOSTINGER-RUNBOOK.md`, `manual-email-warmup-gmail/README.md`, 
 exist for depth, but every step you must *do* is written inline here, in order.
 `docs/LAUNCH-RUNBOOK.md` is the retired Gmail-era archive — never follow it.
 
-Status date: **2026-07-20**. All setup progress through PR #76 is merged. The Warmup Inbox automated
-warm-up is **already running** — its start date is the clock the timeline below runs on.
+Status date: **2026-07-21**. All setup progress through PR #90 is merged. The Warmup Inbox automated
+warm-up is **already running** — its start date is the clock the timeline below runs on. Manual
+warm-up layer triggers install **August 13**; official launch target is **September 17**.
 
 Two Apps Script projects exist in this plan. When a step says to run a function, it names the
 project and the file:
@@ -29,9 +30,9 @@ project and the file:
 | 3 | 1 | Templates (steps 1–3) + SETTINGS + script properties (Part 2) | setup | You | 🟨 templates + SETTINGS ✅; API properties pending |
 | 4 | 1 | Buy ZeroBounce PAYG credits ~$20 (never expire) | 💰 | You | ⬜ |
 | **— WARM-UP TRACK (clock already running) —** |
-| 5 | — | Warmup Inbox automated warm-up running | ops | You | ✅ running |
-| 6 | 1–2 | Manual warm-up layer setup (Part 3) — **join week 2–3 of the ramp** | setup | You | ⬜ deadline-sensitive |
-| 7 | 2–8 | Warm-up runs; weekly DAILY_SUMMARY glance | ops | You | ⬜ |
+| 5 | — | Warmup Inbox automated warm-up running (started July 16) | ops | You | ✅ running |
+| 6 | 4 | Manual warm-up layer setup (Part 3) — **triggers install August 13** | setup | You | ⬜ deadline-sensitive |
+| 7 | 4–9 | Warm-up runs; weekly DAILY_SUMMARY glance | ops | You | ⬜ |
 | **— CODE (all Claude-built) —** |
 | 8 | done | Campaign runtime, Hostinger migration, gap closures (PRs #62–#66, #68) | code | Claude | ✅ merged |
 | 9 | done | Phase 4 enrichment chain: discovery → verification → queue (PR #67) | code | Claude | ✅ merged |
@@ -40,12 +41,12 @@ project and the file:
 | 11 | 1+ | Segmented Apollo/Prospeo/Skrapp/Snov research → `COMPANIES` + `CONTACTS` (Part 4) | ops | You | ⬜ |
 | 12 | 2+ | Enrichment runs: discovery → verification → queue (Part 4) | ops | You | ⬜ |
 | 13 | 3+ | Personalization drafts + human review per batch (Part 4) | ops | You | ⬜ |
-| 14 | 3–8 | Monthly free-credit mining cycles (Hunter 25 + Snov 50 + scraper; Part 5) | ops | You | ⬜ after item 10 |
-| 15 | 5–6 | One Hunter paid month (~$40): batch the stocked backlog, then cancel | 💰 | You | ⬜ |
-| **— LAUNCH (week 6–8 from warm-up start) —** |
-| 16 | 4–5 | Verification burst near end of warm-up (freshness — Gotcha #3) | ops | You | ⬜ |
-| 17 | 6–8 | Smoke test, first sends at 3/day, taper warm-up layer (Part 6) | ops | You | ⬜ |
-| 18 | 6–8+ | Daily reply triage + weekly deliverability/backup routine (Part 7) | ops | You | ⬜ |
+| 14 | 3–9 | Monthly free-credit mining cycles (Hunter 25 + Snov 50 + scraper; Part 5) | ops | You | ⬜ after item 10 |
+| 15 | 7–8 | One Hunter paid month (~$40): batch the stocked backlog, then cancel | 💰 | You | ⬜ |
+| **— LAUNCH (target: September 17, 2026 — 9 weeks from warm-up start) —** |
+| 16 | 7–8 | Verification burst near end of warm-up (freshness — Gotcha #3) | ops | You | ⬜ |
+| 17 | 9 | Smoke test, first sends at 3/day, taper warm-up layer (Part 6) | ops | You | ⬜ |
+| 18 | 9+ | Daily reply triage + weekly deliverability/backup routine (Part 7) | ops | You | ⬜ |
 
 Total planned spend: **~$60** (ZeroBounce $20 one-time + one Hunter month ~$40). Everything
 else is free tier.
@@ -1031,16 +1032,24 @@ Cadence math: 3 sends/day ≈ 65–90 contacts/month. The four exact workbook la
 researched during the remaining warm-up window without duplicating a company across services.
 Do not assume credits roll over: Prospeo/Snov reset; Skrapp's free plan does not advertise
 rollover; Apollo credits expire at the billing-cycle boundary. GetProspect is the exception and
-currently rolls unused credits up to one monthly allowance. **Week 5–6:** if the backlog is big,
-buy one Hunter Starter month (~$40 ≈ 500 finds ≈ 5–6 months runway), batch-process, cancel
-before renewal (calendar reminder — monthly billing only, never annual: Gotcha #4).
+currently rolls unused credits up to one monthly allowance. **Week 7–8 (late August/early
+September, ahead of the September 17 launch):** if the backlog is big, buy one Hunter Starter
+month (~$40 ≈ 500 finds ≈ 5–6 months runway), batch-process, cancel before renewal (calendar
+reminder — monthly billing only, never annual: Gotcha #4).
 
 **Verification freshness (Gotcha #3):** discovery barely decays; verification does. Discover
 early and continuously; run the big *verification* burst in the last 1–2 weeks before launch.
 
 ---
 
-## Part 6 — Smoke test & launch (week 6–8 from warm-up start)
+## Part 6 — Smoke test & launch (target: **September 17, 2026**, 9 weeks from warm-up start)
+
+Warmup Inbox started July 16; the manual layer joins August 13 (week 4) and needs its full
+21-day ramp to reach mature engagement, which lands ~September 3. September 17 gives 2 weeks
+of full-stride manual-layer signal before launch, on top of Warmup Inbox's own 9-week run —
+deliberately more conservative than the 6–8 week floor. If either dashboard looks unhealthy on
+September 17, slip a week rather than launch on schedule; nothing else in this plan depends on
+hitting this date exactly.
 
 Preconditions: warm-up window elapsed with no critical warnings (Warmup Inbox dashboard +
 Postmaster Tools), QUEUE populated, personalization lines human-approved, templates in place.

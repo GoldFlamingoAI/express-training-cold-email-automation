@@ -390,15 +390,21 @@ genuine history is plenty of recipient diversity; don't go below ~3.
        separate Chrome profile or an Incognito window and sign in fresh. If multiple Google
        accounts share the session, the consent screen may bind the token to the wrong one.
     2. Go to [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground).
-    3. Click the **⚙ gear icon** (top right) → check **"Use your own OAuth credentials"** →
-       paste the **Client ID** and **Client secret** from step 14.7 → Close.
+    3. Click the **⚙ gear icon** (top right) and set every one of these:
+       - **OAuth flow:** `Server-side`
+       - **Access type:** `Offline` — required for a refresh token
+       - **Force prompt:** `Consent Screen`
+       - Check **Use your own OAuth credentials**
+       - Paste the shared **Client ID** and **Client secret** from step 14.7 → **Close**.
     4. In the left panel, **Step 1**: ignore the API list — type directly into the
        **"Input your own scopes"** field: `https://mail.google.com/` → click
        **Authorize APIs**.
     5. Google's consent flow opens: pick the seed account → "Google hasn't verified this app"
        → **Advanced → Go to warmup-infra (unsafe)** (it's your own app) → **Allow**.
     6. Back in the Playground, **Step 2**: click **Exchange authorization code for tokens** →
-       copy the **Refresh token** value (starts with `1//`).
+       copy the **Refresh token** value (usually starts with `1//`). Do not copy the temporary
+       access token. If no refresh token appears, reopen the gear and confirm **Access type =
+       Offline** and **Force prompt = Consent Screen**, then authorize that Gmail again.
     7. Store it immediately in the **warm-up project's** Script Properties (created in step
        17) under a descriptive email-derived key — for example, the token for
        `seed.one@gmail.com` can use `SEED_TOKEN_SEED_ONE_GMAIL`. Seed-token property names are

@@ -386,32 +386,49 @@ genuine history is plenty of recipient diversity; don't go below ~3.
 15. **Generate the 4 refresh tokens** (repeat this loop once per seed account, ~3 min each —
     budget extra time for the two dormant accounts, which may trigger Google's "haven't seen
     this device" identity checks):
-    1. Open a browser window signed into **only the seed account you're minting** — use a
-       separate Chrome profile or an Incognito window and sign in fresh. If multiple Google
-       accounts share the session, the consent screen may bind the token to the wrong one.
-    2. Go to [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground).
-    3. Click the **⚙ gear icon** (top right) and set every one of these:
+    1. Open a new **Chrome Incognito** window (**File → New Incognito Window** on Mac or
+       **⋮ → New Incognito window** on Windows). Go to [gmail.com](https://mail.google.com),
+       sign into **only the one seed Gmail you are processing**, and confirm its address from
+       the profile circle at the top-right. Do not add the other Google accounts to this window.
+    2. In that same Incognito window, open
+       [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/). The page has
+       `Step 1`, `Step 2`, and `Step 3` stacked down the **left side**.
+    3. Click the **⚙ gear icon in the upper-right corner**. A white **OAuth 2.0
+       configuration** panel opens on the right. Set:
        - **OAuth flow:** `Server-side`
        - **Access type:** `Offline` — required for a refresh token
        - **Force prompt:** `Consent Screen`
        - Check **Use your own OAuth credentials**
-       - Paste the shared **Client ID** and **Client secret** from step 14.7 → **Close**.
-    4. In the left panel, **Step 1**: ignore the API list — type directly into the
-       **"Input your own scopes"** field: `https://mail.google.com/` → click
-       **Authorize APIs**.
-    5. Google's consent flow opens: pick the seed account → "Google hasn't verified this app"
-       → **Advanced → Go to warmup-infra (unsafe)** (it's your own app) → **Allow**.
-    6. Back in the Playground, **Step 2**: click **Exchange authorization code for tokens** →
-       copy the **Refresh token** value (usually starts with `1//`). Do not copy the temporary
-       access token. If no refresh token appears, reopen the gear and confirm **Access type =
-       Offline** and **Force prompt = Consent Screen**, then authorize that Gmail again.
-    7. Store it immediately in the **warm-up project's** Script Properties (created in step
-       17) under a descriptive email-derived key — for example, the token for
-       `seed.one@gmail.com` can use `SEED_TOKEN_SEED_ONE_GMAIL`. Seed-token property names are
-       **not hardcoded**; the exact key is mapped to its Gmail address in `SEED_ACCOUNTS` in
-       step 18. Never put the refresh-token value itself in the Sheet.
-    8. Between accounts: click the gear → keep credentials; sign out of the seed account or
-       switch profiles, then repeat from 15.1 with the next one.
+       - At the **bottom of that same right-hand panel**, paste the shared OAuth client into
+         **OAuth Client ID** and **OAuth Client secret**. Use the newly rotated secret if you
+         reset it. These same two values are reused for all four seed accounts.
+    4. Click the blue **Close** link at the **bottom-left of the configuration panel**. On the
+       main Playground page, look at the **bottom of the Step 1 panel on the left**. Paste
+       `https://mail.google.com/` into **Input your own scopes**, then click the blue
+       **Authorize APIs** button immediately to its right. Do not select an API from the long
+       list above it.
+    5. Google opens its account/consent screens. Confirm the displayed address is the seed Gmail
+       from step 15.1. If it is wrong, cancel rather than continuing. Click **Continue** as
+       needed. On **Google hasn't verified this app**, click **Advanced** near the bottom-left
+       → **Go to warmup-infra (unsafe)** → **Continue/Allow** on the Gmail-permission screen.
+    6. Google returns you to OAuth Playground. In the left column, click the collapsed bar
+       labeled **Step 2 — Exchange authorization code for tokens**, directly below Step 1.
+       Click the blue **Exchange authorization code for tokens** button inside Step 2.
+    7. Step 2 now displays both an **Access token** and a **Refresh token**. Copy the value in
+       **Refresh token** (usually starts with `1//`). Do **not** copy the Access token; it is
+       temporary. If Refresh token is blank, reopen the upper-right gear, confirm **Access
+       type = Offline** and **Force prompt = Consent Screen**, and repeat steps 15.4–15.7.
+    8. In your normal, non-Incognito browser where the **Manual Email Warmup** Apps Script
+       project is open, click **Project Settings (gear icon in the left rail)** → scroll to
+       **Script Properties** → **Edit script properties** → **Add script property**. Enter a
+       descriptive email-derived property name — for example, `seed.one@gmail.com` can use
+       `SEED_TOKEN_SEED_ONE_GMAIL` — paste the refresh token into **Value**, then click
+       **Save script properties**. Never put the token value itself in the Sheet.
+    9. In `Warmup Command Center` → `SEED_ACCOUNTS`, add the mapping:
+       `seed.one@gmail.com | SEED_TOKEN_SEED_ONE_GMAIL | TRUE`. The middle cell must match the
+       Script Property name exactly; the code uses that cell to find the right token.
+    10. Close the entire Incognito window. Open a brand-new Incognito window and repeat from
+        step 15.1 for the next seed Gmail. Never authorize two seed accounts in one session.
 
 16. **Hostinger Email API token:**
     1. Log into [hpanel.hostinger.com](https://hpanel.hostinger.com) → **Emails** → select

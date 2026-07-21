@@ -64,7 +64,8 @@ Google return a refresh token after **Exchange authorization code for tokens**. 
 under a descriptive email-derived Script Property name, such as
 `SEED_TOKEN_SEED_ONE_GMAIL` for `seed.one@gmail.com`, then put that exact property name beside
 the address in `SEED_ACCOUNTS.tokenPropertyKey`. Copy the refresh token, not the temporary access
-token.
+token. The full beginner click path, including where each control appears on the Playground and
+where to save the result in Apps Script, is in `COLD-EMAIL-MONDAY.md` step 15.
 
 ### 3. Hostinger Email API token
 Hostinger Panel → Emails → API → generate a token scoped to the outreach domain's order.

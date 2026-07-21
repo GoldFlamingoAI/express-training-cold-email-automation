@@ -100,7 +100,6 @@ const propertyValues = {
   OAUTH_CLIENT_ID: 'oauth-client-id',
   OAUTH_CLIENT_SECRET: 'oauth-client-secret',
   OAUTH_PROJECT_OWNER_EMAIL: 'owner@gmail.com',
-  OAUTH_CLOUD_PROJECT_ID: 'warmup-infra-123',
 };
 configuredSeeds.forEach((seed, index) => {
   propertyValues[seed.tokenPropertyKey] = `1//refresh-${index}`;
@@ -116,10 +115,10 @@ context.getWarmupSpreadsheet_ = () => ({
 });
 const logEntries = [];
 context.warmupLog = (...args) => logEntries.push(args);
-assert.deepEqual(
-  JSON.parse(JSON.stringify(context.validateWarmupConfiguration())),
-  { success: true, errors: [], warnings: [] }
-);
+const preflightSummary = JSON.parse(JSON.stringify(context.validateWarmupConfiguration()));
+assert.equal(preflightSummary.success, true);
+assert.deepEqual(preflightSummary.errors, []);
+assert.equal(preflightSummary.warnings.length, 1, 'missing optional project label should only warn');
 
 context.UrlFetchApp = {
   fetch: (url, options) => {

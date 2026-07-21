@@ -365,6 +365,14 @@ genuine history is plenty of recipient diversity; don't go below ~3.
        expire after 7 days**, which would kill the warm-up loop mid-ramp. Published-unverified
        tokens don't expire; the only cost is an extra "unverified app" warning during the
        consent flow in step 15 — expected, click through it.
+
+       > ⚠️ **Google verification warning — expected; do not submit for verification.**
+       > It appears because `https://mail.google.com/` is a **restricted scope** with full
+       > Gmail access. For the four accounts you own, keep the app **External + In
+       > production**, **do not submit for verification**, and ignore the verification banner.
+       > During each authorization, choose **Advanced → Go to warmup-infra (unsafe)**. You will
+       > remain under Google's unverified-app user cap; formal verification is only necessary
+       > for public distribution. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
     7. **Create the OAuth client:** ☰ → **APIs & Services → Credentials** → **+ Create
        Credentials → OAuth client ID** →
        - Application type: **Web application**
@@ -392,8 +400,10 @@ genuine history is plenty of recipient diversity; don't go below ~3.
     6. Back in the Playground, **Step 2**: click **Exchange authorization code for tokens** →
        copy the **Refresh token** value (starts with `1//`).
     7. Store it immediately in the **warm-up project's** Script Properties (created in step
-       17) as `SEED_TOKEN_1` … `SEED_TOKEN_4` — one property per account, and write down
-       which Gmail address got which number; you'll need the mapping in step 18.
+       17) under a descriptive email-derived key — for example, the token for
+       `seed.one@gmail.com` can use `SEED_TOKEN_SEED_ONE_GMAIL`. Seed-token property names are
+       **not hardcoded**; the exact key is mapped to its Gmail address in `SEED_ACCOUNTS` in
+       step 18. Never put the refresh-token value itself in the Sheet.
     8. Between accounts: click the gear → keep credentials; sign out of the seed account or
        switch profiles, then repeat from 15.1 with the next one.
 
@@ -427,8 +437,16 @@ genuine history is plenty of recipient diversity; don't go below ~3.
 
     Plus its `appsscript.json` (Project Settings → "Show appsscript.json") → fill Script
     Properties per `manual-email-warmup-gmail/PROPERTIES.example` (`WARMUP_SHEET_ID`, `WARMUP_FROM_EMAIL`,
-    `WARMUP_START_DATE`, `HOSTINGER_API_TOKEN`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`,
-    `SEED_TOKEN_1..4`, `GEMINI_API_KEY`).
+    `WARMUP_START_DATE`, `HOSTINGER_API_TOKEN`, `OAUTH_PROJECT_OWNER_EMAIL`,
+    `OAUTH_CLOUD_PROJECT_ID`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, four descriptive
+    `SEED_TOKEN_<EMAIL_LABEL>` properties, and `GEMINI_API_KEY`).
+
+    > ⚠️ **Which property names may be changed:** `OAUTH_CLIENT_ID` and
+    > `OAUTH_CLIENT_SECRET` are read by those exact names in `SeedAccountService.gs`; do not
+    > rename them. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional
+    > documentation labels so you can identify which Cloud project issued the client; the code
+    > does not read them. Each `SEED_TOKEN_<EMAIL_LABEL>` name is your choice because the code
+    > reads the name dynamically from `SEED_ACCOUNTS.tokenPropertyKey`.
 
 18. **Initialize the sheet and register the seeds:**
     1. In the **warm-up project's** editor, open the file **`Warmup.gs`** → function dropdown
@@ -440,10 +458,9 @@ genuine history is plenty of recipient diversity; don't go below ~3.
        2–5, one per seed (4 accounts total — the code reads however many active rows are
        listed here, so 4 is not a placeholder, it's the real count):
        - `email` — the seed Gmail address.
-       - `tokenPropertyKey` — the **exact Script Property name** holding that account's
-         refresh token (`SEED_TOKEN_1`, `SEED_TOKEN_2`, …). This is the mapping you wrote
-         down in step 15.7 — a mismatch here means the engagement loop silently acts as the
-         wrong account or fails auth.
+       - `tokenPropertyKey` — the **exact descriptive Script Property name** holding that
+         account's refresh token (for example, `SEED_TOKEN_SEED_ONE_GMAIL`). This is the
+         mapping created in step 15.7 — a mismatch here means token refresh fails.
        - `active` — `TRUE`.
 
 19. **Verify the Hostinger connection, then prove a real send:**

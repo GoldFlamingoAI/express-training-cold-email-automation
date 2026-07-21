@@ -3,7 +3,8 @@ const HOSTINGER_MAIL_DEFAULT_BASE_URL = 'https://api.mail.hostinger.com';
 
 /**
  * Sends one warm-up email from the outreach domain through the Hostinger Email API.
- * The API token is order-scoped; generate it in Hostinger Panel -> Emails -> API.
+ * The API token is order-scoped; generate it in Hostinger Panel -> Emails ->
+ * the outreach domain -> Agentic mail -> API.
  * @param {string} toEmail - Seed recipient address.
  * @param {string} subject - Email subject.
  * @param {string} body - Plain-text email body.
@@ -18,12 +19,13 @@ function sendWarmupEmail(toEmail, subject, body) {
       throw new Error('HOSTINGER_API_TOKEN and WARMUP_FROM_EMAIL script properties are required.');
     }
 
-    const response = UrlFetchApp.fetch(getHostingerMailSendUrl_(properties), {
+    const account = getHostingerMailAccount_(properties, token);
+    const mailbox = findHostingerMailbox_(account, fromEmail);
+    const response = UrlFetchApp.fetch(getHostingerMailSendUrl_(properties, mailbox.resourceId), {
       method: 'post',
       contentType: 'application/json',
       headers: { Authorization: 'Bearer ' + token },
       payload: JSON.stringify({
-        from: fromEmail,
         to: [toEmail],
         subject: subject,
         text: body,
@@ -50,31 +52,77 @@ function sendWarmupEmail(toEmail, subject, body) {
 }
 
 /**
- * Sends a minimal API request so the operator can verify token, scope, and endpoint
- * before the first scheduled run.
- * @returns {{success: boolean, httpStatus: number, error: string|null}}
+ * Discovers the authenticated Hostinger account and confirms that the token can
+ * manage WARMUP_FROM_EMAIL before the first scheduled run.
+ * @returns {{success: boolean, httpStatus: number, mailbox: string, mailboxResourceId: string, error: string|null}}
  */
 function testHostingerConnection() {
   try {
     const properties = PropertiesService.getScriptProperties();
     const token = properties.getProperty('HOSTINGER_API_TOKEN');
-    if (!token) {
-      throw new Error('HOSTINGER_API_TOKEN script property is required.');
+    const fromEmail = properties.getProperty('WARMUP_FROM_EMAIL');
+    if (!token || !fromEmail) {
+      throw new Error('HOSTINGER_API_TOKEN and WARMUP_FROM_EMAIL script properties are required.');
     }
-    const baseUrl = getHostingerMailBaseUrl_(properties);
-    const response = UrlFetchApp.fetch(baseUrl + '/v1/mailboxes', {
-      headers: { Authorization: 'Bearer ' + token },
-      muteHttpExceptions: true,
-    });
-    const status = response.getResponseCode();
-    const success = status >= 200 && status < 300;
-    warmupLog(HOSTINGER_MAIL_STAGE, 'CONNECTION_TEST', '', JSON.stringify({ httpStatus: status }), success ? 'OK' : 'ERROR');
-    return { success: success, httpStatus: status, error: success ? null : response.getContentText() };
+    const account = getHostingerMailAccount_(properties, token);
+    const mailbox = findHostingerMailbox_(account, fromEmail);
+    const details = {
+      httpStatus: 200,
+      mailbox: mailbox.address,
+      mailboxResourceId: mailbox.resourceId,
+    };
+    warmupLog(HOSTINGER_MAIL_STAGE, 'CONNECTION_TEST', mailbox.address, JSON.stringify(details), 'OK');
+    return {
+      success: true,
+      httpStatus: 200,
+      mailbox: mailbox.address,
+      mailboxResourceId: mailbox.resourceId,
+      error: null,
+    };
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
     warmupLog(HOSTINGER_MAIL_STAGE, 'CONNECTION_TEST_FAILED', '', message, 'ERROR');
-    return { success: false, httpStatus: 0, error: message };
+    return { success: false, httpStatus: 0, mailbox: '', mailboxResourceId: '', error: message };
   }
+}
+
+/**
+ * Gets the account and mailbox list available to the bearer token.
+ * @param {GoogleAppsScript.Properties.Properties} properties - Script properties.
+ * @param {string} token - Hostinger Mail API bearer token.
+ * @returns {{orderResourceId: string, mailboxes: Array<{resourceId: string, address: string}>}}
+ */
+function getHostingerMailAccount_(properties, token) {
+  const response = UrlFetchApp.fetch(getHostingerMailBaseUrl_(properties) + '/api/v1/me', {
+    headers: { Authorization: 'Bearer ' + token },
+    muteHttpExceptions: true,
+  });
+  const status = response.getResponseCode();
+  if (status < 200 || status >= 300) {
+    const parsed = parseHostingerMailResponse_(response.getContentText());
+    throw new Error('Hostinger account lookup failed with HTTP ' + status + ': ' +
+      (parsed.error || response.getContentText()));
+  }
+  return parseHostingerMailAccount_(response.getContentText());
+}
+
+/**
+ * Finds the exact outreach mailbox exposed by the scoped token.
+ * @param {{mailboxes: Array<{resourceId: string, address: string}>}} account - Account response.
+ * @param {string} fromEmail - Configured sender address.
+ * @returns {{resourceId: string, address: string}}
+ */
+function findHostingerMailbox_(account, fromEmail) {
+  const expected = String(fromEmail || '').trim().toLowerCase();
+  const mailboxes = account && Array.isArray(account.mailboxes) ? account.mailboxes : [];
+  const mailbox = mailboxes.find(function(candidate) {
+    return String(candidate.address || '').trim().toLowerCase() === expected;
+  });
+  if (!mailbox || !mailbox.resourceId) {
+    throw new Error('Hostinger API token cannot manage WARMUP_FROM_EMAIL (' + fromEmail +
+      '). Recreate the token with this mailbox selected under Agentic mail -> API.');
+  }
+  return mailbox;
 }
 
 /**
@@ -88,14 +136,38 @@ function getHostingerMailBaseUrl_(properties) {
 }
 
 /**
- * Returns the send endpoint URL. Overridable because Hostinger may version or
- * rename the path; verify against https://api.mail.hostinger.com/ docs on setup.
+ * Returns the current mailbox-specific send endpoint URL.
  * @param {GoogleAppsScript.Properties.Properties} properties - Script properties.
+ * @param {string} mailboxResourceId - Resource ID returned by GET /api/v1/me.
  * @returns {string} Full send endpoint URL.
  */
-function getHostingerMailSendUrl_(properties) {
+function getHostingerMailSendUrl_(properties, mailboxResourceId) {
   const configured = String(properties.getProperty('HOSTINGER_SEND_ENDPOINT') || '').trim();
-  return configured || getHostingerMailBaseUrl_(properties) + '/v1/messages/send';
+  if (configured) {
+    return configured.replace('{mailboxResourceId}', encodeURIComponent(mailboxResourceId));
+  }
+  return getHostingerMailBaseUrl_(properties) + '/api/v1/mailboxes/' +
+    encodeURIComponent(mailboxResourceId) + '/send';
+}
+
+/**
+ * Parses GET /api/v1/me and normalizes its mailbox collection.
+ * @param {string} contentText - Raw response body.
+ * @returns {{orderResourceId: string, mailboxes: Array<{resourceId: string, address: string}>}}
+ */
+function parseHostingerMailAccount_(contentText) {
+  const parsed = JSON.parse(contentText);
+  const data = parsed && parsed.data ? parsed.data : {};
+  const mailboxes = Array.isArray(data.mailboxes) ? data.mailboxes : [];
+  return {
+    orderResourceId: String(data.orderResourceId || ''),
+    mailboxes: mailboxes.map(function(mailbox) {
+      return {
+        resourceId: String(mailbox.resourceId || ''),
+        address: String(mailbox.address || ''),
+      };
+    }),
+  };
 }
 
 /**

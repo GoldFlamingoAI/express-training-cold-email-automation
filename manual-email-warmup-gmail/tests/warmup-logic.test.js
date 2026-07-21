@@ -69,6 +69,37 @@ assert.ok(context.pickFallbackWarmupReply(() => 0.2).length > 0);
 assert.equal(context.parseSeedFromAddress_('Adam <Adam@Example-Outreach.com>'), 'adam@example-outreach.com');
 assert.equal(context.parseSeedFromAddress_('plain@example.com'), 'plain@example.com');
 
+// Hostinger's current API discovers the mailbox resource ID before using the
+// mailbox-specific send endpoint.
+const hostingerAccount = JSON.parse(JSON.stringify(context.parseHostingerMailAccount_(JSON.stringify({
+  data: {
+    orderResourceId: 'OR-test',
+    mailboxes: [{ resourceId: 'AC-test', address: 'adam@goldflamingoailabs.com' }],
+  },
+}))));
+assert.deepEqual(hostingerAccount, {
+  orderResourceId: 'OR-test',
+  mailboxes: [{ resourceId: 'AC-test', address: 'adam@goldflamingoailabs.com' }],
+});
+assert.equal(
+  context.findHostingerMailbox_(hostingerAccount, 'Adam@GoldFlamingoAILabs.com').resourceId,
+  'AC-test'
+);
+assert.throws(
+  () => context.findHostingerMailbox_(hostingerAccount, 'other@goldflamingoailabs.com'),
+  /cannot manage WARMUP_FROM_EMAIL/
+);
+const hostingerProperties = {
+  getProperty: (key) => ({
+    HOSTINGER_API_BASE_URL: '',
+    HOSTINGER_SEND_ENDPOINT: '',
+  })[key] || null,
+};
+assert.equal(
+  context.getHostingerMailSendUrl_(hostingerProperties, 'AC-test'),
+  'https://api.mail.hostinger.com/api/v1/mailboxes/AC-test/send'
+);
+
 // The command-center mappings use the configured descriptive Script Property names verbatim.
 const configuredSeeds = [
   { email: 'gfais.demo@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GFAIS' },
@@ -122,6 +153,29 @@ assert.equal(preflightSummary.warnings.length, 1, 'missing optional project labe
 
 context.UrlFetchApp = {
   fetch: (url, options) => {
+    if (url === 'https://api.mail.hostinger.com/api/v1/me') {
+      assert.equal(options.headers.Authorization, 'Bearer hostinger-token');
+      return {
+        getResponseCode: () => 200,
+        getContentText: () => JSON.stringify({
+          data: {
+            orderResourceId: 'OR-test',
+            mailboxes: [{ resourceId: 'AC-test', address: 'adam@goldflamingoailabs.com' }],
+          },
+        }),
+      };
+    }
+    if (url === 'https://api.mail.hostinger.com/api/v1/mailboxes/AC-test/send') {
+      const payload = JSON.parse(options.payload);
+      assert.deepEqual(payload.to, ['recipient@gmail.com']);
+      assert.equal(payload.subject, 'Connection test');
+      assert.equal(payload.text, 'Testing the warm-up pipe.');
+      assert.equal(Object.hasOwn(payload, 'from'), false, 'mailbox resource ID identifies the sender');
+      return {
+        getResponseCode: () => 204,
+        getContentText: () => '',
+      };
+    }
     if (url === 'https://oauth2.googleapis.com/token') {
       const index = Number(String(options.payload.refresh_token).split('-').pop());
       return {
@@ -143,6 +197,17 @@ const connectionSummary = JSON.parse(JSON.stringify(context.testSeedAccountConne
 assert.equal(connectionSummary.success, true);
 assert.equal(connectionSummary.tested, 4);
 assert.ok(connectionSummary.results.every((result) => result.success));
+
+const hostingerConnection = JSON.parse(JSON.stringify(context.testHostingerConnection()));
+assert.equal(hostingerConnection.success, true);
+assert.equal(hostingerConnection.mailbox, 'adam@goldflamingoailabs.com');
+assert.equal(hostingerConnection.mailboxResourceId, 'AC-test');
+const hostingerSend = JSON.parse(JSON.stringify(context.sendWarmupEmail(
+  'recipient@gmail.com',
+  'Connection test',
+  'Testing the warm-up pipe.'
+)));
+assert.equal(hostingerSend.success, true);
 
 propertyValues.WARMUP_FROM_EMAIL = '';
 assert.throws(

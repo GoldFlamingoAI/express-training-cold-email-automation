@@ -491,9 +491,9 @@ screenshot, chat, email, or GitHub.
     | Seed Gmail | Apps Script property name | Sheet row |
     |---|---|---|
     | `gfais.demo@gmail.com` | `SEED_TOKEN_GFAIS` | 2 |
-    | `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMAGDEV_DATA` | 3 |
-    | `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLDFLAMINGO_ARTI` | 4 |
-    | `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKATM_0208` | 5 |
+    | `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMG` | 3 |
+    | `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLD` | 4 |
+    | `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKAT` | 5 |
 
     Repeat substeps 1–14 completely for one row before starting the next account:
 

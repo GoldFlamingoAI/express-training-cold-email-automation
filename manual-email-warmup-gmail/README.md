@@ -61,6 +61,15 @@ not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are opt
 humans and are ignored by the code. Each seed token property may have a descriptive name, but
 that exact name must appear beside its Gmail address in `SEED_ACCOUNTS.tokenPropertyKey`.
 
+The configured seed mappings are:
+
+| Seed Gmail | Script Property / `tokenPropertyKey` |
+|---|---|
+| `gfais.demo@gmail.com` | `SEED_TOKEN_GFAIS` |
+| `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMG` |
+| `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLD` |
+| `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKAT` |
+
 > ⚠️ `https://mail.google.com/` is a restricted scope, so the verification banner is expected.
 > For this private four-account setup, keep the app External + In production and follow the
 > Monday guide's unverified-app and credential-security callouts. Never share a Client secret or

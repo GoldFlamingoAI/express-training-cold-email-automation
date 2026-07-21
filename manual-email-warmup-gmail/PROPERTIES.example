@@ -19,12 +19,12 @@ OAUTH_CLOUD_PROJECT_ID=<exact Google Cloud project ID, not only its display name
 OAUTH_CLIENT_ID=<from the warm-up Google Cloud project>
 OAUTH_CLIENT_SECRET=<from the warm-up Google Cloud project>
 
-# One refresh token per seed Gmail. These names are examples and may be renamed to match the
-# real accounts. Put each exact property name in that email's SEED_ACCOUNTS.tokenPropertyKey cell.
-SEED_TOKEN_SEED_ONE_GMAIL=<refresh token for seed.one@gmail.com>
-SEED_TOKEN_SEED_TWO_GMAIL=<refresh token for seed.two@gmail.com>
-SEED_TOKEN_SEED_THREE_GMAIL=<refresh token for seed.three@gmail.com>
-SEED_TOKEN_SEED_FOUR_GMAIL=<refresh token for seed.four@gmail.com>
+# One refresh token per confirmed seed Gmail. The actual token is the Script Property value;
+# only each property name goes in that Gmail's SEED_ACCOUNTS.tokenPropertyKey cell.
+SEED_TOKEN_GFAIS=<refresh token authorized as gfais.demo@gmail.com>
+SEED_TOKEN_ADAMAGDEV_DATA=<refresh token authorized as adamagdev.data@gmail.com>
+SEED_TOKEN_GOLDFLAMINGO_ARTI=<refresh token authorized as goldflamingo.arti@gmail.com>
+SEED_TOKEN_KITKATM_0208=<refresh token authorized as kitkatm.0208@gmail.com>
 
 GEMINI_API_KEY=<Google AI Studio key; optional — local templates are the fallback>
 

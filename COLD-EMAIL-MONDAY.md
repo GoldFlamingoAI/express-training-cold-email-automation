@@ -344,142 +344,246 @@ volume is unchanged whether it's spread across 4 or 8 seeds (the scheduler ramps
 daily total and picks a random seed per send). 4 real, previously-active Gmail accounts with
 genuine history is plenty of recipient diversity; don't go below ~3.
 
-14. **Google Cloud project + Gmail API + OAuth client** (one-time, ~15 minutes):
-    1. In a browser signed into your **designated low-activity seed Gmail** (never the
-       business account), go to [console.cloud.google.com](https://console.cloud.google.com).
-       First visit: accept the terms prompt.
-    2. Click the **project picker** in the top bar (says "Select a project") → **New Project**
-       → Name: `warmup-infra` → **Create** → when the notification pops, **Select project**.
-    3. **Enable the Gmail API:** ☰ menu → **APIs & Services → Library** → search `Gmail API`
-       → click it → **Enable**.
-    4. **Consent screen:** ☰ → **APIs & Services → OAuth consent screen** (newer consoles
-       call this **Google Auth Platform → Branding**; same settings, different label).
-       - User type: **External** → Create.
-       - App name: `warmup-infra`; User support email: this Gmail; Developer contact: this
-         Gmail. **Save and Continue** through the Scopes page (add nothing) and Summary.
-    5. **Add the 4 test users:** on the consent screen page → **Audience** (or "Test users"
-       section) → **+ Add users** → enter all 4 seed Gmail addresses → **Save**.
-    6. **⚠ Publish the app — do not skip.** On the same page, set Publishing status to
-       **In production** (button reads **Publish app**; confirm the warning — no verification
-       needed). Reason: refresh tokens minted while an app is in *Testing* status **silently
-       expire after 7 days**, which would kill the warm-up loop mid-ramp. Published-unverified
-       tokens don't expire; the only cost is an extra "unverified app" warning during the
-       consent flow in step 15 — expected, click through it.
+### Read this location map before step 14
 
-       > ⚠️ **Google verification warning — expected; do not submit for verification.**
-       > It appears because `https://mail.google.com/` is a **restricted scope** with full
-       > Gmail access. For the four accounts you own, keep the app **External + In
-       > production**, **do not submit for verification**, and ignore the verification banner.
-       > During each authorization, choose **Advanced → Go to warmup-infra (unsafe)**. You will
-       > remain under Google's unverified-app user cap; formal verification is only necessary
-       > for public distribution. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
-    7. **Create the OAuth client:** ☰ → **APIs & Services → Credentials** → **+ Create
-       Credentials → OAuth client ID** →
-       - Application type: **Web application**
-       - Name: `oauth-playground`
-       - **Authorized redirect URIs** → + Add URI: `https://developers.google.com/oauthplayground`
-         (exact string, no trailing slash)
-       - **Create** → a dialog shows the **Client ID** and **Client secret** — copy both
-         somewhere safe. (Web application type + that redirect URI is what lets the OAuth
-         Playground mint your tokens in the next step.)
+This setup uses several Google products that look related but store different pieces. Every
+instruction below starts with a **location label**. Do not move a value to a different product
+unless the instructions explicitly say to switch locations.
 
-15. **Generate the 4 refresh tokens** (repeat this loop once per seed account, ~3 min each —
-    budget extra time for the two dormant accounts, which may trigger Google's "haven't seen
-    this device" identity checks):
-    1. Open a browser window signed into **only the seed account you're minting** — use a
-       separate Chrome profile or an Incognito window and sign in fresh. If multiple Google
-       accounts share the session, the consent screen may bind the token to the wrong one.
-    2. Go to [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground).
-    3. Click the **⚙ gear icon** (top right) and set every one of these:
+| Location label | Where to open it | What belongs there |
+|---|---|---|
+| **[GOOGLE CLOUD]** | [console.cloud.google.com](https://console.cloud.google.com) | Gmail API, consent settings, OAuth Client ID and Client secret |
+| **[APPS SCRIPT]** | [script.google.com](https://script.google.com) | The five `.gs` files, `appsscript.json`, Script Properties, test runs, triggers |
+| **[GOOGLE SHEET]** | [sheets.google.com](https://sheets.google.com) | `Warmup Command Center`, logs, summaries, and email-to-property-name mappings |
+| **[OAUTH PLAYGROUND]** | [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground/) | One-time authorization that creates one refresh token per seed Gmail |
+| **[HOSTINGER HPANEL]** | [hpanel.hostinger.com](https://hpanel.hostinger.com) | The Hostinger Email API token used to send from the outreach mailbox |
+
+**The credential model:** all four seed Gmails share one Cloud **Client ID** and **Client
+secret**. Each seed Gmail gets its own unique **refresh token**. Refresh-token values live only
+in **Apps Script → Project Settings → Script Properties**. The Sheet stores the *property name*,
+not the token. Never paste a Client secret or refresh token into source code, the Sheet, a
+screenshot, chat, email, or GitHub.
+
+14. **[GOOGLE CLOUD — regular browser] Create and configure `warmup-infra`:**
+    1. Open a normal browser window, not Incognito. Sign into the low-activity Google account
+       that will own this infrastructure. This is the **Cloud/GAS owner account**. It does not
+       have to be one of the four seed Gmails; add it as a seed only if it will actually receive
+       and engage with warm-up messages.
+    2. Go to [Google Cloud Console](https://console.cloud.google.com). Click the project picker
+       in the top bar → **New Project** → enter `warmup-infra` → **Create**. After creation,
+       reopen the project picker and select `warmup-infra`. Keep checking the top bar while
+       completing this step; every setting below must be made inside this project.
+    3. In the left **☰ Navigation menu**, open **APIs & Services → Library**. Search for
+       `Gmail API` → open the result → click **Enable**. Wait until its API overview page loads.
+    4. In the left menu, open **Google Auth Platform → Branding**. If Google instead shows
+       **APIs & Services → OAuth consent screen**, use that; it leads to the same setup.
+       Configure:
+       - **App name:** `warmup-infra`
+       - **User support email:** the Cloud/GAS owner account
+       - **Developer contact email:** the Cloud/GAS owner account
+       - **Audience/User type:** `External`
+       Save the page.
+    5. Open **Google Auth Platform → Audience**. Under **Test users**, click **Add users** and
+       add each of the four seed Gmail addresses. Add the Cloud/GAS owner too only when it is
+       also one of the four seeds. Save and confirm that each address appears in the list.
+    6. Open **Google Auth Platform → Data Access** → **Add or remove scopes**. Search for or
+       manually enter `https://mail.google.com/`, check that exact Gmail scope, click **Update**,
+       then click **Save** on the Data Access page. It should appear under **Restricted scopes**.
+       This is intentional: the engagement automation needs to find, read, star, and reply to
+       warm-up messages in each seed inbox.
+    7. Return to **Google Auth Platform → Audience**. Set **Publishing status** to
+       **In production** and confirm the prompt. Do not leave it in Testing: refresh tokens for
+       an External app in Testing can expire after seven days, which would stop the multi-week
+       warm-up.
+
+       > ⚠️ **The verification banner is expected. Do not submit this private app for
+       > verification.** `https://mail.google.com/` is a restricted scope with full Gmail
+       > access. For four accounts you own, keep the app **External + In production**, ignore
+       > the verification banner, and use **Advanced → Go to warmup-infra (unsafe)** during
+       > each authorization. Personal-use apps with fewer than 100 users can continue through
+       > the warning without verification. See Google's
+       > [verification exception guidance](https://support.google.com/cloud/answer/13464323)
+       > and [audience documentation](https://support.google.com/cloud/answer/15549945).
+    8. Open **Google Auth Platform → Clients** → **Create client**. Choose:
+       - **Application type:** `Web application`
+       - **Name:** `oauth-playground`
+       - Under **Authorized redirect URIs**, click **Add URI** and enter exactly
+         `https://developers.google.com/oauthplayground` with no trailing slash.
+       Click **Create**. Leave the resulting Client ID/secret dialog open or store the values
+       temporarily in a password manager; the next step puts them in Apps Script.
+    9. **Security check before continuing:** if the Client secret has appeared in a screenshot,
+       chat, email, or other shared location, rotate it now. In **Google Auth Platform →
+       Clients**, open `oauth-playground`, reset/create a new secret, and use only the new one.
+       Do this before generating the four refresh tokens.
+
+15. **[GOOGLE SHEET → APPS SCRIPT — regular browser] Create the command center and code
+    project before generating any tokens:**
+    1. In the same normal browser session, go to [Google Sheets](https://sheets.google.com) →
+       **Blank spreadsheet**. Rename it `Warmup Command Center`. This must be a native Google
+       Sheet, not an uploaded `.xlsx` file.
+    2. Copy its spreadsheet ID from the address bar. In a URL shaped like
+       `https://docs.google.com/spreadsheets/d/ABC123/edit`, copy only `ABC123`, the characters
+       between `/d/` and `/edit`. Keep this Sheet open in its own browser tab.
+    3. Open a second normal-browser tab at [Apps Script](https://script.google.com) → **New
+       project**. Rename the project `Manual Email Warmup`. Confirm the profile circle shows the
+       Cloud/GAS owner account and that this account can open the Sheet from step 15.1.
+    4. In the Apps Script editor, create five Script files using **+ beside Files → Script**.
+       Name each file exactly as shown, then paste the matching repo file from
+       `manual-email-warmup-gmail/src/`:
+
+       ```text
+       ContentVariationService.gs
+       HostingerMailClient.gs
+       SeedAccountService.gs
+       Warmup.gs
+       WarmupScheduler.gs
+       ```
+
+    5. Click **Project Settings** (gear icon in the Apps Script left rail). Check **Show
+       `appsscript.json` manifest file in editor**. Return to **Editor** (`<>` icon), open
+       `appsscript.json`, and replace its contents with
+       `manual-email-warmup-gmail/appsscript.json` from the repo. Click **Save project**.
+    6. Return to **Project Settings** → scroll to **Script Properties** → click **Edit script
+       properties**. Add these rows; the left field is **Property** and the right field is
+       **Value**:
+
+       | Property — type exactly | Value — paste only this |
+       |---|---|
+       | `WARMUP_SHEET_ID` | The Sheet ID copied in step 15.2 |
+       | `WARMUP_FROM_EMAIL` | The Hostinger outreach mailbox, for example `adam@goldflamingoailabs.com` |
+       | `WARMUP_START_DATE` | Manual-layer start date as `YYYY-MM-DD` |
+       | `OAUTH_PROJECT_OWNER_EMAIL` | Cloud/GAS owner Gmail; human-readable label only |
+       | `OAUTH_CLOUD_PROJECT_ID` | The project ID shown beside `warmup-infra` in Cloud; label only |
+       | `OAUTH_CLIENT_ID` | Client ID created in step 14.8 |
+       | `OAUTH_CLIENT_SECRET` | Current Client secret created in step 14.8/14.9 |
+       | `GEMINI_API_KEY` | Optional; leave absent when not using Gemini |
+
+       Click **Save script properties**. `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` must keep
+       those exact names because `SeedAccountService.gs` reads them literally. The two
+       `OAUTH_PROJECT_*` rows are labels for you and are not read by the code.
+    7. **Do not edit `Warmup.gs` to insert the Sheet ID.** In particular, leave
+       `getProperty('WARMUP_SHEET_ID')` unchanged. `WARMUP_SHEET_ID` is the property *name*;
+       your actual ID belongs in the Script Property **Value** field created in step 15.6.
+
+16. **[APPS SCRIPT → GOOGLE SHEET] Initialize and verify the Sheet tabs:**
+    1. In Apps Script, click **Editor** (`<>`) → open `Warmup.gs`. In the function dropdown at
+       the top, select **`setupWarmupSheet`** → click **Run**.
+    2. The first run asks for authorization. Click **Review permissions** → select the
+       Cloud/GAS owner account → **Advanced** if shown → continue to `Manual Email Warmup` →
+       **Allow**. Return to the execution log and confirm **Execution completed**.
+    3. Switch browser tabs to the **Warmup Command Center** Google Sheet and reload the page.
+       Confirm these four tabs now exist at the bottom: `WARMUP_LOG`, `ENGAGEMENT`,
+       `SEED_ACCOUNTS`, and `DAILY_SUMMARY`.
+    4. Open `SEED_ACCOUNTS`. Confirm row 1 contains exactly:
+       `email | tokenPropertyKey | active`. Leave rows 2–5 blank for now; each will be filled
+       immediately after its token is stored in step 17.
+    5. If setup says `WARMUP_SHEET_ID script property is required`, return to **Apps Script →
+       Project Settings → Script Properties** and check the spelling. If it says the spreadsheet
+       ID is illegal, confirm the Value contains only the characters between `/d/` and `/edit`,
+       the file is a native Google Sheet, and the Cloud/GAS owner can open it.
+
+17. **[OAUTH PLAYGROUND INCOGNITO → APPS SCRIPT REGULAR → GOOGLE SHEET REGULAR] Generate,
+    store, and map one seed token at a time:**
+
+    Use this exact mapping for the four confirmed seed accounts. The property name is a label;
+    the secret refresh token will be its Value in Apps Script.
+
+    | Seed Gmail | Apps Script property name | Sheet row |
+    |---|---|---|
+    | `gfais.demo@gmail.com` | `SEED_TOKEN_GFAIS` | 2 |
+    | `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMAGDEV_DATA` | 3 |
+    | `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLDFLAMINGO_ARTI` | 4 |
+    | `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKATM_0208` | 5 |
+
+    Repeat substeps 1–14 completely for one row before starting the next account:
+
+    1. Open a brand-new **Chrome Incognito** window: Mac menu **File → New Incognito Window**;
+       Windows/Chrome menu **⋮ → New Incognito window**. Keep the regular Apps Script and Sheet
+       tabs open in the original window.
+    2. In Incognito, open [Gmail](https://mail.google.com) and sign into **only the seed Gmail
+       for the current row**. Click its profile circle at upper right and visually confirm the
+       exact email address. Do not add a second Google account to this Incognito window.
+    3. In another tab in that same Incognito window, open
+       [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/). This is a separate
+       Google website; it is not inside Cloud Console or Apps Script.
+    4. Click the **gear icon in the Playground's upper-right corner**. In the white **OAuth 2.0
+       configuration** panel on the right, set:
        - **OAuth flow:** `Server-side`
-       - **Access type:** `Offline` — required for a refresh token
+       - **OAuth endpoints:** `Google`
+       - **Access token location:** `Authorization header w/ Bearer prefix`
+       - **Access type:** `Offline`
        - **Force prompt:** `Consent Screen`
        - Check **Use your own OAuth credentials**
-       - Paste the shared **Client ID** and **Client secret** from step 14.7 → **Close**.
-    4. In the left panel, **Step 1**: ignore the API list — type directly into the
-       **"Input your own scopes"** field: `https://mail.google.com/` → click
-       **Authorize APIs**.
-    5. Google's consent flow opens: pick the seed account → "Google hasn't verified this app"
-       → **Advanced → Go to warmup-infra (unsafe)** (it's your own app) → **Allow**.
-    6. Back in the Playground, **Step 2**: click **Exchange authorization code for tokens** →
-       copy the **Refresh token** value (usually starts with `1//`). Do not copy the temporary
-       access token. If no refresh token appears, reopen the gear and confirm **Access type =
-       Offline** and **Force prompt = Consent Screen**, then authorize that Gmail again.
-    7. Store it immediately in the **warm-up project's** Script Properties (created in step
-       17) under a descriptive email-derived key — for example, the token for
-       `seed.one@gmail.com` can use `SEED_TOKEN_SEED_ONE_GMAIL`. Seed-token property names are
-       **not hardcoded**; the exact key is mapped to its Gmail address in `SEED_ACCOUNTS` in
-       step 18. Never put the refresh-token value itself in the Sheet.
-    8. Between accounts: click the gear → keep credentials; sign out of the seed account or
-       switch profiles, then repeat from 15.1 with the next one.
+       - **OAuth Client ID:** paste the shared Client ID from Cloud/Apps Script
+       - **OAuth Client secret:** paste the shared current Client secret from Cloud/Apps Script
+    5. Click the blue **Close** link at the bottom-left of that white configuration panel. On
+       the main Playground page, find **Step 1 — Select & authorize APIs** on the left.
+    6. At the very bottom of Step 1, click **Input your own scopes**, type exactly
+       `https://mail.google.com/`, then click the blue **Authorize APIs** button immediately to
+       the right. Do not select anything from the long API list.
+    7. Google opens the authorization flow. Confirm the displayed account is the current seed
+       Gmail. If it is wrong, cancel and close Incognito. On **Google hasn't verified this
+       app**, click **Advanced → Go to warmup-infra (unsafe)**. Continue and click **Allow** for
+       the Gmail permission.
+    8. Google returns to OAuth Playground. In the left column, expand **Step 2 — Exchange
+       authorization code for tokens**. Click the blue **Exchange authorization code for
+       tokens** button.
+    9. In Step 2, find **Refresh token** and copy its complete value, usually beginning `1//`.
+       Do not copy **Access token**; that token is temporary. If Refresh token is blank, reopen
+       the gear and verify **Access type = Offline** and **Force prompt = Consent Screen**, then
+       repeat from substep 6.
+    10. **Switch windows now:** return to the original, regular browser window and open the
+        `Manual Email Warmup` Apps Script tab. Do not sign the seed Gmail into this window.
+        Click **Project Settings → Script Properties → Edit script properties → Add script
+        property**.
+    11. In **Property**, type the exact property name from the mapping table for this seed. In
+        **Value**, paste the complete refresh token from OAuth Playground. Example for row 2:
+        Property = `SEED_TOKEN_GFAIS`; Value = the token created while signed into
+        `gfais.demo@gmail.com`. Click **Save script properties**.
+    12. **Switch browser tabs again:** open the regular-window `Warmup Command Center` Sheet →
+        `SEED_ACCOUNTS`. Fill the assigned row:
+        - Column A, `email`: exact seed Gmail address
+        - Column B, `tokenPropertyKey`: exact Apps Script **Property name**, not the token
+        - Column C, `active`: `TRUE`
 
-16. **Hostinger Email API token:**
-    1. Log into [hpanel.hostinger.com](https://hpanel.hostinger.com) → **Emails** → select
-       the **outreach domain** (never the business domain).
-    2. Find the **API** section — as of the current panel it lives in the email management
-       page's **API / Email API** tab (Hostinger occasionally moves it; if you can't find it,
-       open [api.mail.hostinger.com](https://api.mail.hostinger.com) — the API docs state
-       where tokens are generated, currently the *Email provisioning* tab).
-    3. **Generate a token**, name it `warmup-layer`, and if the panel offers scoping, scope it
-       to the outreach domain's order/mailbox. **Copy it immediately** — it's shown once.
-    4. It becomes the `HOSTINGER_API_TOKEN` script property in the warm-up project (step 17).
-    5. Note: the exact send-endpoint path is verified programmatically in step 19 — if
-       Hostinger's docs show a different path than the code's default, you'll set the
-       `HOSTINGER_SEND_ENDPOINT` property then. Don't chase it now.
+        Row 2 must therefore read:
+        `gfais.demo@gmail.com | SEED_TOKEN_GFAIS | TRUE`.
+    13. Confirm that Column B contains a readable name beginning `SEED_TOKEN_`. If it contains
+        a value beginning `1//`, delete that cell immediately; the secret belongs only in Apps
+        Script Properties.
+    14. Close the **entire Incognito window**, not only the Playground tab. Open a fresh
+        Incognito window and repeat from substep 1 for the next row. After all four accounts,
+        the Sheet must have four mappings and Apps Script must have four token properties.
 
-17. **Create the warm-up Sheet + Apps Script project** — new Google Sheet named
-    `Warmup Command Center` under the warm-up account; [script.google.com](https://script.google.com)
-    → New project (standalone, same account) → paste these 5 files from
-    `manual-email-warmup-gmail/src/`, creating each as a new Script file (＋ → Script, name
-    it exactly as below):
+    > ⚠️ **If a refresh token is ever shown in a screenshot, chat, email, or shared document,
+    > revoke it before continuing.** In a private window signed into that exact seed Gmail, open
+    > [Google Account third-party connections](https://myaccount.google.com/connections), select
+    > `warmup-infra`, and choose **Delete all connections**/remove access. Then repeat step 17 for
+    > that Gmail and replace the old Script Property Value. A refresh token plus the OAuth client
+    > credentials grants the automation the full Gmail access represented by the restricted scope.
 
-    ```text
-    ContentVariationService.gs
-    HostingerMailClient.gs
-    SeedAccountService.gs
-    Warmup.gs
-    WarmupScheduler.gs
-    ```
+18. **[HOSTINGER HPANEL → APPS SCRIPT] Create and store the sending API token:**
+    1. Open [Hostinger hPanel](https://hpanel.hostinger.com) in the regular browser → **Emails**
+       → select the outreach domain `goldflamingoailabs.com`, not the business domain.
+    2. Open the email management page's **API / Email API** section. If Hostinger has moved it,
+       open [Hostinger Mail API documentation](https://api.mail.hostinger.com) and follow its
+       current token-generation location.
+    3. Generate a token named `warmup-layer`. If Hostinger offers a scope, restrict it to the
+       outreach domain/mailbox. Copy the token immediately; it may be shown only once.
+    4. Switch to the regular Apps Script tab → **Project Settings → Script Properties → Edit
+       script properties → Add script property**. Property = `HOSTINGER_API_TOKEN`; Value = the
+       complete Hostinger token. Save. Never put it in the Sheet or source code.
 
-    Plus its `appsscript.json` (Project Settings → "Show appsscript.json") → fill Script
-    Properties per `manual-email-warmup-gmail/PROPERTIES.example` (`WARMUP_SHEET_ID`, `WARMUP_FROM_EMAIL`,
-    `WARMUP_START_DATE`, `HOSTINGER_API_TOKEN`, `OAUTH_PROJECT_OWNER_EMAIL`,
-    `OAUTH_CLOUD_PROJECT_ID`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, four descriptive
-    `SEED_TOKEN_<EMAIL_LABEL>` properties, and `GEMINI_API_KEY`).
-
-    > ⚠️ **Which property names may be changed:** `OAUTH_CLIENT_ID` and
-    > `OAUTH_CLIENT_SECRET` are read by those exact names in `SeedAccountService.gs`; do not
-    > rename them. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional
-    > documentation labels so you can identify which Cloud project issued the client; the code
-    > does not read them. Each `SEED_TOKEN_<EMAIL_LABEL>` name is your choice because the code
-    > reads the name dynamically from `SEED_ACCOUNTS.tokenPropertyKey`.
-
-18. **Initialize the sheet and register the seeds:**
-    1. In the **warm-up project's** editor, open the file **`Warmup.gs`** → function dropdown
-       → select **`setupWarmupSheet`** → **Run** → authorize (Sheets + external-request
-       scopes only).
-    2. Open the warm-up spreadsheet: four tabs now exist — `WARMUP_LOG`, `ENGAGEMENT`,
-       `SEED_ACCOUNTS`, `DAILY_SUMMARY`.
-    3. Open **SEED_ACCOUNTS** (headers: `email | tokenPropertyKey | active`) and fill rows
-       2–5, one per seed (4 accounts total — the code reads however many active rows are
-       listed here, so 4 is not a placeholder, it's the real count):
-       - `email` — the seed Gmail address.
-       - `tokenPropertyKey` — the **exact descriptive Script Property name** holding that
-         account's refresh token (for example, `SEED_TOKEN_SEED_ONE_GMAIL`). This is the
-         mapping created in step 15.7 — a mismatch here means token refresh fails.
-       - `active` — `TRUE`.
-
-19. **Verify the Hostinger connection, then prove a real send:**
-    1. In **`Warmup.gs`** (warm-up project) → function dropdown → **`testHostingerConnection`**
-       → **Run**.
-    2. Check the result: the `WARMUP_LOG` tab gains a `CONNECTION_TEST` row. `OK` + HTTP 200 →
-       token and base URL are good. `ERROR` with HTTP **401/403** → the token is wrong or
-       mis-scoped, redo step 16. HTTP **404** → the endpoint path moved: open
-       [api.mail.hostinger.com](https://api.mail.hostinger.com), find the current *send
-       message* endpoint, and add Script Property `HOSTINGER_SEND_ENDPOINT` = that full URL,
-       then rerun.
-    3. **One real test send.** The send function takes arguments, so give yourself a
-       temporary button — add this at the bottom of `Warmup.gs`:
+19. **[APPS SCRIPT → GOOGLE SHEET → RECEIVING GMAIL] Test the complete send path:**
+    1. In Apps Script → **Editor → `Warmup.gs`**. Select `testHostingerConnection` in the
+       function dropdown → **Run**.
+    2. Switch to the Sheet → `WARMUP_LOG`. Find the new `CONNECTION_TEST` row. `OK`/HTTP 200
+       means the API token and URL work. HTTP 401/403 means the token is wrong or mis-scoped.
+       HTTP 404 means Hostinger moved the send endpoint; find the current send-message URL in
+       its API documentation, then add `HOSTINGER_SEND_ENDPOINT` as a Script Property with the
+       full URL as its Value and rerun the test.
+    3. Back in Apps Script, temporarily add this at the bottom of `Warmup.gs`, replacing the
+       placeholder with a Gmail inbox you can check:
 
        ```javascript
        function testSendToMe() {
@@ -487,28 +591,27 @@ genuine history is plenty of recipient diversity; don't go below ~3.
        }
        ```
 
-       Select `testSendToMe` in the dropdown → **Run** → then **delete the function** (it's
-       scaffolding, not code to keep).
-    4. In the receiving Gmail: open the message → **⋮ (three-dot menu, top right) → Show
-       original**. Verify all three of:
-       - **SPF: PASS**, **DKIM: PASS**, **DMARC: PASS** in the summary table at the top;
-       - the DKIM line's **`d=` domain is the outreach domain** (not gmail.com, not
-         hostinger.com);
-       - the `Received:` chain shows **Hostinger mail servers with no google.com hop**.
-       Any failure here means DNS/DKIM isn't aligned to the Hostinger path — stop and fix
-       before installing triggers; warming up an unauthenticated path builds nothing.
+       Save → select `testSendToMe` in the function dropdown → **Run**. After the test arrives,
+       delete the temporary function and save again.
+    4. In the receiving Gmail, open the message → message **⋮ menu → Show original**. Confirm:
+       - **SPF: PASS**, **DKIM: PASS**, and **DMARC: PASS**;
+       - DKIM's `d=` value is the outreach domain;
+       - the `Received:` chain shows Hostinger with no Google sending hop.
+       Stop and fix authentication before installing triggers if any check fails.
 
-20. **Install the 3 warm-up triggers** — warm-up project → clock icon (Triggers) →
-    **+ Add Trigger**, three times:
+20. **[APPS SCRIPT] Install exactly three triggers:**
+    1. In the `Manual Email Warmup` Apps Script project, click **Triggers** (clock icon in the
+       left rail) → **+ Add Trigger** at bottom-right.
+    2. Add and save each row separately:
 
-    | Function | Event source | Type | Time |
-    |---|---|---|---|
-    | `runWarmupSendTrigger` | Time-driven | Day timer | 9am to 10am |
-    | `runWarmupEngagementTrigger` | Time-driven | Hour timer | Every hour |
-    | `refreshWarmupSummary` | Time-driven | Day timer | 7pm to 8pm |
+       | Function | Event source | Type | Time |
+       |---|---|---|---|
+       | `runWarmupSendTrigger` | Time-driven | Day timer | 9am to 10am |
+       | `runWarmupEngagementTrigger` | Time-driven | Hour timer | Every hour |
+       | `refreshWarmupSummary` | Time-driven | Day timer | 7pm to 8pm |
 
-    Save each. Final state: exactly three triggers listed. The layer now runs itself; your
-    only job is the weekly `DAILY_SUMMARY` glance, and the taper at launch (Part 6).
+    3. Final check: the Triggers page shows exactly three rows. The layer now runs itself. Check
+       `Warmup Command Center → DAILY_SUMMARY` weekly and follow the launch taper in Part 6.
 
 ---
 

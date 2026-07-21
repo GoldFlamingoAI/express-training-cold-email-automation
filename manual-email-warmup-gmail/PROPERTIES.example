@@ -13,10 +13,13 @@ HOSTINGER_API_TOKEN=<bearer token from Hostinger Panel -> Emails -> API>
 
 OAUTH_CLIENT_ID=<from the warm-up Google Cloud project>
 OAUTH_CLIENT_SECRET=<from the warm-up Google Cloud project>
-# One refresh token per seed Gmail; the property name goes in SEED_ACCOUNTS.tokenPropertyKey:
+# One refresh token per seed Gmail; the property name goes in SEED_ACCOUNTS.tokenPropertyKey.
+# 4 seeds is the recommended count (see README) — add more SEED_TOKEN_N properties only if
+# you deliberately choose to run more than 4.
 SEED_TOKEN_1=<refresh token for seed account 1>
 SEED_TOKEN_2=<refresh token for seed account 2>
-# ... SEED_TOKEN_3 through SEED_TOKEN_8
+SEED_TOKEN_3=<refresh token for seed account 3>
+SEED_TOKEN_4=<refresh token for seed account 4>
 
 GEMINI_API_KEY=<Google AI Studio key; optional — local templates are the fallback>
 

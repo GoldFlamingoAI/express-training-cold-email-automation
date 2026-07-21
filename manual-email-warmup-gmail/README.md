@@ -8,6 +8,13 @@ different credentials. They share only the outreach domain and the strategy.
 **Scope: warm-up only.** This layer supplements the Warmup Inbox subscription during the
 6–8 week ramp and is scaled back once real cold emails start (taper, never stop abruptly).
 
+**Seed count: 4 accounts.** The seeds are receiving inboxes, not the source of reputation —
+the outreach domain's send volume and engagement rate are what matter, and both are unchanged
+whether spread across 4 seeds or 8 (the scheduler ramps the domain's daily total and picks a
+random seed per send). 4 real, previously-active Gmail accounts is plenty of recipient
+diversity; don't go below ~3. `getSeedAccounts()` reads however many active rows exist in
+`SEED_ACCOUNTS` — the account count is config, not a code constant.
+
 ## How it works
 
 ```text
@@ -36,17 +43,17 @@ content hashes logged so repeating Gemini output can be audited.
 2. Create project `warmup-infra`; enable the **Gmail API**.
 3. Create an OAuth client (type **Web application**, redirect URI
    `https://developers.google.com/oauthplayground`) → note Client ID + Secret.
-4. Configure the consent screen (External); add all 8 seed Gmails as test users.
+4. Configure the consent screen (External); add all 4 seed Gmails as test users.
 5. **Publish the app to Production** (unverified is fine). Refresh tokens minted while the
    app is in *Testing* status silently expire after 7 days, which would stop the warm-up
    loop mid-ramp. Published-unverified tokens do not expire; the only cost is an extra
    "unverified app" warning during each account's one-time consent flow.
 
-### 2. Refresh token per seed account (8×)
+### 2. Refresh token per seed account (4×)
 For each seed Gmail, run the OAuth consent flow once with scope
 `https://mail.google.com/` and capture the refresh token — easiest via
 [OAuth Playground](https://developers.google.com/oauthplayground) with "Use your own
-OAuth credentials" checked. Store each token as a script property (`SEED_TOKEN_1`…`8`).
+OAuth credentials" checked. Store each token as a script property (`SEED_TOKEN_1`…`4`).
 
 ### 3. Hostinger Email API token
 Hostinger Panel → Emails → API → generate a token scoped to the outreach domain's order.
@@ -58,7 +65,7 @@ default path in `HostingerMailClient.gs` is overridable via `HOSTINGER_SEND_ENDP
 2. Create a new standalone Apps Script project **under the warm-up Google account**.
 3. Paste in the five `src/*.gs` files and `appsscript.json` (no Gmail scope — correct).
 4. Fill in script properties per `PROPERTIES.example`.
-5. Run `setupWarmupSheet()` once, then list the 8 seeds in the `SEED_ACCOUNTS` tab
+5. Run `setupWarmupSheet()` once, then list the 4 seeds in the `SEED_ACCOUNTS` tab
    (`email | tokenPropertyKey | active`).
 6. Run `testHostingerConnection()` and fix anything it reports.
 7. Send one real test: `sendWarmupEmail('you@gmail.com', 'test', 'test')`, then open the

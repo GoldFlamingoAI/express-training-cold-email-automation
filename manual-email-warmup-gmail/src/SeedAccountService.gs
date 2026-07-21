@@ -4,7 +4,7 @@ const SEED_ACCOUNT_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const SEED_ACCOUNT_GMAIL_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const WARMUP_EXPECTED_SEED_MAPPINGS = [
   { email: 'gfais.demo@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GFAIS' },
-  { email: 'adamagdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
+  { email: 'adamgdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
   { email: 'goldflamingo.arti@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GOLD' },
   { email: 'kitkatm.0208@gmail.com', tokenPropertyKey: 'SEED_TOKEN_KITKAT' },
 ];

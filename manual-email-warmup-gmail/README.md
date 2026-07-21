@@ -88,7 +88,7 @@ The configured seed mappings are:
 | Seed Gmail | Script Property / `tokenPropertyKey` |
 |---|---|
 | `gfais.demo@gmail.com` | `SEED_TOKEN_GFAIS` |
-| `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMG` |
+| `adamgdev.data@gmail.com` | `SEED_TOKEN_ADAMG` |
 | `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLD` |
 | `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKAT` |
 

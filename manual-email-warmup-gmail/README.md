@@ -38,60 +38,33 @@ content hashes logged so repeating Gemini output can be audited.
 
 ## One-time setup
 
-### 1. Google Cloud project (NOT your business account)
-1. Log into `console.cloud.google.com` as the designated low-activity seed Gmail.
-2. Create project `warmup-infra`; enable the **Gmail API**.
-3. Create an OAuth client (type **Web application**, redirect URI
-   `https://developers.google.com/oauthplayground`) → note Client ID + Secret.
-4. Configure the consent screen (External); add all 4 seed Gmails as test users.
-5. **Publish the app to Production** (unverified is fine). Refresh tokens minted while the
-   app is in *Testing* status silently expire after 7 days, which would stop the warm-up
-   loop mid-ramp. Published-unverified tokens do not expire; the only cost is an extra
-   "unverified app" warning during each account's one-time consent flow.
+**Use the complete beginner walkthrough in
+[`COLD-EMAIL-MONDAY.md`, Part 3, steps 14–20](../COLD-EMAIL-MONDAY.md#part-3--manual-warm-up-layer-deadline-week-23-of-the-running-ramp).**
+It names the website, browser window, account, screen, field, and destination at every handoff.
+This README describes the component; it is not a substitute for that click-by-click setup.
 
-> ⚠️ **The verification banner is expected.** `https://mail.google.com/` is a restricted
-> scope. For four Gmail accounts you own, keep the app **External + In production**, do not
-> submit it for verification, and use **Advanced → Go to warmup-infra (unsafe)** during each
-> authorization. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
+The required execution order is:
 
-### 2. Refresh token per seed account (4×)
-For each seed Gmail, run the OAuth consent flow once with scope
-`https://mail.google.com/` and capture the refresh token — easiest via
-[OAuth Playground](https://developers.google.com/oauthplayground) with "Use your own
-OAuth credentials" checked. In the Playground gear, also set **OAuth flow = Server-side**,
-**Access type = Offline**, and **Force prompt = Consent Screen**; Offline access is what makes
-Google return a refresh token after **Exchange authorization code for tokens**. Store each token
-under a descriptive email-derived Script Property name, such as
-`SEED_TOKEN_SEED_ONE_GMAIL` for `seed.one@gmail.com`, then put that exact property name beside
-the address in `SEED_ACCOUNTS.tokenPropertyKey`. Copy the refresh token, not the temporary access
-token.
+1. **[GOOGLE CLOUD]** Create `warmup-infra`, enable Gmail API, configure External/In production,
+   add the restricted Gmail scope and four seed users, and create the Playground OAuth client.
+2. **[GOOGLE SHEET + APPS SCRIPT]** Create `Warmup Command Center` and `Manual Email Warmup`,
+   paste the five source files and manifest, and add the shared Script Properties.
+3. **[APPS SCRIPT → GOOGLE SHEET]** Run `setupWarmupSheet()` and verify `SEED_ACCOUNTS` exists.
+4. **[OAUTH PLAYGROUND INCOGNITO]** Generate one refresh token per seed Gmail. After each token,
+   store its secret value in Apps Script and put only its property-name mapping in the Sheet.
+5. **[HOSTINGER HPANEL → APPS SCRIPT]** Generate and store `HOSTINGER_API_TOKEN`.
+6. **[APPS SCRIPT → GMAIL]** Test the Hostinger connection and one authenticated real send.
+7. **[APPS SCRIPT]** Install the three triggers only after every test passes.
 
-### 3. Hostinger Email API token
-Hostinger Panel → Emails → API → generate a token scoped to the outreach domain's order.
-Verify the send endpoint against the docs at `https://api.mail.hostinger.com/` — the
-default path in `HostingerMailClient.gs` is overridable via `HOSTINGER_SEND_ENDPOINT`.
+Property naming rule: `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are fixed lookup keys and must
+not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional labels for
+humans and are ignored by the code. Each seed token property may have a descriptive name, but
+that exact name must appear beside its Gmail address in `SEED_ACCOUNTS.tokenPropertyKey`.
 
-### 4. Apps Script project + sheet
-1. Create a new Google Sheet (the warm-up command center); note its ID.
-2. Create a new standalone Apps Script project **under the warm-up Google account**.
-3. Paste in the five `src/*.gs` files and `appsscript.json` (no Gmail scope — correct).
-4. Fill in script properties per `PROPERTIES.example`.
-5. Run `setupWarmupSheet()` once, then list the 4 seeds in the `SEED_ACCOUNTS` tab
-   (`email | tokenPropertyKey | active`).
-6. Run `testHostingerConnection()` and fix anything it reports.
-7. Send one real test: `sendWarmupEmail('you@gmail.com', 'test', 'test')`, then open the
-   received message → Show original → confirm the `Received:` chain shows Hostinger (no
-   google.com hop) and DKIM `d=` is the outreach domain.
-
-Property naming rule: `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are hardcoded lookup keys and
-must not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional labels
-for humans and are ignored by the code. Seed-token property names are user-defined and are read
-dynamically from the Sheet.
-
-### 5. Triggers
-- `runWarmupSendTrigger` — time-driven, daily, morning hours.
-- `runWarmupEngagementTrigger` — time-driven, hourly.
-- `refreshWarmupSummary` — time-driven, daily (evening), or run manually.
+> ⚠️ `https://mail.google.com/` is a restricted scope, so the verification banner is expected.
+> For this private four-account setup, keep the app External + In production and follow the
+> Monday guide's unverified-app and credential-security callouts. Never share a Client secret or
+> refresh token in a screenshot, chat, Sheet, source file, or GitHub.
 
 ## Sequencing (from the strategy doc)
 

@@ -575,14 +575,23 @@ screenshot, chat, email, or GitHub.
        complete Hostinger token. Save. Never put it in the Sheet or source code.
 
 19. **[APPS SCRIPT → GOOGLE SHEET → RECEIVING GMAIL] Test the complete send path:**
-    1. In Apps Script → **Editor → `Warmup.gs`**. Select `testHostingerConnection` in the
-       function dropdown → **Run**.
-    2. Switch to the Sheet → `WARMUP_LOG`. Find the new `CONNECTION_TEST` row. `OK`/HTTP 200
+    1. In Apps Script → **Editor → `Warmup.gs`**. Select `validateWarmupConfiguration` in the
+       function dropdown → **Run**. This checks every required Script Property, all four tabs,
+       all four exact `SEED_ACCOUNTS` mappings, and all four refresh-token properties at once.
+       Fix every item in the execution error before continuing. For the outreach sender, the
+       exact required row is Property `WARMUP_FROM_EMAIL`, Value
+       `adam@goldflamingoailabs.com`; never paste that value into the source code.
+    2. Select `testSeedAccountConnections` → **Run**. This exchanges all four refresh tokens
+       and calls Gmail's read-only profile endpoint. It does not read, open, star, or reply to
+       messages. In `WARMUP_LOG`, confirm four `SEED_CONNECTION_TEST` rows are `OK` and the
+       final `SEED_CONNECTION_TEST_COMPLETE` row is `OK` with `tested: 4`.
+    3. Select `testHostingerConnection` → **Run**.
+    4. Switch to the Sheet → `WARMUP_LOG`. Find the new `CONNECTION_TEST` row. `OK`/HTTP 200
        means the API token and URL work. HTTP 401/403 means the token is wrong or mis-scoped.
        HTTP 404 means Hostinger moved the send endpoint; find the current send-message URL in
        its API documentation, then add `HOSTINGER_SEND_ENDPOINT` as a Script Property with the
        full URL as its Value and rerun the test.
-    3. Back in Apps Script, temporarily add this at the bottom of `Warmup.gs`, replacing the
+    5. Back in Apps Script, temporarily add this at the bottom of `Warmup.gs`, replacing the
        placeholder with a Gmail inbox you can check:
 
        ```javascript
@@ -593,7 +602,7 @@ screenshot, chat, email, or GitHub.
 
        Save → select `testSendToMe` in the function dropdown → **Run**. After the test arrives,
        delete the temporary function and save again.
-    4. In the receiving Gmail, open the message → message **⋮ menu → Show original**. Confirm:
+    6. In the receiving Gmail, open the message → message **⋮ menu → Show original**. Confirm:
        - **SPF: PASS**, **DKIM: PASS**, and **DMARC: PASS**;
        - DKIM's `d=` value is the outreach domain;
        - the `Received:` chain shows Hostinger with no Google sending hop.

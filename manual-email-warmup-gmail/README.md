@@ -53,8 +53,11 @@ The required execution order is:
 4. **[OAUTH PLAYGROUND INCOGNITO]** Generate one refresh token per seed Gmail. After each token,
    store its secret value in Apps Script and put only its property-name mapping in the Sheet.
 5. **[HOSTINGER HPANEL → APPS SCRIPT]** Generate and store `HOSTINGER_API_TOKEN`.
-6. **[APPS SCRIPT → GMAIL]** Test the Hostinger connection and one authenticated real send.
-7. **[APPS SCRIPT]** Install the three triggers only after every test passes.
+6. **[APPS SCRIPT]** Run `validateWarmupConfiguration()` to report every missing property,
+   tab, or mapping at once; then run `testSeedAccountConnections()` to verify all four tokens
+   and Gmail identities without reading or modifying messages.
+7. **[APPS SCRIPT → GMAIL]** Test the Hostinger connection and one authenticated real send.
+8. **[APPS SCRIPT]** Install the three triggers only after every test passes.
 
 Property naming rule: `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are fixed lookup keys and must
 not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional labels for

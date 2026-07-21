@@ -22,7 +22,7 @@ OAUTH_CLIENT_SECRET=<from the warm-up Google Cloud project>
 # One refresh token per confirmed seed Gmail. The actual token is the Script Property value;
 # only each property name goes in that Gmail's SEED_ACCOUNTS.tokenPropertyKey cell.
 SEED_TOKEN_GFAIS=<refresh token authorized as gfais.demo@gmail.com>
-SEED_TOKEN_ADAMG=<refresh token authorized as adamagdev.data@gmail.com>
+SEED_TOKEN_ADAMG=<refresh token authorized as adamgdev.data@gmail.com>
 SEED_TOKEN_GOLD=<refresh token authorized as goldflamingo.arti@gmail.com>
 SEED_TOKEN_KITKAT=<refresh token authorized as kitkatm.0208@gmail.com>
 

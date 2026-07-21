@@ -379,7 +379,7 @@ all required rows must exist before running the tests in step 19.
 | `OAUTH_CLIENT_ID` | Web OAuth Client ID from `warmup-infra`; keep this property name unchanged |
 | `OAUTH_CLIENT_SECRET` | Current rotated secret for that same OAuth client; keep this property name unchanged |
 | `SEED_TOKEN_GFAIS` | Refresh token authorized while signed into `gfais.demo@gmail.com` |
-| `SEED_TOKEN_ADAMG` | Refresh token authorized while signed into `adamagdev.data@gmail.com` |
+| `SEED_TOKEN_ADAMG` | Refresh token authorized while signed into `adamgdev.data@gmail.com` |
 | `SEED_TOKEN_GOLD` | Refresh token authorized while signed into `goldflamingo.arti@gmail.com` |
 | `SEED_TOKEN_KITKAT` | Refresh token authorized while signed into `kitkatm.0208@gmail.com` |
 
@@ -519,7 +519,7 @@ Optional properties:
     | Seed Gmail | Apps Script property name | Sheet row |
     |---|---|---|
     | `gfais.demo@gmail.com` | `SEED_TOKEN_GFAIS` | 2 |
-    | `adamagdev.data@gmail.com` | `SEED_TOKEN_ADAMG` | 3 |
+    | `adamgdev.data@gmail.com` | `SEED_TOKEN_ADAMG` | 3 |
     | `goldflamingo.arti@gmail.com` | `SEED_TOKEN_GOLD` | 4 |
     | `kitkatm.0208@gmail.com` | `SEED_TOKEN_KITKAT` | 5 |
 

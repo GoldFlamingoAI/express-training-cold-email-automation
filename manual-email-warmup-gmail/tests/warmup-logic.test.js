@@ -103,7 +103,7 @@ assert.equal(
 // The command-center mappings use the configured descriptive Script Property names verbatim.
 const configuredSeeds = [
   { email: 'gfais.demo@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GFAIS' },
-  { email: 'adamagdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
+  { email: 'adamgdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
   { email: 'goldflamingo.arti@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GOLD' },
   { email: 'kitkatm.0208@gmail.com', tokenPropertyKey: 'SEED_TOKEN_KITKAT' },
 ];

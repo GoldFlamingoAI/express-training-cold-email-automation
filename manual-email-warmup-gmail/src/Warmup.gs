@@ -9,6 +9,8 @@
  *
  * Entry points:
  * - setupWarmupSheet()          one-time tab creation
+ * - validateWarmupConfiguration() checks every required property, tab, and seed mapping
+ * - testSeedAccountConnections() verifies all seed tokens without changing mailbox data
  * - runWarmupSendTrigger()      daily time trigger — sends the day's ramped volume
  * - runWarmupEngagementTrigger() hourly time trigger — opens/replies as seed accounts
  * - refreshWarmupSummary()      rebuilds the DAILY_SUMMARY dashboard tab
@@ -44,6 +46,95 @@ function setupWarmupSheet() {
   });
   warmupLog(WARMUP_STAGE, 'SHEET_SETUP', '', JSON.stringify({ created: created }), 'OK');
   return { created: created };
+}
+
+/**
+ * Checks every required Script Property, tab, seed mapping, and refresh-token property at once.
+ * This does not call Hostinger or Gmail; run the connection tests after it passes.
+ * @returns {{success: boolean, errors: string[], warnings: string[]}} Preflight summary.
+ */
+function validateWarmupConfiguration() {
+  const properties = PropertiesService.getScriptProperties();
+  const errors = [];
+  const warnings = [];
+  const requiredProperties = [
+    'WARMUP_SHEET_ID',
+    'WARMUP_FROM_EMAIL',
+    'WARMUP_START_DATE',
+    'HOSTINGER_API_TOKEN',
+    'OAUTH_CLIENT_ID',
+    'OAUTH_CLIENT_SECRET',
+  ];
+
+  requiredProperties.forEach(function(key) {
+    if (!String(properties.getProperty(key) || '').trim()) {
+      errors.push('Missing Script Property ' + key + ' in Apps Script > Project Settings > Script Properties.');
+    }
+  });
+
+  const fromEmail = String(properties.getProperty('WARMUP_FROM_EMAIL') || '').trim().toLowerCase();
+  if (fromEmail && fromEmail !== 'adam@goldflamingoailabs.com') {
+    errors.push('WARMUP_FROM_EMAIL must be adam@goldflamingoailabs.com, not ' + fromEmail + '.');
+  }
+
+  const startDate = String(properties.getProperty('WARMUP_START_DATE') || '').trim();
+  if (startDate && (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || Number.isNaN(new Date(startDate + 'T00:00:00').getTime()))) {
+    errors.push('WARMUP_START_DATE must use YYYY-MM-DD, for example 2026-07-28.');
+  }
+
+  if (!String(properties.getProperty('OAUTH_PROJECT_OWNER_EMAIL') || '').trim()) {
+    warnings.push('OAUTH_PROJECT_OWNER_EMAIL is missing; optional, but recommended as a human-readable label.');
+  }
+  if (!String(properties.getProperty('OAUTH_CLOUD_PROJECT_ID') || '').trim()) {
+    warnings.push('OAUTH_CLOUD_PROJECT_ID is missing; optional, but recommended as a human-readable label.');
+  }
+
+  let spreadsheet;
+  try {
+    spreadsheet = getWarmupSpreadsheet_();
+  } catch (error) {
+    errors.push('WARMUP_SHEET_ID cannot be opened: ' + (error && error.message ? error.message : String(error)));
+  }
+  if (spreadsheet) {
+    [WARMUP_LOG_SHEET, WARMUP_ENGAGEMENT_SHEET, SEED_ACCOUNT_SHEET, WARMUP_SUMMARY_SHEET].forEach(function(sheetName) {
+      if (!spreadsheet.getSheetByName(sheetName)) {
+        errors.push('Missing Sheet tab ' + sheetName + '; run setupWarmupSheet().');
+      }
+    });
+  }
+
+  let accounts = [];
+  if (spreadsheet && spreadsheet.getSheetByName(SEED_ACCOUNT_SHEET)) {
+    accounts = getSeedAccounts();
+    const accountsByEmail = {};
+    accounts.forEach(function(account) { accountsByEmail[account.email] = account; });
+    WARMUP_EXPECTED_SEED_MAPPINGS.forEach(function(expected) {
+      const account = accountsByEmail[expected.email];
+      if (!account) {
+        errors.push('SEED_ACCOUNTS is missing active row: ' + expected.email + ' | ' + expected.tokenPropertyKey + ' | TRUE.');
+        return;
+      }
+      if (account.tokenPropertyKey !== expected.tokenPropertyKey) {
+        errors.push('SEED_ACCOUNTS tokenPropertyKey for ' + expected.email + ' must be ' + expected.tokenPropertyKey + '.');
+      }
+      const refreshToken = String(properties.getProperty(expected.tokenPropertyKey) || '').trim();
+      if (!refreshToken) {
+        errors.push('Missing Script Property ' + expected.tokenPropertyKey + ' for ' + expected.email + '.');
+      } else if (refreshToken.indexOf('1//') !== 0) {
+        warnings.push(expected.tokenPropertyKey + ' does not begin with 1//; confirm it is the OAuth refresh token, not the access token.');
+      }
+    });
+    if (accounts.length !== WARMUP_EXPECTED_SEED_MAPPINGS.length) {
+      errors.push('SEED_ACCOUNTS must contain exactly 4 active rows; found ' + accounts.length + '.');
+    }
+  }
+
+  const result = { success: errors.length === 0, errors: errors, warnings: warnings };
+  warmupLog(WARMUP_STAGE, 'CONFIGURATION_TEST', '', JSON.stringify(result), result.success ? (warnings.length ? 'WARN' : 'OK') : 'ERROR');
+  if (!result.success) {
+    throw new Error('Warm-up configuration failed:\n- ' + errors.join('\n- '));
+  }
+  return result;
 }
 
 /**
@@ -224,7 +315,7 @@ function getWarmupConfig_() {
     maxEngageDelayMinutes: WARMUP_SCHEDULER_DEFAULTS.maxEngageDelayMinutes,
   };
   if (!config.warmupDomain) {
-    throw new Error('WARMUP_FROM_EMAIL script property must be a full outreach-domain address.');
+    throw new Error('Set WARMUP_FROM_EMAIL=adam@goldflamingoailabs.com in Apps Script > Project Settings > Script Properties. Do not edit this source line.');
   }
   return config;
 }

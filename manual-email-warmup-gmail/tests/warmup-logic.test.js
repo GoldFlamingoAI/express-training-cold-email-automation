@@ -90,4 +90,64 @@ assert.deepEqual(
   'seed mappings must preserve the exact Script Property names configured in SEED_ACCOUNTS'
 );
 
+// Preflight reports the entire configuration at once, and the seed test verifies token identity
+// without reading or modifying messages.
+const propertyValues = {
+  WARMUP_SHEET_ID: 'test-sheet-id',
+  WARMUP_FROM_EMAIL: 'adam@goldflamingoailabs.com',
+  WARMUP_START_DATE: '2026-07-28',
+  HOSTINGER_API_TOKEN: 'hostinger-token',
+  OAUTH_CLIENT_ID: 'oauth-client-id',
+  OAUTH_CLIENT_SECRET: 'oauth-client-secret',
+  OAUTH_PROJECT_OWNER_EMAIL: 'owner@gmail.com',
+};
+configuredSeeds.forEach((seed, index) => {
+  propertyValues[seed.tokenPropertyKey] = `1//refresh-${index}`;
+});
+context.PropertiesService = {
+  getScriptProperties: () => ({
+    getProperty: (key) => propertyValues[key] || null,
+  }),
+};
+const requiredWarmupSheets = new Set(['WARMUP_LOG', 'ENGAGEMENT', 'SEED_ACCOUNTS', 'DAILY_SUMMARY']);
+context.getWarmupSpreadsheet_ = () => ({
+  getSheetByName: (name) => (requiredWarmupSheets.has(name) ? {} : null),
+});
+const logEntries = [];
+context.warmupLog = (...args) => logEntries.push(args);
+const preflightSummary = JSON.parse(JSON.stringify(context.validateWarmupConfiguration()));
+assert.equal(preflightSummary.success, true);
+assert.deepEqual(preflightSummary.errors, []);
+assert.equal(preflightSummary.warnings.length, 1, 'missing optional project label should only warn');
+
+context.UrlFetchApp = {
+  fetch: (url, options) => {
+    if (url === 'https://oauth2.googleapis.com/token') {
+      const index = Number(String(options.payload.refresh_token).split('-').pop());
+      return {
+        getResponseCode: () => 200,
+        getContentText: () => JSON.stringify({ access_token: `access-${index}` }),
+      };
+    }
+    if (url === 'https://gmail.googleapis.com/gmail/v1/users/me/profile') {
+      const index = Number(String(options.headers.Authorization).split('-').pop());
+      return {
+        getResponseCode: () => 200,
+        getContentText: () => JSON.stringify({ emailAddress: configuredSeeds[index].email }),
+      };
+    }
+    throw new Error(`Unexpected test URL: ${url}`);
+  },
+};
+const connectionSummary = JSON.parse(JSON.stringify(context.testSeedAccountConnections()));
+assert.equal(connectionSummary.success, true);
+assert.equal(connectionSummary.tested, 4);
+assert.ok(connectionSummary.results.every((result) => result.success));
+
+propertyValues.WARMUP_FROM_EMAIL = '';
+assert.throws(
+  () => context.validateWarmupConfiguration(),
+  /Missing Script Property WARMUP_FROM_EMAIL/
+);
+
 console.log(`Validated ${sourceFiles.length} warm-up Apps Script files and scheduler behavior.`);

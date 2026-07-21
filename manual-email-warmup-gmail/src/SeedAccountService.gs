@@ -2,6 +2,12 @@ const SEED_ACCOUNT_STAGE = 'SeedAccountService';
 const SEED_ACCOUNT_SHEET = 'SEED_ACCOUNTS';
 const SEED_ACCOUNT_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const SEED_ACCOUNT_GMAIL_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
+const WARMUP_EXPECTED_SEED_MAPPINGS = [
+  { email: 'gfais.demo@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GFAIS' },
+  { email: 'adamagdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
+  { email: 'goldflamingo.arti@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GOLD' },
+  { email: 'kitkatm.0208@gmail.com', tokenPropertyKey: 'SEED_TOKEN_KITKAT' },
+];
 
 /**
  * Reads active seed accounts from the SEED_ACCOUNTS tab.
@@ -59,6 +65,69 @@ function getSeedAccessToken_(tokenPropertyKey) {
     throw new Error('Token refresh returned no access_token for ' + tokenPropertyKey);
   }
   return parsed.access_token;
+}
+
+/**
+ * Reads the Gmail identity behind an access token without modifying mailbox data.
+ * @param {string} accessToken - Seed account access token.
+ * @returns {{emailAddress: string, messagesTotal: number, threadsTotal: number}} Gmail profile.
+ */
+function getSeedProfile_(accessToken) {
+  const response = UrlFetchApp.fetch(SEED_ACCOUNT_GMAIL_BASE + '/profile', {
+    headers: { Authorization: 'Bearer ' + accessToken },
+    muteHttpExceptions: true,
+  });
+  if (response.getResponseCode() !== 200) {
+    throw new Error('Gmail profile check failed: HTTP ' + response.getResponseCode());
+  }
+  const parsed = JSON.parse(response.getContentText());
+  return {
+    emailAddress: String(parsed.emailAddress || '').trim().toLowerCase(),
+    messagesTotal: Number(parsed.messagesTotal) || 0,
+    threadsTotal: Number(parsed.threadsTotal) || 0,
+  };
+}
+
+/**
+ * Side-effect-free manual test for every active seed token and its Gmail identity.
+ * Run from the Apps Script function dropdown after validateWarmupConfiguration().
+ * @returns {{success: boolean, tested: number, results: Array<Object>}} Test summary.
+ */
+function testSeedAccountConnections() {
+  const results = getSeedAccounts().map(function(seed) {
+    try {
+      const accessToken = getSeedAccessToken_(seed.tokenPropertyKey);
+      const profile = getSeedProfile_(accessToken);
+      const matches = profile.emailAddress === seed.email;
+      const result = {
+        email: seed.email,
+        tokenPropertyKey: seed.tokenPropertyKey,
+        actualEmail: profile.emailAddress,
+        success: matches,
+        error: matches ? '' : 'Token belongs to ' + profile.emailAddress + ', not ' + seed.email + '.',
+      };
+      warmupLog(SEED_ACCOUNT_STAGE, 'SEED_CONNECTION_TEST', seed.email, JSON.stringify(result), matches ? 'OK' : 'ERROR');
+      return result;
+    } catch (error) {
+      const message = error && error.message ? error.message : String(error);
+      const result = {
+        email: seed.email,
+        tokenPropertyKey: seed.tokenPropertyKey,
+        actualEmail: '',
+        success: false,
+        error: message,
+      };
+      warmupLog(SEED_ACCOUNT_STAGE, 'SEED_CONNECTION_TEST', seed.email, JSON.stringify(result), 'ERROR');
+      return result;
+    }
+  });
+  const summary = {
+    success: results.length === WARMUP_EXPECTED_SEED_MAPPINGS.length && results.every(function(result) { return result.success; }),
+    tested: results.length,
+    results: results,
+  };
+  warmupLog(SEED_ACCOUNT_STAGE, 'SEED_CONNECTION_TEST_COMPLETE', '', JSON.stringify(summary), summary.success ? 'OK' : 'ERROR');
+  return summary;
 }
 
 /**

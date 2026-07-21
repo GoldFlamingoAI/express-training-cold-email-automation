@@ -661,6 +661,16 @@ Optional properties:
        - the `Received:` chain shows Hostinger with no Google sending hop.
        Stop and fix authentication before installing triggers if any check fails.
 
+> 🚀📣 **AUGUST 13, 2026 TRIGGER LAUNCH GATE — DO NOT INSTALL THE THREE TRIGGERS
+> BEFORE THIS DATE.** Warmup Inbox started on July 16, so August 13 gives it four complete
+> weeks to establish the Hostinger mailbox's baseline before this manual layer adds traffic.
+> Set the Apps Script Property `WARMUP_START_DATE` to `2026-08-13`. On August 13, open the
+> Warmup Inbox dashboard for `adam@goldflamingoailabs.com` and install the triggers in step 20
+> only when the account is still **Running**, recent placement is healthy, spam placement is
+> zero or shows no adverse trend, and there are no authentication, bounce, or connection
+> warnings. If any signal is questionable, install nothing, let Warmup Inbox run alone for
+> seven more days, and repeat this check.
+
 20. **[APPS SCRIPT] Install exactly three triggers:**
     1. In the `Manual Email Warmup` Apps Script project, click **Triggers** (clock icon in the
        left rail) → **+ Add Trigger** at bottom-right.

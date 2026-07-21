@@ -706,88 +706,267 @@ Ready row → COMPANIES + CONTACTS
 
 21. **Run the four research lanes (continuous while warm-up runs):**
 
+    **What this process does:** the four websites do not connect to one another or to the
+    campaign. You manually take one company from `MASTER_QUEUE`, paste it into its assigned
+    research website, identify one current decision-maker, and type the evidence back into the
+    same `MASTER_QUEUE` row. Do not begin with a broad Google search. Google is only a last-resort
+    confirmation tool after the assigned service has already identified a likely company or
+    person.
+
+    **Use the tools in this order:**
+
+    1. **Apollo** — learn the workflow with a five-company pilot, then finish `APOLLO_59`.
+    2. **Prospeo** — finish `PROSPEO_70` after Apollo is complete or Apollo reaches its limit.
+    3. **Skrapp** — finish `SKRAPP_50`, respecting its daily company-search limit.
+    4. **Snov.io** — finish `SNOV_50` last because opening a Domain Search result spends a credit.
+
+    The tools do not feed each other. This order is for a simple, repeatable learning sequence.
+    When a service reaches the limit displayed in its own account, leave its unfinished rows as
+    `Not Started`, record the displayed reset date in your notes, move to the next service, and
+    return after the service resets. Do not assume all four reset on the first of the month.
+
     **One-time account setup — keep the outreach mailbox out of these tools:**
+
     1. Create one legitimate free account at [Apollo](https://app.apollo.io),
        [Prospeo](https://prospeo.io/sign-up), [Skrapp](https://skrapp.io), and
        [Snov.io](https://snov.io). Use **`savetime@goldflamingoai.com`** for account ownership
        and product notifications, not `adam@goldflamingoailabs.com`.
-    2. Do **not** connect either mailbox, import a sending list, create a sequence, enable a
-       warm-up feature, or send outreach from any research tool. Hostinger remains the only
-       campaign sender and Warmup Inbox remains the only automated warm-up service.
-    3. Use one account per service. Do not use aliases, VPNs, or duplicate free accounts to
-       evade limits. Free plans can be restricted for that behavior.
-    4. Current free allowances (checked 2026-07-20; confirm the account page before spending):
-       Apollo lists 900 annual credits granted monthly; Prospeo gives 100/month; Skrapp gives
-       50/month plus 10 people searches/day and 5 company searches/day; Snov's Trial gives
-       50/month. Research-tool verification never replaces the final ZeroBounce check.
+    2. When any service offers to connect an inbox, sync Gmail, connect a CRM, import contacts,
+       create a sequence, or start warm-up, click **Skip**, **Not now**, or close the dialog.
+    3. Do **not** connect either mailbox, upload the workbook, import a sending list, create a
+       campaign, or send outreach from any research service. Hostinger remains the only campaign
+       sender and Warmup Inbox remains the only paid automated warm-up service.
+    4. Use one account per service. Do not use aliases, VPNs, or duplicate free accounts to evade
+       limits. Free plans can be restricted for that behavior.
+    5. Before the first search in each service, find the credit counter or billing/usage page and
+       write down the displayed balance and reset date. Free-plan details change; the website's
+       current account screen wins over the estimates in this document.
+    6. Research-tool verification never replaces the final ZeroBounce check in step 22.
 
-    **The same row-by-row process for every assigned tool:**
-    1. Open [`Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx) →
-       `MASTER_QUEUE`. Filter `assignedTool` to the tool you are working and `reviewStatus` to
-       `Not Started`. The matching named tool tab is the audit list; do not type research into
-       it.
-    2. Set the row to `In Progress`. Search the **exact legal company name + Massachusetts
-       city**. When you have a domain, rerun the search by domain; domain is stronger than a
-       name match.
-    3. Confirm at least three signals before accepting the company: legal/brand name, official
-       domain, Massachusetts location, matching industry, or matching LinkedIn company page.
-       A directory, social profile, franchise parent, similarly named company in another state,
-       or parked domain is not the official website.
-    4. In `MASTER_QUEUE`, enter `website` as a bare domain, `industry`, the displayed
-       `employeeSize` band, and a full `sourceUrl`. Preserve useful grant/source context already
-       present; do not overwrite it with tool marketing copy.
-    5. Search the matched company's people. Choose **one** person in this order:
-       Owner/Founder/CEO/President → COO/General Manager/Operations leader → HR/People leader →
-       Training/Learning & Development leader. Reject advisors, former employees, consultants,
-       generic inboxes, and people whose employer does not match.
-    6. Enter `decisionMakerFirstName`, `decisionMakerLastName`, exact `title`, and the person's
-       full `linkedinUrl`. Add a factual personalization lead in `researchNotes` if one appears;
-       do not invent one.
-    7. Email discovery is optional in this pass. If the assigned service can return one
-       business email within the lane's budget, reveal **one person only**, then enter
-       `discoveredEmail` and `emailSource`. Never use a personal Gmail/Yahoo/Outlook address.
-       Do not spend a second credit chasing another person at the same company.
-    8. Set `matchConfidence`: `High` only when company/domain/location and person/employer/title
-       all agree; `Medium` when a legal-name/brand or location mismatch is defensible and
-       explained; `Low` when anything material remains uncertain. Set `Needs Review` for Low.
-    9. Set `reviewStatus=Ready` only when `website`, `industry`, `employeeSize`, `sourceUrl`,
-       decision-maker first/last name, title, and `linkedinUrl` are complete and the match is
-       High or reviewed Medium. Use `Rejected` for a closed, duplicate, out-of-state, consumer-
-       only, or otherwise unusable company.
+    **The workbook controls every research session:**
 
-    **Exact lane instructions and pacing:**
-    1. **Apollo — `APOLLO_59`, 59 rows:** work roughly 10 companies per session for six
-       sessions. Search **Companies** by exact name + city, confirm the company, open its
-       **People** view, and capture one decision-maker. Do not click **Access email** in this
-       first pass; preserve Apollo's monthly credits for hard cases. If Apollo has no reliable
-       company/person match, set `Needs Review` and explain why.
-    2. **Prospeo — `PROSPEO_70`, 70 rows:** use **Company Search**, inspect free visible
-       results, and enrich only an exact company match. Company enrichment costs one credit;
-       reserve **70 of the 100 monthly credits** for these rows and keep 30 for person/email
-       exceptions. Work 10–15 rows per session. Never select more than the exact assigned row
-       and never bulk-enrich the whole source list.
-    3. **Skrapp — `SKRAPP_50`, 50 rows:** use **Companies Search** for no more than **5 assigned
-       companies/day**, then **People Search** for no more than one chosen decision-maker per
-       company (the free cap is 10 people searches/day). Ten research days clears the queue.
-       Viewing searches is free; reveal/enrich at most one email per company and stop at the
-       50-credit monthly allowance.
-    4. **Snov — `SNOV_50`, 50 rows:** use **Database Search** to confirm the company, then
-       **Domain Search** or the company profile only for the one target person. Budget **one
-       credit per assigned company**; 10 companies/session over five sessions clears the
-       queue. Do not connect the Hostinger mailbox, use Snov campaigns, or activate Snov's
-       warm-up slot.
-    5. **GetProspect fallback — no preassigned rows:** create one free account only after a
-       primary lane produces `Needs Review` or finds the person but no usable email. Its free
-       plan currently includes 50 valid email finds and 100 verifications/month. Search the
-       exact domain + known name/title, reveal one result, record `emailSource=GetProspect`,
-       and return to the primary row. It is an exception queue, not a fifth copy of all 229
-       companies.
+    1. Open [`Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx).
+    2. Click the **`MASTER_QUEUE`** worksheet tab at the bottom. Do not type into `APOLLO_59`,
+       `PROSPEO_70`, `SKRAPP_50`, or `SNOV_50`; those are read-only audit views.
+    3. Click anywhere in row 1, open the spreadsheet's **Data** menu, and choose **Filter** if
+       filter arrows are not already visible.
+    4. Click the filter arrow on `assignedTool`, clear **Select all**, check the tool named in the
+       current mini-runbook, and click **OK**.
+    5. Click the filter arrow on `reviewStatus`, clear **Select all**, check **Not Started**, and
+       click **OK**. The visible rows are the remaining workload for that tool.
+    6. Work the first visible row only. Change its `reviewStatus` cell from `Not Started` to
+       **`In Progress`** before opening the research website.
+    7. Copy the row's exact `company` value. Also note its `city`, `state`, and any existing
+       `website`; these distinguish it from similarly named companies.
+    8. Keep the workbook open in one browser tab or window and the research service open in a
+       second tab. Return to the workbook after every company; do not collect a loose batch of
+       names in another note.
+
+    **Tool 1 — Apollo click-by-click (`APOLLO_59`, 59 rows):**
+
+    **Goal:** use Apollo's visible company and people data to complete one company and one
+    decision-maker per row without spending an email credit. Start with **five rows only**. Review
+    those five in `MASTER_QUEUE`; if they look correct, finish the lane in sessions of about ten.
+
+    1. Complete **The workbook controls every research session** above with
+       `assignedTool=APOLLO_59`, then copy the first visible row's `company` value.
+    2. Go to [Apollo](https://app.apollo.io) and sign in with
+       `savetime@goldflamingoai.com`.
+    3. In Apollo's left navigation, click **Companies**. If Apollo shows a general **Search**
+       menu first, click **Search**, then click **Companies**.
+    4. Click **Show Filters**, then **More Filters** if the company filters are collapsed.
+    5. Click the **Company** filter, choose **Is any of**, paste the exact company name into the
+       field, and click the matching suggestion. Do not choose a lookalike company.
+    6. If more than one company appears, add the **Location** or **Account HQ** filter and enter
+       the Massachusetts city from `MASTER_QUEUE`. Click **Apply filters**.
+    7. Click the exact company's name in the results. Compare its name, website/domain,
+       headquarters, industry, and employee count with the source row. Accept it only when at
+       least three signals agree.
+    8. Return to `MASTER_QUEUE` and enter:
+       `website` as a bare domain such as `example.com`; `industry`; Apollo's displayed employee
+       band in `employeeSize`; and the full Apollo page URL from the browser address bar in
+       `sourceUrl`.
+    9. Return to Apollo. In the left navigation, click **People**.
+    10. Click **Show Filters**, then **More Filters** if necessary. Open the **Company** filter,
+        choose **Is any of**, paste the exact company name, and select the same company from the
+        dropdown.
+    11. Open **Job titles**. Enter titles in this order, stopping when a credible current employee
+        appears: `owner`, `founder`, `ceo`, `president`, `coo`, `general manager`, `operations`,
+        `human resources`, `people`, `training`, `learning and development`. Click **Apply
+        filters** after changing filters.
+    12. Click the best person's name. Confirm the profile says the person currently works for the
+        matched company. Reject advisors, former employees, consultants, and unrelated branches.
+    13. Copy the person's first name, last name, exact current title, and LinkedIn URL. Use the
+        LinkedIn icon/link on the profile when available. If Apollo identifies the person but does
+        not display the URL, search that exact name plus exact company inside LinkedIn; do not
+        start a broad Google search.
+    14. Return to `MASTER_QUEUE` and fill `decisionMakerFirstName`,
+        `decisionMakerLastName`, `title`, and the full `linkedinUrl` beginning with
+        `https://www.linkedin.com/`.
+    15. Do **not** click **Access email**, **Save**, **Add to list**, **Export**, or **Add to
+        sequence** during this first pass. Leave `discoveredEmail` blank and let Hunter handle it
+        later.
+    16. Complete **Close the row correctly** below, then take the next visible Apollo row.
+
+    Official UI reference: [Apollo Search Filters Overview](https://knowledge.apollo.io/hc/en-us/articles/4412665755661-Search-Filters-Overview).
+
+    **Tool 2 — Prospeo click-by-click (`PROSPEO_70`, 70 rows):**
+
+    **Goal:** complete one exact company and one decision-maker per row. Work 10–15 rows per
+    session. Use free previews first; spend at most one email/company credit on a row and preserve
+    the rest for exceptions.
+
+    1. Complete **The workbook controls every research session** with
+       `assignedTool=PROSPEO_70`, then copy the first visible row's `company` value.
+    2. Go to [Prospeo](https://app.prospeo.io) and sign in with
+       `savetime@goldflamingoai.com`.
+    3. In the left navigation, click **Search**, then click **Companies**. The direct page is
+       [Prospeo Company Search](https://app.prospeo.io/search/companies).
+    4. In the filters on the left, find **Company**. Paste the exact company name. If the row
+       already has a domain, use the domain because it is a stronger identifier. Select the exact
+       suggestion rather than merely leaving text in the field.
+    5. If multiple companies appear, add the headquarters/location filter and select the row's
+       Massachusetts city. Do not select or enrich multiple results.
+    6. Inspect the exact match's visible company name, domain, industry, location, and employee
+       size. Accept it only when at least three signals agree.
+    7. Return to `MASTER_QUEUE` and fill `website`, `industry`, `employeeSize`, and `sourceUrl`.
+       Copy the full Prospeo results/profile URL from the browser address bar into `sourceUrl`.
+    8. Return to Prospeo. In the left navigation, click **Search**, then **People**. The direct
+       page is [Prospeo People Search](https://app.prospeo.io/search/people).
+    9. In the left filter panel, click **Company**. Paste the exact company name or domain and
+       select the exact company from the suggestions.
+    10. Click **Job Title**. Enter one title at a time in the priority order used in the Apollo
+        steps. Press **Enter** or choose the suggested title, and use **Contains** for titles such
+        as operations, human resources, training, or learning and development.
+    11. Review the results and open the best current decision-maker. Confirm the company and title
+        before accepting the person.
+    12. Copy the person's first name, last name, exact title, and LinkedIn URL. When Prospeo does
+        not show a LinkedIn URL, confirm that exact person/company combination in LinkedIn.
+    13. Return to `MASTER_QUEUE` and fill the four decision-maker columns.
+    14. **Optional one-credit action:** only after the company and person are confirmed, click
+        Prospeo's single-person email/contact reveal control. Do not use a bulk selection or
+        export. If a business-domain email is returned, put it in `discoveredEmail` and enter
+        `Prospeo` in `emailSource`. Never save a Gmail, Yahoo, Outlook, or other personal address.
+    15. If the preview is enough to complete the row, do not click **Export**, **Enrich**, **Add
+        all**, or any bulk control.
+    16. Complete **Close the row correctly** below, then take the next visible Prospeo row.
+
+    Official UI references: [Prospeo People Search filters](https://help.prospeo.io/en/article/people-search-filters-explained-cppbsm/) and [Prospeo credit behavior](https://help.prospeo.io/en/article/how-credits-work-in-people-search-idi2ua/).
+
+    **Tool 3 — Skrapp click-by-click (`SKRAPP_50`, 50 rows):**
+
+    **Goal:** complete one company and one decision-maker per row while staying under the free
+    plan's displayed daily limits. The current published limit is five company searches/day, so
+    stop after five assigned companies even if the session feels short.
+
+    1. Complete **The workbook controls every research session** with
+       `assignedTool=SKRAPP_50`, then copy the first visible row's `company` value.
+    2. Go to [Skrapp](https://app.skrapp.io) and sign in with
+       `savetime@goldflamingoai.com`.
+    3. In the left navigation, click **Search**. In the tabbed navigation at the top of the search
+       page, click **Company Search**.
+    4. Open the **Company (Name or Website)** filter and paste the exact company name or known
+       domain. Open **Location** and enter the Massachusetts city when the name is ambiguous.
+    5. Click **Search**.
+    6. Compare the returned company name, location, industry, and headcount with the source row.
+       If the exact company appears, click its **Get Emails** button to open the company detail and
+       leads view. This button name is misleading here: you are opening the company's leads, not
+       authorizing a campaign.
+    7. Click **See More** in the company details and copy the official domain, industry, company
+       size, and headquarters. Return to `MASTER_QUEUE` and fill `website`, `industry`,
+       `employeeSize`, and the full Skrapp page URL in `sourceUrl`.
+    8. Return to Skrapp and review the displayed company leads. Choose one current person using
+       the same title priority as Apollo. Confirm the displayed full name, job title, and location.
+    9. Copy the person's first name, last name, and exact title. Use a displayed profile/LinkedIn
+       link when available; otherwise confirm that exact name and company inside LinkedIn and copy
+       the full LinkedIn URL.
+    10. Return to `MASTER_QUEUE` and fill the four decision-maker columns.
+    11. Do **not** click **Save All Leads** or **Save Selected Leads**. If you deliberately spend
+        one credit for the chosen person, click only that person's **Save in List** button, then
+        record a returned business-domain email in `discoveredEmail` and `Skrapp` in
+        `emailSource`.
+    12. Complete **Close the row correctly** below, then take the next visible Skrapp row. After
+        five company searches that day, stop this lane and resume it the next day.
+
+    Official UI reference: [Skrapp Company Search](https://support.skrapp.io/hc/en-us/articles/360019198358-How-to-Search-for-Companies).
+
+    **Tool 4 — Snov.io click-by-click (`SNOV_50`, 50 rows):**
+
+    **Goal:** spend no more than one company-search credit and, optionally, one person-save credit
+    per assigned row. Work about ten rows per session. Do not use Snov campaigns or warm-up.
+
+    1. Complete **The workbook controls every research session** with
+       `assignedTool=SNOV_50`, then copy the first visible row's `company` value and known domain,
+       if present.
+    2. Go to [Snov.io](https://app.snov.io) and sign in with
+       `savetime@goldflamingoai.com`.
+    3. In the top navigation, click **Finder**, then click **Domain Search**.
+    4. Paste the known bare domain into the search field. If the row has no domain, paste the exact
+       company name. Click **Search**. Domain Search handles one company at a time and opening the
+       company profile can cost one credit, so do not open similar-company suggestions.
+    5. In the company **Overview**, compare the website, headquarters/location, industry, and
+       employee count with the source row. Use the quick website and LinkedIn links only to
+       confirm the exact company.
+    6. Return to `MASTER_QUEUE` and fill `website`, `industry`, `employeeSize`, and the full Snov
+       company-profile URL in `sourceUrl`.
+    7. Return to Snov and click the **Prospects** tab in the company profile.
+    8. Find the position search field at the top. Enter the prioritized titles, beginning with
+       `owner`, `founder`, `ceo`, and `president`, then click **Search** on the right. Add the next
+       title group only when the first group produces no credible current employee.
+    9. Choose one person. Confirm the current job position and use Snov's direct LinkedIn link to
+       open and copy the full profile URL.
+    10. Return to `MASTER_QUEUE` and fill `decisionMakerFirstName`,
+        `decisionMakerLastName`, `title`, and `linkedinUrl`.
+    11. **Optional one-credit action:** click **Save** on the right side of that one person's row
+        to reveal the verified email and add the person to a Snov list. Record a business-domain
+        result in `discoveredEmail` and enter `Snov` in `emailSource`. Do not select multiple
+        prospects, **All on page**, **Save to list** in bulk, or **All Domain Emails**.
+    12. Ignore **Campaigns**, **Deliverability**, **Email Warm-up**, and mailbox-connection prompts.
+        Do not connect `adam@goldflamingoailabs.com`.
+    13. Complete **Close the row correctly** below, then take the next visible Snov row.
+
+    Official UI reference: [Snov Domain Search](https://snov.io/knowledgebase/how-to-get-email-addresses-from-a-domain/).
+
+    **Close the row correctly — do this after every company in every tool:**
+
+    1. Confirm that at least three company signals agree: legal/brand name, official domain,
+       Massachusetts location, industry, or matching LinkedIn company page.
+    2. Confirm that the chosen person currently works for the exact company. Reject advisors,
+       former employees, consultants, generic inboxes, and people associated only with a parent,
+       franchise, or similarly named company.
+    3. Preserve useful grant/source context already in the row. Add a factual personalization lead
+       to `researchNotes` only when the service shows one; do not invent one.
+    4. Set `matchConfidence=High` only when company/domain/location and
+       person/employer/title all agree. Use `Medium` when a defensible legal-name, brand, or
+       location difference is explained in `researchNotes`. Use `Low` when anything material is
+       uncertain.
+    5. Set `reviewStatus=Ready` only when `website`, `industry`, `employeeSize`, `sourceUrl`,
+       decision-maker first/last name, `title`, and `linkedinUrl` are complete and confidence is
+       High or reviewed Medium.
+    6. Set `reviewStatus=Needs Review` when the likely match is incomplete, confidence is Low, or
+       the tool cannot supply the required LinkedIn URL. Explain the exact missing or conflicting
+       detail in `researchNotes`.
+    7. Set `reviewStatus=Rejected` when the company is closed, duplicated, out of state,
+       consumer-only, or otherwise unusable. Explain why in `researchNotes`.
+    8. If an email was revealed, accept only a business-domain address. Email discovery is optional
+       here, and every discovered address still goes through ZeroBounce before QUEUE.
+    9. Save the workbook. Reapply the `reviewStatus=Not Started` filter if the completed row remains
+       visible. Select the next visible row, change it to `In Progress`, and begin the same tool's
+       steps again.
+
+    **GetProspect fallback — exceptions only, not a fifth lane:** create one free account only
+    after a primary tool produces `Needs Review` or finds the person but no usable email. Search
+    the exact known domain plus the already identified person's name/title, reveal one result,
+    enter `GetProspect` in `emailSource`, and return immediately to the original `MASTER_QUEUE`
+    row. Do not run all 229 companies through it.
 
     **Move completed rows into the campaign:** follow Part 2 step 9.6–9.9. Paste Ready A:H
     values from `IMPORT_READY` into `COMPANIES`, then add the same row's person fields to
     `CONTACTS`. `CONTACTS.company` must match `COMPANIES.company` verbatim; leave `contactId`
     blank. If no email was found, leave `email` blank for Hunter. If one was found, copy it but
     still run ZeroBounce before anything reaches QUEUE.
+
+    **Rinse and repeat.**
 
 22. **Run the enrichment functions** — all in the **campaign project**, all selected from the
     function dropdown with **`Code.gs` open**, all manual-run:

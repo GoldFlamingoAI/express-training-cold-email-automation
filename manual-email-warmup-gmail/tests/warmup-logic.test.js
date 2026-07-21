@@ -69,4 +69,25 @@ assert.ok(context.pickFallbackWarmupReply(() => 0.2).length > 0);
 assert.equal(context.parseSeedFromAddress_('Adam <Adam@Example-Outreach.com>'), 'adam@example-outreach.com');
 assert.equal(context.parseSeedFromAddress_('plain@example.com'), 'plain@example.com');
 
+// The command-center mappings use the configured descriptive Script Property names verbatim.
+const configuredSeeds = [
+  { email: 'gfais.demo@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GFAIS' },
+  { email: 'adamagdev.data@gmail.com', tokenPropertyKey: 'SEED_TOKEN_ADAMG' },
+  { email: 'goldflamingo.arti@gmail.com', tokenPropertyKey: 'SEED_TOKEN_GOLD' },
+  { email: 'kitkatm.0208@gmail.com', tokenPropertyKey: 'SEED_TOKEN_KITKAT' },
+];
+context.getWarmupSheet_ = () => ({
+  getDataRange: () => ({
+    getValues: () => [
+      ['email', 'tokenPropertyKey', 'active'],
+      ...configuredSeeds.map((seed) => [seed.email, seed.tokenPropertyKey, true]),
+    ],
+  }),
+});
+assert.deepEqual(
+  JSON.parse(JSON.stringify(context.getSeedAccounts())),
+  configuredSeeds,
+  'seed mappings must preserve the exact Script Property names configured in SEED_ACCOUNTS'
+);
+
 console.log(`Validated ${sourceFiles.length} warm-up Apps Script files and scheduler behavior.`);

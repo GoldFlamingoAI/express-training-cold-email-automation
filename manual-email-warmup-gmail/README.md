@@ -58,9 +58,13 @@ content hashes logged so repeating Gemini output can be audited.
 For each seed Gmail, run the OAuth consent flow once with scope
 `https://mail.google.com/` and capture the refresh token — easiest via
 [OAuth Playground](https://developers.google.com/oauthplayground) with "Use your own
-OAuth credentials" checked. Store each token under a descriptive email-derived Script Property
-name, such as `SEED_TOKEN_SEED_ONE_GMAIL` for `seed.one@gmail.com`, then put that exact property
-name beside the address in `SEED_ACCOUNTS.tokenPropertyKey`.
+OAuth credentials" checked. In the Playground gear, also set **OAuth flow = Server-side**,
+**Access type = Offline**, and **Force prompt = Consent Screen**; Offline access is what makes
+Google return a refresh token after **Exchange authorization code for tokens**. Store each token
+under a descriptive email-derived Script Property name, such as
+`SEED_TOKEN_SEED_ONE_GMAIL` for `seed.one@gmail.com`, then put that exact property name beside
+the address in `SEED_ACCOUNTS.tokenPropertyKey`. Copy the refresh token, not the temporary access
+token.
 
 ### 3. Hostinger Email API token
 Hostinger Panel → Emails → API → generate a token scoped to the outreach domain's order.

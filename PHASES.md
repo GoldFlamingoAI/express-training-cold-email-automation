@@ -233,7 +233,7 @@ Strategy source: `Manual_Email_Warmup` research doc (2026-07-17).*
 - [x] ✅ **Task W.5** Warmup orchestrator: send/engagement triggers, ENGAGEMENT state, WARMUP_LOG, DAILY_SUMMARY
 - [x] ✅ **Task W.6** Tests: `manual-email-warmup-gmail/tests/warmup-logic.test.js`
 - [ ] 🏠 **Setup W.a** Warm-up Google Cloud project on a seed Gmail; enable Gmail API; OAuth client
-- [ ] 🏠 **Setup W.b** Generate 8 seed-account refresh tokens; store as script properties
+- [ ] 🏠 **Setup W.b** Generate 4 seed-account refresh tokens; store as script properties
 - [ ] 🏠 **Setup W.c** Hostinger Email API token; verify send endpoint + test send (headers/DKIM check)
 - [ ] 🏠 **Setup W.d** Create warm-up Sheet + Apps Script project; paste files; run `setupWarmupSheet()`; install triggers
 - [ ] 🏠 **Setup W.e** Start manual layer in week 2–3 of the Warmup Inbox ramp (see subdir README)

@@ -338,6 +338,12 @@ alone, never run a second warm-up tool on the same mailbox, and note its start d
 manual layer joins **week 2–3 of that ramp** and is a *separate, standalone* Apps Script
 project — the **warm-up project** (full internals: `manual-email-warmup-gmail/README.md`).
 
+**Seed count: 4 accounts, not 8.** The seeds are receiving inboxes, not the thing building
+reputation — the outreach domain's send volume and engagement rate are what matter, and that
+volume is unchanged whether it's spread across 4 or 8 seeds (the scheduler ramps the domain's
+daily total and picks a random seed per send). 4 real, previously-active Gmail accounts with
+genuine history is plenty of recipient diversity; don't go below ~3.
+
 14. **Google Cloud project + Gmail API + OAuth client** (one-time, ~15 minutes):
     1. In a browser signed into your **designated low-activity seed Gmail** (never the
        business account), go to [console.cloud.google.com](https://console.cloud.google.com).
@@ -351,8 +357,8 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
        - User type: **External** → Create.
        - App name: `warmup-infra`; User support email: this Gmail; Developer contact: this
          Gmail. **Save and Continue** through the Scopes page (add nothing) and Summary.
-    5. **Add the 8 test users:** on the consent screen page → **Audience** (or "Test users"
-       section) → **+ Add users** → enter all 8 seed Gmail addresses → **Save**.
+    5. **Add the 4 test users:** on the consent screen page → **Audience** (or "Test users"
+       section) → **+ Add users** → enter all 4 seed Gmail addresses → **Save**.
     6. **⚠ Publish the app — do not skip.** On the same page, set Publishing status to
        **In production** (button reads **Publish app**; confirm the warning — no verification
        needed). Reason: refresh tokens minted while an app is in *Testing* status **silently
@@ -369,7 +375,9 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
          somewhere safe. (Web application type + that redirect URI is what lets the OAuth
          Playground mint your tokens in the next step.)
 
-15. **Generate the 8 refresh tokens** (repeat this loop once per seed account, ~3 min each):
+15. **Generate the 4 refresh tokens** (repeat this loop once per seed account, ~3 min each —
+    budget extra time for the two dormant accounts, which may trigger Google's "haven't seen
+    this device" identity checks):
     1. Open a browser window signed into **only the seed account you're minting** — use a
        separate Chrome profile or an Incognito window and sign in fresh. If multiple Google
        accounts share the session, the consent screen may bind the token to the wrong one.
@@ -384,7 +392,7 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
     6. Back in the Playground, **Step 2**: click **Exchange authorization code for tokens** →
        copy the **Refresh token** value (starts with `1//`).
     7. Store it immediately in the **warm-up project's** Script Properties (created in step
-       17) as `SEED_TOKEN_1` … `SEED_TOKEN_8` — one property per account, and write down
+       17) as `SEED_TOKEN_1` … `SEED_TOKEN_4` — one property per account, and write down
        which Gmail address got which number; you'll need the mapping in step 18.
     8. Between accounts: click the gear → keep credentials; sign out of the seed account or
        switch profiles, then repeat from 15.1 with the next one.
@@ -420,7 +428,7 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
     Plus its `appsscript.json` (Project Settings → "Show appsscript.json") → fill Script
     Properties per `manual-email-warmup-gmail/PROPERTIES.example` (`WARMUP_SHEET_ID`, `WARMUP_FROM_EMAIL`,
     `WARMUP_START_DATE`, `HOSTINGER_API_TOKEN`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`,
-    `SEED_TOKEN_1..8`, `GEMINI_API_KEY`).
+    `SEED_TOKEN_1..4`, `GEMINI_API_KEY`).
 
 18. **Initialize the sheet and register the seeds:**
     1. In the **warm-up project's** editor, open the file **`Warmup.gs`** → function dropdown
@@ -429,7 +437,8 @@ project — the **warm-up project** (full internals: `manual-email-warmup-gmail/
     2. Open the warm-up spreadsheet: four tabs now exist — `WARMUP_LOG`, `ENGAGEMENT`,
        `SEED_ACCOUNTS`, `DAILY_SUMMARY`.
     3. Open **SEED_ACCOUNTS** (headers: `email | tokenPropertyKey | active`) and fill rows
-       2–9, one per seed:
+       2–5, one per seed (4 accounts total — the code reads however many active rows are
+       listed here, so 4 is not a placeholder, it's the real count):
        - `email` — the seed Gmail address.
        - `tokenPropertyKey` — the **exact Script Property name** holding that account's
          refresh token (`SEED_TOKEN_1`, `SEED_TOKEN_2`, …). This is the mapping you wrote

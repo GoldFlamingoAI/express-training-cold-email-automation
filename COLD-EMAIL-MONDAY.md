@@ -364,6 +364,34 @@ in **Apps Script → Project Settings → Script Properties**. The Sheet stores 
 not the token. Never paste a Client secret or refresh token into source code, the Sheet, a
 screenshot, chat, email, or GitHub.
 
+### Complete Script Property inventory
+
+All of these values belong in **Apps Script → `Manual Email Warmup` → Project Settings →
+Script Properties**. This is the single final checklist. Some values are added in later steps;
+all required rows must exist before running the tests in step 19.
+
+| Required Property — exact name | Required Value / source |
+|---|---|
+| `WARMUP_SHEET_ID` | Characters between `/d/` and `/edit` in the `Warmup Command Center` URL |
+| `WARMUP_FROM_EMAIL` | Exactly `adam@goldflamingoailabs.com` |
+| `WARMUP_START_DATE` | Manual-layer start date in `YYYY-MM-DD` format |
+| `HOSTINGER_API_TOKEN` | Token generated in Hostinger hPanel in step 18 |
+| `OAUTH_CLIENT_ID` | Web OAuth Client ID from `warmup-infra`; keep this property name unchanged |
+| `OAUTH_CLIENT_SECRET` | Current rotated secret for that same OAuth client; keep this property name unchanged |
+| `SEED_TOKEN_GFAIS` | Refresh token authorized while signed into `gfais.demo@gmail.com` |
+| `SEED_TOKEN_ADAMG` | Refresh token authorized while signed into `adamagdev.data@gmail.com` |
+| `SEED_TOKEN_GOLD` | Refresh token authorized while signed into `goldflamingo.arti@gmail.com` |
+| `SEED_TOKEN_KITKAT` | Refresh token authorized while signed into `kitkatm.0208@gmail.com` |
+
+Optional properties:
+
+- `OAUTH_PROJECT_OWNER_EMAIL` — recommended human-readable Cloud/GAS owner label; code ignores it.
+- `OAUTH_CLOUD_PROJECT_ID` — recommended human-readable Cloud project label; code ignores it.
+- `GEMINI_API_KEY` — optional; local content templates are used when absent.
+- `HOSTINGER_API_BASE_URL`, `HOSTINGER_SEND_ENDPOINT`, `WARMUP_START_PER_DAY`,
+  `WARMUP_MAX_PER_DAY`, and `WARMUP_RAMP_DAYS` — optional overrides; do not add unless the
+  guide explicitly calls for one.
+
 14. **[GOOGLE CLOUD — regular browser] Create and configure `warmup-infra`:**
     1. Open a normal browser window, not Incognito. Sign into the low-activity Google account
        that will own this infrastructure. This is the **Cloud/GAS owner account**. It does not

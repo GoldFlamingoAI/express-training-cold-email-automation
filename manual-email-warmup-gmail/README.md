@@ -59,6 +59,25 @@ The required execution order is:
 7. **[APPS SCRIPT → GMAIL]** Test the Hostinger connection and one authenticated real send.
 8. **[APPS SCRIPT]** Install the three triggers only after every test passes.
 
+Final required Script Property inventory:
+
+```text
+WARMUP_SHEET_ID
+WARMUP_FROM_EMAIL
+WARMUP_START_DATE
+HOSTINGER_API_TOKEN
+OAUTH_CLIENT_ID
+OAUTH_CLIENT_SECRET
+SEED_TOKEN_GFAIS
+SEED_TOKEN_ADAMG
+SEED_TOKEN_GOLD
+SEED_TOKEN_KITKAT
+```
+
+Optional labels/integrations: `OAUTH_PROJECT_OWNER_EMAIL`, `OAUTH_CLOUD_PROJECT_ID`, and
+`GEMINI_API_KEY`. See the Monday playbook's **Complete Script Property inventory** table for
+the exact value and source of every row.
+
 Property naming rule: `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are fixed lookup keys and must
 not be renamed. `OAUTH_PROJECT_OWNER_EMAIL` and `OAUTH_CLOUD_PROJECT_ID` are optional labels for
 humans and are ignored by the code. Each seed token property may have a descriptive name, but

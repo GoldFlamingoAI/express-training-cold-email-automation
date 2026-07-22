@@ -1008,6 +1008,66 @@ Ready row → COMPANIES + CONTACTS
     intend to queue needs a human-approved `personalizationLine` before `runPreparationPipeline`
     will pass it (ApprovalGate hard-blocks blanks).
 
+### 🧐 FUTURE CONSIDERATION — humanized, research-informed email variants
+
+The future improvement is **controlled variation**, not unlimited AI rewriting or synonym
+spinning. Keep the core claim, offer, CTA, physical address, and opt-out language fixed. Use the
+recipient's role plus verified company research to choose an approved angle and write one short,
+natural opening. Generate and save the draft during research, then require human approval before
+it can enter the send queue; never ask Gemini to rewrite a message live at send time.
+
+**Approved role angles:**
+
+- **Owner / founder / CEO:** business impact, measurable time savings, and available funding.
+- **HR / L&D:** employee adoption, practical training, and consistent responsible use.
+- **Operations / general manager:** repeatable workflows, documentation, and productivity.
+- **Finance / CFO:** training cost, efficiency, and measurable return on investment.
+
+**Research-hook rules:**
+
+1. Use one research-informed sentence of no more than **20–25 words**.
+2. Translate `industry` and `linkedInCompanySize` into a relevant business observation; do not
+   recite spreadsheet fields back to the recipient.
+3. Use the employee **size band**, never an exact LinkedIn headcount unless the company itself
+   publishes and the human reviewer confirms it.
+4. Do not write "I see you have X employees" or anything that sounds scraped or invasive.
+5. Do not assume the company already uses AI. Prefer language such as "You may already have
+   employees experimenting with AI" or describe the opportunity without making that claim.
+6. Never let Gemini invent grant eligibility, AI usage, growth, accomplishments, pain points,
+   employee counts, or company facts. Every company-specific statement must be supported by the
+   workbook's verified research.
+
+**Target message shape — keep it short:**
+
+1. Research-informed observation.
+2. Connection to a role-appropriate, measurable AI opportunity.
+3. Workforce-training/funding relevance.
+4. One simple question.
+
+Example for an operations leader at a growing manufacturer:
+
+```text
+Hi {{firstName}},
+
+For a growing manufacturing company like {{company}}, small improvements in quoting,
+documentation, and internal training can add up quickly.
+
+You may already have employees experimenting with AI, but there is usually a gap between
+occasional use and workflows that produce measurable time savings. Massachusetts funding may
+help cover the training needed to close that gap.
+
+Worth a quick conversation to see whether {{company}} might qualify?
+```
+
+**Multiple people at the same company:** contact no more than two people initially, stagger them
+by 3–5 business days, and use different role-based angles rather than lightly reworded copies. A
+reply from anyone must stop every other open contact at that company. The future implementation
+therefore needs company-level outreach state in addition to contact-level status.
+
+When the research workbook is updated, proposed fields are `messageAngle`, `researchHook`, and
+`approvedBody`; the campaign data will also need a company-level stop/status mechanism. Finalize
+the exact headers only when this feature is scheduled for implementation.
+
 ---
 
 ## Part 5 — Free-tier mining strategy (+ the two purchases)

@@ -1008,6 +1008,474 @@ Ready row → COMPANIES + CONTACTS
     intend to queue needs a human-approved `personalizationLine` before `runPreparationPipeline`
     will pass it (ApprovalGate hard-blocks blanks).
 
+### 🧐 FUTURE CONSIDERATION — research-informed email + LinkedIn account strategy
+
+> **Planning only. Do not change the live `TEMPLATES` tab, campaign cadence, spreadsheet schema,
+> or GAS code yet.** This section is the complete design reference for a later implementation.
+
+#### Goal and operating position
+
+Email remains the primary outreach channel. LinkedIn is a supporting channel for the highest-value
+accounts and for people who do not respond to email; it is not permission to hit several employees
+at the same company simultaneously. The message system uses **controlled, role-based variation**,
+not unlimited AI rewriting, synonym spinning, or a different unreviewed message on every send.
+
+The future system must:
+
+1. Preserve the core offer, truthful funding language, CTA, sender identity, physical address,
+   and opt-out language across every version.
+2. Use the recipient's role plus verified industry and company-size research to choose an angle.
+3. Add one short research-informed opening that demonstrates relevance without reciting scraped
+   data back to the recipient.
+4. Generate and save the draft during research, not live at send time.
+5. Require a human to approve the final body before it can enter `QUEUE`.
+6. Coordinate all people at the company through a company-level stop/status mechanism. Any reply
+   from anyone at that company stops every open email and LinkedIn action for the company.
+7. Keep all LinkedIn activity manual. Never use a bot, extension, script, or service to automate
+   profile scraping, connection requests, or messages. See [LinkedIn's prohibited-software
+   policy](https://www.linkedin.com/help/linkedin/answer/a1341387).
+
+#### The research hook — how company research enters the message
+
+Use one research-informed sentence of no more than **20–25 words**. The sentence should translate
+`industry`, `linkedInCompanySize`, and verified research notes into a useful observation. It should
+not announce that the recipient was researched.
+
+**Hard rules:**
+
+1. Use the employee **size band**, never an exact LinkedIn headcount unless the company itself
+   publishes it and the human reviewer confirms it.
+2. Do not write "I see you have 73 employees," "I found you on LinkedIn," or anything else that
+   sounds scraped, invasive, or mechanically assembled.
+3. Do not assume the company already uses AI. Prefer "You may already have employees experimenting
+   with AI" or describe the opportunity without making any claim about current adoption.
+4. Never let Gemini invent grant eligibility, AI usage, growth, accomplishments, pain points,
+   employee counts, customers, technology, or company facts.
+5. Every specific company statement must be supported by the verified workbook research.
+6. Do not use a generic compliment such as "I love what your company is doing." The hook must
+   connect the company's real operating context to a plausible AI-training opportunity.
+7. Do not mention sensitive information, personal information, layoffs, financial trouble, legal
+   disputes, employee reviews, or anything not appropriate for a professional first contact.
+
+**Industry-to-use-case guidance:**
+
+| Industry | Safe AI opportunity language for the hook |
+|---|---|
+| Manufacturing | Quoting, SOP updates, production documentation, internal knowledge, and training |
+| Construction / trades | Estimates, proposals, job documentation, customer updates, and workforce training |
+| Professional services | Research, first drafts, client deliverables, internal knowledge, and administrative work |
+| Healthcare / human services | Administrative workflows, employee training, policy communication, and scheduling — never imply use of patient data |
+| Hospitality / retail | Onboarding, scheduling support, SOPs, customer communication, and manager training |
+| Logistics / wholesale | Vendor communication, documentation, internal knowledge, reporting, and process consistency |
+| Technology / media | Internal knowledge, delivery workflows, sales support, documentation, and responsible adoption |
+| Nonprofit / education | Grant administration, outreach, internal communication, program documentation, and staff training |
+
+**Company-size wording:**
+
+| Size band | Recommended wording |
+|---|---|
+| 1–10 | "For a small {{industry}} team, saving even a few hours each week can have an outsized impact." |
+| 11–50 | "For a growing {{industry}} company, small improvements across repeated work can add up quickly." |
+| 51–200 | "At {{company}}'s size, consistent AI workflows can matter more than isolated individual experimentation." |
+| 201+ | "Across a larger {{industry}} organization, the challenge is usually consistent adoption, governance, and measurable workflows." |
+
+#### Approved role angles
+
+| Recipient role | Primary angle | What the message should emphasize |
+|---|---|---|
+| Owner / founder / CEO / president | Business impact | Measurable time savings, competitive capability, practical adoption, and available training funding |
+| HR / L&D / people leader | Employee adoption | Practical skills, consistent responsible use, confidence, repeatable training, and accessibility |
+| Operations / COO / general manager | Repeatable workflows | Documentation, handoffs, process consistency, productivity, and moving beyond one-off prompts |
+| Finance / CFO / controller | Return on investment | Net training cost, measurable efficiency, adoption of existing tools, and avoiding waste |
+
+Gemini may select only one approved angle. It may not combine every benefit into one long message.
+The angle must match the recipient's current title, not merely a title keyword found somewhere on
+the profile.
+
+#### Fixed and variable message components
+
+**Fixed across every version:** truthful sender identity, core offer, Massachusetts funding framed
+as a possibility rather than a guarantee, CTA, mailing address, opt-out language, and the rule that
+no unsupported facts may appear.
+
+**Variable within approved limits:** subject from an approved subject bank, `researchHook`, role
+angle, one role-specific benefit sentence, and minor natural phrasing. Variation exists to improve
+relevance, not to evade spam filters.
+
+**Target message shape — keep it short:**
+
+1. Greeting.
+2. One research-informed observation.
+3. One role-appropriate AI opportunity.
+4. One truthful workforce-training/funding sentence.
+5. One simple question.
+6. Signature, physical address, and opt-out.
+
+#### Email 1 — complete role-based first-touch bodies
+
+The approved first-touch subject bank should remain small. Starting candidates are:
+
+- `Mass. Training Fund Opportunity`
+- `AI training for {{company}}`
+- `A practical AI training idea for {{company}}`
+
+Do not put fake `Re:` or `Fwd:` prefixes in any subject. Select one subject before approval and
+store it with the approved body.
+
+**Owner / founder / CEO / president version:**
+
+```text
+Hi {{firstName}},
+
+{{researchHook}}
+
+You may already have people experimenting with AI, but there is usually a gap between occasional
+use and workflows that create measurable time savings across the business. Massachusetts funding
+may help cover practical training that closes that gap without adding the full cost to {{company}}.
+
+Worth a quick conversation to see whether {{company}} might qualify?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+**HR / L&D / people-leader version:**
+
+```text
+Hi {{firstName}},
+
+{{researchHook}}
+
+AI adoption often develops unevenly — a few confident employees move quickly while everyone else
+is left to figure it out. Practical training can give the team repeatable, responsible ways to use
+AI in real work, and Massachusetts funding may help cover the cost for {{company}}.
+
+Would it be useful to compare the training options and see whether {{company}} might qualify?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+**Operations / COO / general-manager version:**
+
+```text
+Hi {{firstName}},
+
+{{researchHook}}
+
+AI becomes much more useful when it moves beyond one-off prompts and into repeatable workflows for
+documentation, handoffs, reporting, and internal knowledge. Massachusetts funding may help
+{{company}} cover practical training focused on those day-to-day applications.
+
+Worth a short conversation to identify one or two workflows that could produce measurable time
+savings?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+**Finance / CFO / controller version:**
+
+```text
+Hi {{firstName}},
+
+{{researchHook}}
+
+Many companies have access to AI tools without a consistent way to measure whether employees are
+using them productively. Practical training can turn scattered experimentation into repeatable
+time savings, and Massachusetts funding may reduce the net training cost for {{company}}.
+
+Open to a brief conversation about the potential cost and ROI before deciding whether it is worth
+pursuing?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+#### Email 2 — useful follow-up with a role bridge
+
+Subject: `Free No-Strings-Attached AI Guide`
+
+```text
+Hi {{firstName}},
+
+I wanted to follow up with something useful rather than simply bumping my last note. I have a
+short, practical AI guide that shows where teams can begin finding repeatable time savings without
+turning the workday upside down.
+
+{{roleBridge}}
+
+Happy to send it over. If the ideas look relevant, we can also check whether Massachusetts
+training funding could help {{company}} put them into practice.
+
+Would you like me to send the guide?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+Use exactly one approved `roleBridge`:
+
+- **Executive:** `The focus is measurable business value, not adding another collection of AI tools.`
+- **HR / L&D:** `The focus is helping employees use AI consistently and responsibly in work they already do.`
+- **Operations:** `The focus is turning repeated documentation, reporting, and handoff work into clearer workflows.`
+- **Finance:** `The focus is identifying use cases where saved time can be measured against the cost of training.`
+
+Do not claim the guide is personalized unless a human actually customized it. Do not attach a file
+or add a tracked link to the first follow-up unless the final deliverability plan approves it.
+
+#### Email 3 — respectful close-the-loop message
+
+Subject: `Should I close this out?`
+
+```text
+Hi {{firstName}},
+
+I know this may not be a priority right now, so I will close the loop after this note.
+
+If practical AI training or Massachusetts funding becomes relevant for {{company}}, I would be
+glad to share what the program can and cannot cover and help you evaluate whether it is worth the
+time.
+
+Should I close this out for now?
+
+{{senderName}}
+Express Training
+{{physicalAddress}}
+
+If you'd rather not hear from me, reply "stop" and I won't email again.
+```
+
+#### Gemini drafting contract
+
+Gemini receives only: company name, verified domain, industry, size band, recipient name and title,
+approved role angle, verified research notes, approved industry use cases, and the fixed template
+requirements. It returns structured fields — `researchHook`, `messageAngle`, `roleBridge`,
+`subject`, and `bodyDraft` — rather than sending anything.
+
+The draft fails review if it:
+
+- Contains a factual claim not present in the provided research.
+- States or implies that funding eligibility is guaranteed.
+- Uses an exact employee count without confirmed company-published evidence.
+- Assumes the company currently uses AI.
+- Adds urgency, scarcity, fake familiarity, unsupported praise, or a misleading subject.
+- Removes the physical address or opt-out.
+- Exceeds the final word-count ceiling selected during implementation.
+
+The human reviewer edits the draft, checks every factual statement, and copies the final version
+into `approvedBody`. Only `approvedBody`, never `bodyDraft`, may reach `QUEUE`.
+
+#### Email + LinkedIn cadence
+
+Establish an email-only baseline first. For roughly the first 30–50 companies, use the approved
+email sequence and measure replies before adding LinkedIn. After that baseline, reserve the
+email-plus-LinkedIn sequence for approximately the highest-value **20–30% of companies** rather
+than using it on every lead.
+
+The future combined cadence is:
+
+| Day | Channel | Person | Action |
+|---:|---|---|---|
+| 1 | Email | Primary contact | Send the approved role-based Email 1 |
+| 4 | LinkedIn | Same primary contact | Manually send one connection request; no hard pitch |
+| 7 | Email | Same primary contact | Send Email 2 with the approved role bridge |
+| 10+ | LinkedIn | Same primary contact | Only if accepted: wait at least 24 hours after acceptance, then send one short DM |
+| 13 | Email | Same primary contact | Send Email 3 and close the email sequence |
+| 15+ | Email or LinkedIn | Secondary contact, if allowed | Begin a different role-based angle only after complete silence from the primary |
+
+Do not send an email and LinkedIn DM on the same day. Do not repeat the email body inside LinkedIn.
+Do not begin with different people on different channels; start with the same primary person so the
+outreach feels coherent rather than like a company-wide blast.
+
+The current campaign uses `FOLLOW_UP_DELAY_DAYS=4`. The combined cadence above is a future design;
+before activating it, update and test the scheduler/settings so the automated preparation dates
+match the approved cadence. Never run two contradictory schedules at once.
+
+#### LinkedIn scripts and rules
+
+**Connection request — no hard pitch:**
+
+```text
+Hi {{firstName}} — I work with Massachusetts employers on practical AI training. Your role at
+{{company}} made sense to connect with.
+```
+
+Sending no note is also acceptable. Do not place a meeting request, funding claim, link, attachment,
+or full sales pitch in the connection request.
+
+**DM after acceptance — wait at least 24 hours:**
+
+```text
+Thanks for connecting, {{firstName}}. I sent a short email because I work with Massachusetts
+companies on practical AI training and possible workforce-funding support. No need to dig for it —
+I can summarize the relevant piece here if that is easier.
+```
+
+If the person says yes, reply personally. Do not paste an automated sequence. If the person says
+no, opts out, or indicates the topic is irrelevant, stop both channels and update the company-level
+status immediately.
+
+**Company-size contact limits:**
+
+| Company size | Email rule | LinkedIn rule |
+|---|---|---|
+| Under 50 | One primary contact; consider a second only after the full sequence receives no response | Use LinkedIn with the same primary person; no second person initially |
+| 50–200 | One primary, then at most one secondary after silence | Primary first; secondary only if email sequence is complete and roles differ |
+| 200+ | Up to two staggered, role-specific contacts | Use one LinkedIn contact at a time; never DM both simultaneously |
+| Enterprise | Two initial stakeholders may be justified; a third only later when the buying roles are genuinely distinct | LinkedIn supports the active stakeholder strategy but never becomes a broad employee blast |
+
+A secondary contact must receive a genuinely different role angle. Changing a few words in the
+same message does not count. No more than two people are active at one company at the same time,
+and the safer default is one.
+
+#### Maximize third-party research and email-finder credits
+
+The goal is not to collect the maximum number of addresses. The goal is to obtain the minimum
+number of **current, role-relevant, verified** contacts needed for the company-size strategy above.
+
+**Credit-preserving workflow for every company:**
+
+1. Use the assigned research tool's free company/person search first. Confirm the exact company,
+   domain, Massachusetts connection, current employee, title, and LinkedIn profile before revealing
+   any email.
+2. Select the primary decision-maker using the established industry + company-size title rules.
+3. Spend at most one finder/reveal credit on that primary person.
+4. Stop if the company-size rule requires only one active contact. Do not reveal extra addresses
+   merely because the search produced them.
+5. For a company that genuinely needs a secondary contact, first look for public, current **named
+   employee** emails at the same domain. Generic addresses such as `info@`, `sales@`, `support@`,
+   and `contact@` do not establish the employee-email pattern.
+6. Treat one known employee address as a clue, not proof. Two current named employees using the
+   same exact domain and structure provide the preferred evidence for a pattern such as
+   `first.last@company.com` or `firstInitialLast@company.com`.
+7. Once the pattern is supported, generate only the one secondary candidate address actually
+   required by the account strategy.
+8. Run every inferred address through ZeroBounce. MX records, matching syntax, and apparent email
+   structure do not prove that the mailbox exists.
+9. Accept only a ZeroBounce result of `valid`. Reject `invalid`, `do_not_mail`, `abuse`, or
+   `spamtrap`. Park `catch-all` and `unknown`; do not risk the young outreach domain on an unresolved
+   inferred address. ZeroBounce explains that an unresolved catch-all cannot confirm the mailbox:
+   [catch-all guidance](https://www.zerobounce.net/docs/email-list-validation/catch-all-email-validation).
+10. If the pattern is unclear or the inferred address does not validate, spend a second finder
+    credit only when the secondary contact is strategically justified. Otherwise keep the company
+    to its verified primary contact.
+11. Never use bulk reveal, Save All, All on Page, or mass export actions in Apollo, Prospeo, Skrapp,
+    Snov, or a fallback tool. Those actions burn credits before relevance is established.
+12. Record every spent credit, finder source, validation result, and pattern inference in the
+    workbook so the process can be audited and improved.
+
+**Tool order and purpose:**
+
+1. Use the workbook's assigned primary lane first: Apollo, Prospeo, Skrapp, or Snov.
+2. Use that tool for company confirmation, title research, LinkedIn confirmation, and the primary
+   email reveal only.
+3. Use GetProspect only as an exception when the primary tool found the correct person but could
+   not return a usable email.
+4. Use Hunter only after a verified name + company domain are known; do not spend a Hunter credit
+   on an unconfirmed person.
+5. Use pattern inference for a justified secondary contact only after sufficient pattern evidence.
+6. Use ZeroBounce on every source, including paid-tool results and inferred addresses.
+
+**Credit budget by company size:**
+
+| Company size | Default finder-credit budget | Expansion rule |
+|---|---:|---|
+| Under 50 | 1 primary reveal | Second credit only after full silence and a clearly different relevant role |
+| 50–200 | 1 primary reveal | Infer/verify or spend 1 additional credit for a justified secondary after silence |
+| 200+ | Up to 2 deliberate reveals | Each must represent a different buying role and be staggered |
+| Enterprise | 2 deliberate reveals initially | Third only after evidence that the buying committee requires it |
+
+The cost-saving trade is deliberate: finder credits are conserved by pattern inference, but every
+candidate still spends a verification credit. That is worthwhile only when verification is cheaper
+than another finder reveal and the secondary contact is strategically necessary. A guessed address
+that cannot be verified is not a lead.
+
+#### Company-level stop conditions
+
+Stop all email preparation, follow-ups, connection requests, and DMs for the company when any
+contact:
+
+- Replies positively or asks a question.
+- Says no or says the topic is not relevant.
+- Requests removal or uses opt-out language.
+- Refers the outreach to another employee — switch to the referred person; do not keep pursuing
+  everyone else.
+- Reports that the recipient left the company or the address is wrong; correct the research before
+  contacting anyone else.
+
+An out-of-office response is not a rejection, but do not contact a second employee merely because
+the primary person is temporarily unavailable. Respect the return date.
+
+#### Proposed spreadsheet and campaign fields — add later, not now
+
+Research workbook fields:
+
+- `messageAngle`
+- `researchHook`
+- `roleBridge`
+- `bodyDraft`
+- `approvedBody`
+- `approvedSubject`
+- `emailPattern`
+- `emailPatternEvidence`
+- `finderCreditsSpent`
+- `emailSource`
+- `verificationResult`
+
+Contact/channel tracking fields:
+
+- `emailVariantId`
+- `linkedinStatus`
+- `linkedinConnectionRequestedAt`
+- `linkedinConnectedAt`
+- `linkedinDmSentAt`
+- `lastChannelTouchAt`
+
+Company-level control fields:
+
+- `companyOutreachStatus`
+- `primaryContactId`
+- `secondaryContactId`
+- `activeContactCount`
+- `lastCompanyTouchAt`
+- `companyReplyStatus`
+- `companyStopReason`
+
+Finalize the exact headers and ownership boundaries only when implementation is scheduled. The
+eventual migration must preserve current `COMPANIES`, `CONTACTS`, `QUEUE`, and `SUPPRESSION`
+behavior and must add tests proving that one company reply stops all other contacts.
+
+#### Metrics for deciding whether the strategy works
+
+Track results at company level, not only message level:
+
+- Positive reply rate by role angle.
+- Positive reply rate for email-only versus email + LinkedIn accounts.
+- LinkedIn connection-acceptance rate and DM-reply rate.
+- Companies contacted per positive reply.
+- Finder credits spent per verified usable contact.
+- Bounce and catch-all rate for tool-found versus pattern-inferred addresses.
+- Number of companies where multiple contacts were stopped after the first reply.
+
+Do not declare a winning variant from a handful of sends. Establish the email-only baseline first,
+then add LinkedIn to a controlled high-value segment and compare company-level outcomes.
+
 ---
 
 ## Part 5 — Free-tier mining strategy (+ the two purchases)

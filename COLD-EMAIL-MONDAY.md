@@ -1121,6 +1121,34 @@ Postmaster Tools), QUEUE populated, personalization lines human-approved, templa
 5. Sheet backup: File → Make a copy (dated) → Drive Backups folder. Extra copy before any bulk
    edit.
 
+### 🧐 FUTURE CONSIDERATION — replenish the lead list
+
+There is no single free database that will continuously produce unlimited, verified
+decision-makers. That does **not** mean the campaign lacks a sustainable next source. At a limit
+of 3 new emails per weekday, nearly 300 prospects provide roughly 100 sending days — about five
+months of runway before accounting for pauses and follow-ups. The future requirement is therefore
+not another giant one-time list; it is a repeatable process that adds approximately **15 qualified
+companies per week**.
+
+Use this replenishment pipeline when the current researched list begins running low:
+
+1. Discover candidate companies through OpenStreetMap/Overpass, targeted business directories,
+   industry associations, chambers, grant-recipient lists, and focused searches.
+2. Automatically normalize the records and remove duplicates, obvious poor fits, suppressed
+   companies, and companies already present in `COMPANIES`.
+3. Enrich company size, industry, website, and LinkedIn information.
+4. Use Prospeo, Skrapp, Snov, and LinkedIn to identify decision-makers matching the established
+   company-size and industry title rules.
+5. Discover and verify business-domain email addresses; never promote an unverified address.
+6. Require human approval before moving a candidate into `COMPANIES` and `CONTACTS`.
+
+Treat Overpass and other public sources as **candidate-company discovery**, not as sources of
+outreach-ready contacts. The discovery, normalization, deduplication, and basic enrichment stages
+can eventually be automated, but final qualification should remain human-reviewed to protect the
+sender reputation and avoid wasting the limited daily sends. Finish researching the current list
+first and record which industries, company sizes, and titles survive qualification; build the
+future replenishment automation around those demonstrated patterns.
+
 ---
 
 ## Gotchas (carried forward, current)

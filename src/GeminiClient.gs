@@ -1,14 +1,13 @@
 const GEMINI_CLIENT_STAGE = 'GeminiClient';
 const GEMINI_CLIENT_API_KEY_PROPERTY = 'GEMINI_API_KEY';
-const GEMINI_CLIENT_DEFAULT_MODEL = 'gemini-2.0-flash';
+const GEMINI_CLIENT_DEFAULT_MODEL = 'gemini-3.6-flash';
 
 /**
  * Generates text through the Gemini API (Google AI Studio free tier).
  * @param {string} prompt - Generation prompt.
- * @param {{temperature: number=}=} options - Optional generation settings.
  * @returns {{success: boolean, text: string, error: string|null}}
  */
-function generateGeminiText(prompt, options) {
+function generateGeminiText(prompt) {
   try {
     const properties = PropertiesService.getScriptProperties();
     const apiKey = String(properties.getProperty(GEMINI_CLIENT_API_KEY_PROPERTY) || '').trim();
@@ -16,7 +15,6 @@ function generateGeminiText(prompt, options) {
       throw new Error('Missing script property: ' + GEMINI_CLIENT_API_KEY_PROPERTY);
     }
     const model = String(properties.getProperty('GEMINI_MODEL') || GEMINI_CLIENT_DEFAULT_MODEL).trim();
-    const temperature = options && Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.7;
 
     // NEEDS_WIFI_TEST: UrlFetchApp.fetch calls the live Gemini API and consumes free-tier quota.
     const response = UrlFetchApp.fetch(
@@ -26,7 +24,6 @@ function generateGeminiText(prompt, options) {
         contentType: 'application/json',
         payload: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: temperature },
         }),
         muteHttpExceptions: true,
       }

@@ -23,6 +23,10 @@ for (const file of sourceFiles) {
   new vm.Script(source, { filename: file }).runInContext(context);
 }
 
+const geminiClientSource = fs.readFileSync(path.join(srcDir, 'GeminiClient.gs'), 'utf8');
+assert.equal(geminiClientSource.includes("gemini-3.6-flash"), true, 'GeminiClient must use Gemini 3.6 Flash');
+assert.equal(/gemini-2\.0-flash|temperature|topP|topK/.test(geminiClientSource), false, 'GeminiClient contains deprecated Gemini configuration');
+
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'appsscript.json'), 'utf8'));
 assert.equal(manifest.oauthScopes.includes('https://mail.google.com/'), false);
 

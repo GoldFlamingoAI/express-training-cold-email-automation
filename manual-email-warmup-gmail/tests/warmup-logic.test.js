@@ -13,6 +13,10 @@ for (const file of sourceFiles) {
   new vm.Script(source, { filename: file }).runInContext(context);
 }
 
+const contentVariationSource = fs.readFileSync(path.join(srcDir, 'ContentVariationService.gs'), 'utf8');
+assert.equal(contentVariationSource.includes("gemini-3.6-flash"), true, 'ContentVariationService must use Gemini 3.6 Flash');
+assert.equal(/gemini-2\.0-flash|temperature|topP|topK/.test(contentVariationSource), false, 'ContentVariationService contains deprecated Gemini configuration');
+
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'appsscript.json'), 'utf8'));
 assert.equal(manifest.oauthScopes.includes('https://mail.google.com/'), false, 'manifest must not carry the Gmail scope');
 

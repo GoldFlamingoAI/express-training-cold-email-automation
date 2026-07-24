@@ -58,7 +58,7 @@ function runPersonalizationDrafts() {
         continue;
       }
 
-      const result = generateGeminiText(buildPersonalizationPrompt(contact.company, contact.title, siteText), { temperature: 0.7 });
+      const result = generateGeminiText(buildPersonalizationPrompt(contact.company, contact.title, siteText));
       if (!result.success) {
         summary.skipped += 1;
         auditLog(PERSONALIZATION_DRAFT_STAGE, 'DRAFT_SKIPPED_GENERATION_FAILED', contactId, result.error || '', 'SKIP');

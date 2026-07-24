@@ -1,5 +1,5 @@
 const CONTENT_VARIATION_STAGE = 'ContentVariationService';
-const CONTENT_VARIATION_GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const CONTENT_VARIATION_GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
 
 const CONTENT_VARIATION_FALLBACK_SUBJECTS = [
   'Quick thought from this morning',
@@ -101,7 +101,7 @@ function callGeminiForContent_(prompt) {
       contentType: 'application/json',
       payload: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 1.2, responseMimeType: 'application/json' },
+        generationConfig: { responseMimeType: 'application/json' },
       }),
       muteHttpExceptions: true,
     });

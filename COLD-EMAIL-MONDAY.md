@@ -38,7 +38,7 @@ project and the file:
 | 9 | done | Phase 4 enrichment chain: discovery → verification → queue (PR #67) | code | Claude | ✅ merged |
 | 10 | 2–3 | Phase 5 free sourcing funnel: data.mass.gov client, criteria filter, CANDIDATES staging + promotion, website scraper, pattern-guesser + MX check, Snov client | code | Claude | ⬜ **next build** |
 | **— ENRICHMENT & MINING OPS —** |
-| 11 | 1+ | Segmented Apollo/Prospeo/Skrapp/Snov research → `COMPANIES` + `CONTACTS` (Part 4) | ops | You | ⬜ |
+| 11 | 1+ | Apollo research (company + decision-maker + reveal) → `COMPANIES` + `CONTACTS` (Part 4) | ops | You | ⬜ |
 | 12 | 2+ | Enrichment runs: discovery → verification → queue (Part 4) | ops | You | ⬜ |
 | 13 | 3+ | Personalization drafts + human review per batch (Part 4) | ops | You | ⬜ |
 | 14 | 3–9 | Monthly free-credit mining cycles (Hunter 25 + Snov 50 + scraper; Part 5) | ops | You | ⬜ after item 10 |
@@ -48,8 +48,10 @@ project and the file:
 | 17 | 9 | Smoke test, first sends at 3/day, taper warm-up layer (Part 6) | ops | You | ⬜ |
 | 18 | 9+ | Daily reply triage + weekly deliverability/backup routine (Part 7) | ops | You | ⬜ |
 
-Total planned spend: **~$60** (ZeroBounce $20 one-time + one Hunter month ~$40). Everything
-else is free tier.
+Total planned spend: **Apollo Basic ~$59/mo (ongoing, cancel-anytime monthly billing) + ~$60
+one-time** (ZeroBounce $20 + one Hunter Starter month ~$40, for a backlog burst near launch).
+Everything else — Hunter's free tier, ZeroBounce verification, data.mass.gov/scraper (once
+Phase 5 lands) — stays free.
 
 ---
 
@@ -693,8 +695,8 @@ Optional properties:
 The full machine, end to end:
 
 ```
-Prospect_Research_Staging.xlsx (229 employer prospects, four exact tool queues)
-   ↓ you: company + decision-maker research (step 21)
+Prospect_Research_Staging.xlsx (229 employer prospects, one Apollo lane)
+   ↓ you: company + decision-maker research in Apollo (step 21)
 Ready row → COMPANIES + CONTACTS
    ↓ runContactDiscoveryTrigger()    — Hunter finds the email (spends credits)
    ↓ runContactVerificationTrigger() — ZeroBounce verifies (spends credits)
@@ -705,267 +707,142 @@ Ready row → COMPANIES + CONTACTS
    ↓ you: copy into Hostinger Webmail, send, Cold Email → Mark selected email sent
 ```
 
-21. **Run the four research lanes (continuous while warm-up runs):**
+21. **Run Apollo research (continuous while warm-up runs):**
 
-    **What this process does:** the four websites do not connect to one another or to the
-    campaign. You manually take one company from `MASTER_QUEUE`, paste it into its assigned
-    research website, identify one current decision-maker, and type the evidence back into the
-    same `MASTER_QUEUE` row. Do not begin with a broad Google search. Google is only a last-resort
-    confirmation tool after the assigned service has already identified a likely company or
-    person.
+    **What changed:** the four-lane Apollo/Prospeo/Skrapp/Snov research process is retired.
+    Apollo Basic ($59/mo, monthly billing, no annual lock-in) replaces all four — company
+    research, decision-maker identification, and email reveal now happen in one tool instead of
+    four. Prospeo, Skrapp, Snov, and GetProspect are no longer part of the primary workflow;
+    their credit allowances can sit unused or serve as an emergency tie-breaker on a single
+    stubborn company, nothing more. Verify Apollo's current monthly credit allowance on its own
+    pricing page before relying on any number here — it has changed before and will again.
 
-    **Use the tools in this order:**
+    **Why one tool instead of four:** the old four-lane structure existed to stay at $0 by
+    spreading load across separate free tiers. That traded money for time — four logins, four
+    UIs, four credit budgets, 10-rows-per-session pacing. Apollo Basic buys back that time:
+    company search, people search with title filters, and a one-click email reveal, all in one
+    place, all free to browse until you choose to reveal.
 
-    1. **Apollo** — learn the workflow with a five-company pilot, then finish `APOLLO_59`.
-    2. **Prospeo** — finish `PROSPEO_70` after Apollo is complete or Apollo reaches its limit.
-    3. **Skrapp** — finish `SKRAPP_50`, respecting its daily company-search limit.
-    4. **Snov.io** — finish `SNOV_50` last because opening a Domain Search result spends a credit.
+    **One-time account setup:**
 
-    The tools do not feed each other. This order is for a simple, repeatable learning sequence.
-    When a service reaches the limit displayed in its own account, leave its unfinished rows as
-    `Not Started`, record the displayed reset date in your notes, move to the next service, and
-    return after the service resets. Do not assume all four reset on the first of the month.
-
-    **One-time account setup — keep the outreach mailbox out of these tools:**
-
-    1. Create one legitimate free account at [Apollo](https://app.apollo.io),
-       [Prospeo](https://prospeo.io/sign-up), [Skrapp](https://skrapp.io), and
-       [Snov.io](https://snov.io). Use **`savetime@goldflamingoai.com`** for account ownership
-       and product notifications, not `adam@goldflamingoailabs.com`.
-    2. When any service offers to connect an inbox, sync Gmail, connect a CRM, import contacts,
-       create a sequence, or start warm-up, click **Skip**, **Not now**, or close the dialog.
-    3. Do **not** connect either mailbox, upload the workbook, import a sending list, create a
-       campaign, or send outreach from any research service. Hostinger remains the only campaign
-       sender and Warmup Inbox remains the only paid automated warm-up service.
-    4. Use one account per service. Do not use aliases, VPNs, or duplicate free accounts to evade
-       limits. Free plans can be restricted for that behavior.
-    5. Before the first search in each service, find the credit counter or billing/usage page and
-       write down the displayed balance and reset date. Free-plan details change; the website's
-       current account screen wins over the estimates in this document.
-    6. Research-tool verification never replaces the final ZeroBounce check in step 22.
+    1. Sign up at [Apollo](https://app.apollo.io) using **`savetime@goldflamingoai.com`** for
+       account ownership and notifications — never `adam@goldflamingoailabs.com`.
+    2. Subscribe to **Basic, monthly billing** (not annual — see Gotcha #4 on why monthly-only
+       matters for any tool you might later cancel).
+    3. When Apollo offers to connect an inbox, sync Gmail, connect a CRM, create a sequence, or
+       start warm-up, click **Skip** or close the dialog every time.
+    4. Do **not** connect either mailbox, import a sending list, create a campaign, or send
+       outreach from Apollo. Hostinger remains the only campaign sender; Warmup Inbox remains
+       the only paid automated warm-up service.
+    5. Before your first research session, find Apollo's credit/usage page and write down the
+       displayed balance and reset date. The account screen wins over any number in this doc.
+    6. Apollo research never replaces the final ZeroBounce check in step 22 — every email,
+       however it was found, gets verified before QUEUE.
 
     **The workbook controls every research session:**
 
-    1. Open [`Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx).
-    2. Click the **`MASTER_QUEUE`** worksheet tab at the bottom. Do not type into `APOLLO_59`,
-       `PROSPEO_70`, `SKRAPP_50`, or `SNOV_50`; those are read-only audit views.
-    3. Click anywhere in row 1, open the spreadsheet's **Data** menu, and choose **Filter** if
-       filter arrows are not already visible.
-    4. Click the filter arrow on `assignedTool`, clear **Select all**, check the tool named in the
-       current mini-runbook, and click **OK**.
-    5. Click the filter arrow on `reviewStatus`, clear **Select all**, check **Not Started**, and
-       click **OK**. The visible rows are the remaining workload for that tool.
-    6. Work the first visible row only. Change its `reviewStatus` cell from `Not Started` to
-       **`In Progress`** before opening the research website.
-    7. Copy the row's exact `company` value. Also note its `city`, `state`, and any existing
-       `website`; these distinguish it from similarly named companies.
-    8. Keep the workbook open in one browser tab or window and the research service open in a
-       second tab. Return to the workbook after every company; do not collect a loose batch of
-       names in another note.
+    1. Open [`Prospect_Research_Staging.xlsx`](business-lists/Prospect_Research_Staging.xlsx)
+       and click the **`MASTER_QUEUE`** worksheet tab. The `APOLLO_59`/`PROSPEO_70`/`SKRAPP_50`/
+       `SNOV_50` tabs are historical audit views from the old four-lane assignment; ignore the
+       `assignedTool` column entirely now — every row gets worked through Apollo regardless of
+       its original assignment.
+    2. Click anywhere in row 1, open **Data → Filter** if filter arrows aren't visible.
+    3. Click the filter arrow on `reviewStatus`, clear **Select all**, check **Not Started**,
+       click **OK**. The visible rows are your remaining workload.
+    4. Work the first visible row only. Change its `reviewStatus` to **`In Progress`** before
+       opening Apollo.
+    5. Copy the row's exact `company` value. Note its `city`, `state`, and any existing
+       `website` — these distinguish it from similarly named companies.
+    6. Keep the workbook open in one tab and Apollo open in a second. Return to the workbook
+       after every company; don't collect names in a separate note.
 
-    **Tool 1 — Apollo click-by-click (`APOLLO_59`, 59 rows):**
+    **Apollo click-by-click — one company, start to finish:**
 
-    **Goal:** use Apollo's visible company and people data to complete one company and one
-    decision-maker per row without spending an email credit. Start with **five rows only**. Review
-    those five in `MASTER_QUEUE`; if they look correct, finish the lane in sessions of about ten.
+    1. Go to [Apollo](https://app.apollo.io), signed in as `savetime@goldflamingoai.com`.
+    2. In the left navigation, click **Search → Companies**.
+    3. Click **Show Filters** (and **More Filters** if collapsed). Open the **Company** filter,
+       choose **Is any of**, paste the exact company name, and click the matching suggestion.
+       Do not accept a lookalike company.
+    4. If more than one company appears, add the **Location**/**Account HQ** filter with the
+       Massachusetts city from `MASTER_QUEUE` and click **Apply filters**.
+    5. Click the exact company's name. Compare name, website/domain, headquarters, industry,
+       and employee count against the source row. Accept only when at least three signals
+       agree.
+    6. Return to `MASTER_QUEUE` and fill `website` (bare domain, e.g. `example.com`),
+       `industry`, Apollo's displayed employee band in `employeeSize`, and the full Apollo page
+       URL in `sourceUrl`.
+    7. **Determine the size tier from `employeeSize`** and pick your title search order —
+       lead first, backup only if the lead search comes up empty:
 
-    1. Complete **The workbook controls every research session** above with
-       `assignedTool=APOLLO_59`, then copy the first visible row's `company` value.
-    2. Go to [Apollo](https://app.apollo.io) and sign in with
-       `savetime@goldflamingoai.com`.
-    3. In Apollo's left navigation, click **Companies**. If Apollo shows a general **Search**
-       menu first, click **Search**, then click **Companies**.
-    4. Click **Show Filters**, then **More Filters** if the company filters are collapsed.
-    5. Click the **Company** filter, choose **Is any of**, paste the exact company name into the
-       field, and click the matching suggestion. Do not choose a lookalike company.
-    6. If more than one company appears, add the **Location** or **Account HQ** filter and enter
-       the Massachusetts city from `MASTER_QUEUE`. Click **Apply filters**.
-    7. Click the exact company's name in the results. Compare its name, website/domain,
-       headquarters, industry, and employee count with the source row. Accept it only when at
-       least three signals agree.
-    8. Return to `MASTER_QUEUE` and enter:
-       `website` as a bare domain such as `example.com`; `industry`; Apollo's displayed employee
-       band in `employeeSize`; and the full Apollo page URL from the browser address bar in
-       `sourceUrl`.
-    9. Return to Apollo. In the left navigation, click **People**.
-    10. Click **Show Filters**, then **More Filters** if necessary. Open the **Company** filter,
-        choose **Is any of**, paste the exact company name, and select the same company from the
-        dropdown.
-    11. Open **Job titles**. Enter titles in this order, stopping when a credible current employee
-        appears: `owner`, `founder`, `ceo`, `president`, `coo`, `general manager`, `operations`,
-        `human resources`, `people`, `training`, `learning and development`. Click **Apply
-        filters** after changing filters.
-    12. Click the best person's name. Confirm the profile says the person currently works for the
-        matched company. Reject advisors, former employees, consultants, and unrelated branches.
-    13. Copy the person's first name, last name, exact current title, and LinkedIn URL. Use the
-        LinkedIn icon/link on the profile when available. If Apollo identifies the person but does
-        not display the URL, search that exact name plus exact company inside LinkedIn; do not
-        start a broad Google search.
-    14. Return to `MASTER_QUEUE` and fill `decisionMakerFirstName`,
-        `decisionMakerLastName`, `title`, and the full `linkedinUrl` beginning with
-        `https://www.linkedin.com/`.
-    15. Do **not** click **Access email**, **Save**, **Add to list**, **Export**, or **Add to
-        sequence** during this first pass. Leave `discoveredEmail` blank and let Hunter handle it
-        later.
-    16. Complete **Close the row correctly** below, then take the next visible Apollo row.
+       | Employees | Contact 1 (lead) | Contact 2 (backup) | Contact 3 (large orgs only) |
+       |---|---|---|---|
+       | 1–10 | Owner / Founder | President / CEO | Office Manager / GM |
+       | 11–50 | Owner / President | Operations Manager / Dir. of Ops | HR Manager / Office Manager |
+       | 51–100 | HR Manager / Dir. of HR | Operations Manager / Dir. of Ops | GM / VP Ops (or Owner if founder-led) |
+       | 101–250 | HR Director / Dir. of People | Training / L&D Manager | VP / Dir. of Operations |
+       | 251+ | Dir. of Learning & Development | HR Director / VP HR | VP / Dir. of Operations |
 
-    Official UI reference: [Apollo Search Filters Overview](https://knowledge.apollo.io/hc/en-us/articles/4412665755661-Search-Filters-Overview).
+       Only pursue Contact 2/3 for **this same company** later, after Contact 1's full send
+       sequence (initial + 2 follow-ups, ~2 weeks) has gone cold — see Part 5's contact-cap
+       discipline. Right now, research and record Contact 1 only.
+    8. Return to Apollo. In the left navigation, click **People**. Click **Show Filters**, open
+       the **Company** filter, choose **Is any of**, paste the exact company name, and select
+       the same company from the dropdown.
+    9. Open **Job titles**. Enter the tier's Contact-1 title(s) from the table above. If nothing
+       credible appears, try Contact 1's close synonyms before falling back to Contact 2's
+       title. Click **Apply filters** after each change.
+    10. Click the best person's name. Confirm the profile shows them **currently** at the
+        matched company. Reject advisors, former employees, consultants, and people at
+        unrelated parent/franchise companies.
+    11. Copy the person's first name, last name, exact current title, and LinkedIn URL (use the
+        profile's LinkedIn link when shown; otherwise confirm that exact name + company inside
+        LinkedIn directly — never a broad Google search).
+    12. Return to `MASTER_QUEUE` and fill `decisionMakerFirstName`, `decisionMakerLastName`,
+        `title`, and the full `linkedinUrl` beginning with `https://www.linkedin.com/`.
+    13. **Reveal the email now, since Apollo is already open and it's the same tool:** click
+        **Access Email** on that one confirmed person only — never a bulk **Add to list**,
+        **Export**, or **Add to sequence** action. This spends 1 credit.
+        - If Apollo returns a business-domain email: copy it into `discoveredEmail`, enter
+          `Apollo` in `emailSource`. It still goes through ZeroBounce before QUEUE — Apollo's
+          reveal is not a verification.
+        - If Apollo has no email on file, or only shows a personal-domain address (gmail/
+          yahoo/etc.): leave `discoveredEmail` blank. `runContactDiscoveryTrigger()` (Hunter,
+          step 22) automatically fills these on the next enrichment run — no separate tool or
+          manual step needed.
+        - If you'd rather conserve credits and let Hunter try first for every row, skip this
+          step entirely and leave `discoveredEmail` blank always; Hunter is free (25/mo) and
+          fully automated either way. Reveal-now is a convenience, not a requirement.
+    14. Complete **Close the row correctly** below, then take the next visible row.
 
-    **Tool 2 — Prospeo click-by-click (`PROSPEO_70`, 70 rows):**
+    Official UI references: [Apollo Search Filters Overview](https://knowledge.apollo.io/hc/en-us/articles/4412665755661-Search-Filters-Overview), [Apollo Access Email](https://knowledge.apollo.io/hc/en-us/articles/4412665808013).
 
-    **Goal:** complete one exact company and one decision-maker per row. Work 10–15 rows per
-    session. Use free previews first; spend at most one email/company credit on a row and preserve
-    the rest for exceptions.
+    **Close the row correctly — do this after every company:**
 
-    1. Complete **The workbook controls every research session** with
-       `assignedTool=PROSPEO_70`, then copy the first visible row's `company` value.
-    2. Go to [Prospeo](https://app.prospeo.io) and sign in with
-       `savetime@goldflamingoai.com`.
-    3. In the left navigation, click **Search**, then click **Companies**. The direct page is
-       [Prospeo Company Search](https://app.prospeo.io/search/companies).
-    4. In the filters on the left, find **Company**. Paste the exact company name. If the row
-       already has a domain, use the domain because it is a stronger identifier. Select the exact
-       suggestion rather than merely leaving text in the field.
-    5. If multiple companies appear, add the headquarters/location filter and select the row's
-       Massachusetts city. Do not select or enrich multiple results.
-    6. Inspect the exact match's visible company name, domain, industry, location, and employee
-       size. Accept it only when at least three signals agree.
-    7. Return to `MASTER_QUEUE` and fill `website`, `industry`, `employeeSize`, and `sourceUrl`.
-       Copy the full Prospeo results/profile URL from the browser address bar into `sourceUrl`.
-    8. Return to Prospeo. In the left navigation, click **Search**, then **People**. The direct
-       page is [Prospeo People Search](https://app.prospeo.io/search/people).
-    9. In the left filter panel, click **Company**. Paste the exact company name or domain and
-       select the exact company from the suggestions.
-    10. Click **Job Title**. Enter one title at a time in the priority order used in the Apollo
-        steps. Press **Enter** or choose the suggested title, and use **Contains** for titles such
-        as operations, human resources, training, or learning and development.
-    11. Review the results and open the best current decision-maker. Confirm the company and title
-        before accepting the person.
-    12. Copy the person's first name, last name, exact title, and LinkedIn URL. When Prospeo does
-        not show a LinkedIn URL, confirm that exact person/company combination in LinkedIn.
-    13. Return to `MASTER_QUEUE` and fill the four decision-maker columns.
-    14. **Optional one-credit action:** only after the company and person are confirmed, click
-        Prospeo's single-person email/contact reveal control. Do not use a bulk selection or
-        export. If a business-domain email is returned, put it in `discoveredEmail` and enter
-        `Prospeo` in `emailSource`. Never save a Gmail, Yahoo, Outlook, or other personal address.
-    15. If the preview is enough to complete the row, do not click **Export**, **Enrich**, **Add
-        all**, or any bulk control.
-    16. Complete **Close the row correctly** below, then take the next visible Prospeo row.
-
-    Official UI references: [Prospeo People Search filters](https://help.prospeo.io/en/article/people-search-filters-explained-cppbsm/) and [Prospeo credit behavior](https://help.prospeo.io/en/article/how-credits-work-in-people-search-idi2ua/).
-
-    **Tool 3 — Skrapp click-by-click (`SKRAPP_50`, 50 rows):**
-
-    **Goal:** complete one company and one decision-maker per row while staying under the free
-    plan's displayed daily limits. The current published limit is five company searches/day, so
-    stop after five assigned companies even if the session feels short.
-
-    1. Complete **The workbook controls every research session** with
-       `assignedTool=SKRAPP_50`, then copy the first visible row's `company` value.
-    2. Go to [Skrapp](https://app.skrapp.io) and sign in with
-       `savetime@goldflamingoai.com`.
-    3. In the left navigation, click **Search**. In the tabbed navigation at the top of the search
-       page, click **Company Search**.
-    4. Open the **Company (Name or Website)** filter and paste the exact company name or known
-       domain. Open **Location** and enter the Massachusetts city when the name is ambiguous.
-    5. Click **Search**.
-    6. Compare the returned company name, location, industry, and headcount with the source row.
-       If the exact company appears, click its **Get Emails** button to open the company detail and
-       leads view. This button name is misleading here: you are opening the company's leads, not
-       authorizing a campaign.
-    7. Click **See More** in the company details and copy the official domain, industry, company
-       size, and headquarters. Return to `MASTER_QUEUE` and fill `website`, `industry`,
-       `employeeSize`, and the full Skrapp page URL in `sourceUrl`.
-    8. Return to Skrapp and review the displayed company leads. Choose one current person using
-       the same title priority as Apollo. Confirm the displayed full name, job title, and location.
-    9. Copy the person's first name, last name, and exact title. Use a displayed profile/LinkedIn
-       link when available; otherwise confirm that exact name and company inside LinkedIn and copy
-       the full LinkedIn URL.
-    10. Return to `MASTER_QUEUE` and fill the four decision-maker columns.
-    11. Do **not** click **Save All Leads** or **Save Selected Leads**. If you deliberately spend
-        one credit for the chosen person, click only that person's **Save in List** button, then
-        record a returned business-domain email in `discoveredEmail` and `Skrapp` in
-        `emailSource`.
-    12. Complete **Close the row correctly** below, then take the next visible Skrapp row. After
-        five company searches that day, stop this lane and resume it the next day.
-
-    Official UI reference: [Skrapp Company Search](https://support.skrapp.io/hc/en-us/articles/360019198358-How-to-Search-for-Companies).
-
-    **Tool 4 — Snov.io click-by-click (`SNOV_50`, 50 rows):**
-
-    **Goal:** spend no more than one company-search credit and, optionally, one person-save credit
-    per assigned row. Work about ten rows per session. Do not use Snov campaigns or warm-up.
-
-    1. Complete **The workbook controls every research session** with
-       `assignedTool=SNOV_50`, then copy the first visible row's `company` value and known domain,
-       if present.
-    2. Go to [Snov.io](https://app.snov.io) and sign in with
-       `savetime@goldflamingoai.com`.
-    3. In the top navigation, click **Finder**, then click **Domain Search**.
-    4. Paste the known bare domain into the search field. If the row has no domain, paste the exact
-       company name. Click **Search**. Domain Search handles one company at a time and opening the
-       company profile can cost one credit, so do not open similar-company suggestions.
-    5. In the company **Overview**, compare the website, headquarters/location, industry, and
-       employee count with the source row. Use the quick website and LinkedIn links only to
-       confirm the exact company.
-    6. Return to `MASTER_QUEUE` and fill `website`, `industry`, `employeeSize`, and the full Snov
-       company-profile URL in `sourceUrl`.
-    7. Return to Snov and click the **Prospects** tab in the company profile.
-    8. Find the position search field at the top. Enter the prioritized titles, beginning with
-       `owner`, `founder`, `ceo`, and `president`, then click **Search** on the right. Add the next
-       title group only when the first group produces no credible current employee.
-    9. Choose one person. Confirm the current job position and use Snov's direct LinkedIn link to
-       open and copy the full profile URL.
-    10. Return to `MASTER_QUEUE` and fill `decisionMakerFirstName`,
-        `decisionMakerLastName`, `title`, and `linkedinUrl`.
-    11. **Optional one-credit action:** click **Save** on the right side of that one person's row
-        to reveal the verified email and add the person to a Snov list. Record a business-domain
-        result in `discoveredEmail` and enter `Snov` in `emailSource`. Do not select multiple
-        prospects, **All on page**, **Save to list** in bulk, or **All Domain Emails**.
-    12. Ignore **Campaigns**, **Deliverability**, **Email Warm-up**, and mailbox-connection prompts.
-        Do not connect `adam@goldflamingoailabs.com`.
-    13. Complete **Close the row correctly** below, then take the next visible Snov row.
-
-    Official UI reference: [Snov Domain Search](https://snov.io/knowledgebase/how-to-get-email-addresses-from-a-domain/).
-
-    **Close the row correctly — do this after every company in every tool:**
-
-    1. Confirm that at least three company signals agree: legal/brand name, official domain,
+    1. Confirm at least three company signals agree: legal/brand name, official domain,
        Massachusetts location, industry, or matching LinkedIn company page.
-    2. Confirm that the chosen person currently works for the exact company. Reject advisors,
-       former employees, consultants, generic inboxes, and people associated only with a parent,
-       franchise, or similarly named company.
-    3. Preserve useful grant/source context already in the row. Add a factual personalization lead
-       to `researchNotes` only when the service shows one; do not invent one.
-    4. Set `matchConfidence=High` only when company/domain/location and
-       person/employer/title all agree. Use `Medium` when a defensible legal-name, brand, or
-       location difference is explained in `researchNotes`. Use `Low` when anything material is
-       uncertain.
+    2. Confirm the chosen person currently works for the exact company. Reject advisors, former
+       employees, consultants, generic inboxes, and people at a parent/franchise/similarly
+       named company.
+    3. Add a factual personalization lead to `researchNotes` only when Apollo actually shows
+       one; never invent one.
+    4. Set `matchConfidence=High` only when company/domain/location and person/employer/title
+       all agree. `Medium` when a defensible legal-name, brand, or location difference is
+       explained in `researchNotes`. `Low` when anything material is uncertain.
     5. Set `reviewStatus=Ready` only when `website`, `industry`, `employeeSize`, `sourceUrl`,
-       decision-maker first/last name, `title`, and `linkedinUrl` are complete and confidence is
-       High or reviewed Medium.
-    6. Set `reviewStatus=Needs Review` when the likely match is incomplete, confidence is Low, or
-       the tool cannot supply the required LinkedIn URL. Explain the exact missing or conflicting
-       detail in `researchNotes`.
+       decision-maker first/last name, `title`, and `linkedinUrl` are complete and confidence
+       is High or reviewed Medium.
+    6. Set `reviewStatus=Needs Review` when the likely match is incomplete, confidence is Low,
+       or Apollo can't supply a LinkedIn URL. Explain the exact gap in `researchNotes`.
     7. Set `reviewStatus=Rejected` when the company is closed, duplicated, out of state,
        consumer-only, or otherwise unusable. Explain why in `researchNotes`.
-    8. If an email was revealed, accept only a business-domain address. Email discovery is optional
-       here, and every discovered address still goes through ZeroBounce before QUEUE.
-    9. Save the workbook. Reapply the `reviewStatus=Not Started` filter if the completed row remains
-       visible. Select the next visible row, change it to `In Progress`, and begin the same tool's
-       steps again.
-
-    **GetProspect fallback — exceptions only, not a fifth lane:** create one free account only
-    after a primary tool produces `Needs Review` or finds the person but no usable email. Search
-    the exact known domain plus the already identified person's name/title, reveal one result,
-    enter `GetProspect` in `emailSource`, and return immediately to the original `MASTER_QUEUE`
-    row. Do not run all 229 companies through it.
+    8. Save the workbook. Reapply the `reviewStatus=Not Started` filter if the completed row is
+       still visible, select the next row, mark it `In Progress`, and repeat.
 
     **Move completed rows into the campaign:** follow Part 2 step 9.6–9.9. Paste Ready A:H
     values from `IMPORT_READY` into `COMPANIES`, then add the same row's person fields to
     `CONTACTS`. `CONTACTS.company` must match `COMPANIES.company` verbatim; leave `contactId`
-    blank. If no email was found, leave `email` blank for Hunter. If one was found, copy it but
-    still run ZeroBounce before anything reaches QUEUE.
+    blank. Whatever `discoveredEmail` holds (Apollo's, or blank for Hunter to fill) still runs
+    through ZeroBounce before anything reaches QUEUE.
 
     **Rinse and repeat.**
 
@@ -1483,30 +1360,39 @@ then add LinkedIn to a controlled high-value segment and compare company-level o
 Free-plan figures below were checked on **2026-07-20**; confirm each account page before a
 session because providers change quotas without preserving old documentation.
 
-| Service | Current free allowance | Role in this plan |
+| Service | Cost | Role in this plan |
 |---|---|---|
-| data.mass.gov (Socrata) | Unlimited | Company sourcing (Phase 5 build — roadmap #10) |
-| Website scraper + Gemini | Unlimited | Email extraction from company sites (Phase 5) |
-| Pattern-guess + MX check | Unlimited | Free Hunter-bypass, verified by ZeroBounce (Phase 5) |
-| [Apollo](https://www.apollo.io/pricing) | 900 annual credits granted monthly | 59-company web research lane; avoid reveals in first pass |
-| [Prospeo](https://help.prospeo.io/en/article/how-to-create-an-account-on-prospeo-for-free-5inxir/) | 100 credits/month | 70-company lane; reserve 70 company credits + 30 exceptions |
-| [Skrapp](https://skrapp.io/pricing) | 50 credits/month; 10 people + 5 company searches/day | 50-company lane paced over 10 research days |
-| [Snov](https://snov.io/knowledgebase/pricing-plans-overview/) | 50 credits/month | 50-company lane; one credit maximum per company |
-| [GetProspect](https://getprospect.com/pricing) | 50 valid emails + 100 verifications/month | Fallback only after a primary lane fails |
-| Hunter | 25 finds/mo | Fallback finder for the holdouts |
-| ZeroBounce | PAYG pack | Verify **everything**, every source, always |
+| [Apollo Basic](https://www.apollo.io/pricing) | $59/mo, monthly billing | Primary: company + decision-maker research, email reveal, backup-list criteria search (step 21, Part 5 backup playbook) |
+| Hunter | 25 finds/mo, free | Automatic fallback when Apollo has no email on file (`runContactDiscoveryTrigger`) |
+| ZeroBounce | PAYG pack, one-time ~$20 | Verify **everything**, every source, always — the only gate that matters before QUEUE |
+| data.mass.gov (Socrata) | Unlimited, free | Company sourcing (Phase 5 build — roadmap #10, still unbuilt) |
+| Website scraper + Gemini | Unlimited, free | Email extraction from company sites (Phase 5, still unbuilt) |
+| Pattern-guess + MX check | Unlimited, free | Free Hunter-bypass, verified by ZeroBounce (Phase 5, still unbuilt) |
 
-Cadence math: 3 sends/day ≈ 65–90 contacts/month. The four exact workbook lanes can be
-researched during the remaining warm-up window without duplicating a company across services.
-Do not assume credits roll over: Prospeo/Snov reset; Skrapp's free plan does not advertise
-rollover; Apollo credits expire at the billing-cycle boundary. GetProspect is the exception and
-currently rolls unused credits up to one monthly allowance. **Week 7–8 (late August/early
-September, ahead of the September 17 launch):** if the backlog is big, buy one Hunter Starter
-month (~$40 ≈ 500 finds ≈ 5–6 months runway), batch-process, cancel before renewal (calendar
-reminder — monthly billing only, never annual: Gotcha #4).
+Prospeo, Skrapp, Snov, and GetProspect are retired from the primary workflow (see step 21) —
+Apollo Basic replaced all four. Any unused credits on those accounts cost nothing to keep and
+can serve as an emergency tie-breaker on one stubborn company, but nothing in this plan depends
+on them anymore.
+
+**MillionVerifier was considered and rejected.** ZeroBounce is already bought, already wired
+into `ContactVerificationService.gs`, and already the automatic gate `QueueBuilder` checks —
+adding a second verifier would mean a manual CSV round-trip into a column the pipeline already
+fills for free. Skip it.
+
+Cadence math: 3 sends/day ≈ 65–90 contacts/month. **Week 7–8 (late August/early September,
+ahead of the September 17 launch):** if the backlog is big, buy one Hunter Starter month
+(~$40 ≈ 500 finds ≈ 5–6 months runway) to clear a verification backlog fast, batch-process,
+cancel before renewal (calendar reminder — monthly billing only, never annual: Gotcha #4).
+This is separate from and additional to the Apollo subscription, not a replacement for it.
 
 **Verification freshness (Gotcha #3):** discovery barely decays; verification does. Discover
 early and continuously; run the big *verification* burst in the last 1–2 weeks before launch.
+
+**Contact-cap discipline (per company):** never email more than one contact at a company
+simultaneously. Give Contact 1 the full sequence (initial + 2 follow-ups, ~2 weeks) before
+researching or queuing Contact 2. Realistic ceiling by company size: 1 contact under 50
+employees, 2 for 50–250, 3 only for 250+ — see the title-tier table in step 21. More than that
+at a small company reads as automated, not personal.
 
 ---
 
@@ -1589,33 +1475,60 @@ Postmaster Tools), QUEUE populated, personalization lines human-approved, templa
 5. Sheet backup: File → Make a copy (dated) → Drive Backups folder. Extra copy before any bulk
    edit.
 
-### 🧐 FUTURE CONSIDERATION — replenish the lead list
+### Backup list — Apollo criteria search (build now, reveal later)
 
-There is no single free database that will continuously produce unlimited, verified
-decision-makers. That does **not** mean the campaign lacks a sustainable next source. At a limit
-of 3 new emails per weekday, nearly 300 prospects provide roughly 100 sending days — about five
-months of runway before accounting for pauses and follow-ups. The future requirement is therefore
-not another giant one-time list; it is a repeatable process that adds approximately **15 qualified
-companies per week**.
+**This is live now, not a future build** — it's Apollo web-UI usage, no code or schema change.
+At 3 sends/day with 2–3 contacts per company (Part 5's contact-cap discipline), the current 229
+prospects are roughly 6–9 months of send volume. You'll know within the first 2–3 weeks of
+sending whether the list is producing replies, long before it runs out. This backup list exists
+so a weak signal never turns into a scramble — and it costs nothing to build, because Apollo
+search/browse doesn't spend credits. Only *revealing* an email does.
 
-Use this replenishment pipeline when the current researched list begins running low:
+**Why not a broader automated scraper (OpenStreetMap/Overpass, business directories, etc.):**
+those surface *any* business, weighted toward consumer storefronts that are common on a map —
+restaurants, shops, salons — not the 16–250-employee B2B employers this offer targets. They also
+return no employee count and no WTFP-fit signal, so every result still needs the full manual
+research pass. Apollo's criteria search returns MA employers pre-qualified on the two fields
+that actually matter (size, industry) in the same tool already used for step 21 — no new source,
+no new dedupe path, no new qualification step to design.
 
-1. Discover candidate companies through OpenStreetMap/Overpass, targeted business directories,
-   industry associations, chambers, grant-recipient lists, and focused searches.
-2. Automatically normalize the records and remove duplicates, obvious poor fits, suppressed
-   companies, and companies already present in `COMPANIES`.
-3. Enrich company size, industry, website, and LinkedIn information.
-4. Use Prospeo, Skrapp, Snov, and LinkedIn to identify decision-makers matching the established
-   company-size and industry title rules.
-5. Discover and verify business-domain email addresses; never promote an unverified address.
-6. Require human approval before moving a candidate into `COMPANIES` and `CONTACTS`.
+**Build the backlog (free — browsing and criteria search cost no credits):**
 
-Treat Overpass and other public sources as **candidate-company discovery**, not as sources of
-outreach-ready contacts. The discovery, normalization, deduplication, and basic enrichment stages
-can eventually be automated, but final qualification should remain human-reviewed to protect the
-sender reputation and avoid wasting the limited daily sends. Finish researching the current list
-first and record which industries, company sizes, and titles survive qualification; build the
-future replenishment automation around those demonstrated patterns.
+1. In [Apollo](https://app.apollo.io), go to **Search → Companies**.
+2. Filter: **Location** = Massachusetts, **Employees** = your target band (16–250, or split
+   into the size tiers from step 21 if you want to pre-sort by tier), and an **Industry**/
+   **Keywords** filter matching your best-performing verticals from the current list once you
+   have reply data (trades, manufacturing, healthcare, professional services — adjust as real
+   results come in).
+3. Browse the results. For each company that looks like a real fit, note the company name and
+   domain in a scratch tab (a new sheet tab, e.g. `APOLLO_BACKLOG`) — **do not reveal any
+   emails yet.** This step is pure list-building.
+4. Repeat during warm-up dead time — there's no rush and no cost pressure; this is exactly what
+   the pre-launch weeks are for.
+
+**Dedupe the backlog against `COMPANIES` before promoting anything:**
+
+Dedupe on **normalized website domain**, not company name — Gotcha #8 applies here too:
+"Acme" vs "Acme Inc." won't match, but the domain will. `Cleaner.gs` already normalizes
+`COMPANIES.website` to lowercase, no `http(s)://`, no leading `www.`, no trailing `/`; match
+your backlog's domain the same way. In a spare column next to your `APOLLO_BACKLOG` domains:
+
+```
+=IF(COUNTIF(COMPANIES!$B:$B, LOWER(REGEXREPLACE(A2,"^https?://|^www\.|/$",""))) > 0, "DUPLICATE", "NEW")
+```
+
+(Adjust `A2` and `COMPANIES!$B:$B` to your actual columns.) Only `NEW` rows are real backlog —
+discard the rest. Watch for two edge cases the formula won't catch: existing `COMPANIES` rows
+with a blank website won't dedupe against anything, and subdomain mismatches
+(`shop.acme.com` vs `acme.com`) will read as different companies. Both are rare enough to
+eyeball at this volume.
+
+**Activate a backlog company only when needed** (the 229 goes stale, or a specific industry
+needs reinforcement): move it into `COMPANIES`/`MASTER_QUEUE` and run it through the exact same
+step 21 Apollo playbook — company confirm, tier-appropriate title search, reveal the email now
+(this is where the credit actually gets spent), close the row, promote. Nothing about the
+downstream pipeline (Hunter fallback, ZeroBounce, QueueBuilder) changes for backlog-sourced
+companies; they enter the funnel exactly like any other `COMPANIES` row.
 
 ---
 

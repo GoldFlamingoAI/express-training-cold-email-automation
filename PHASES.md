@@ -240,6 +240,21 @@ Strategy source: `Manual_Email_Warmup` research doc (2026-07-17).*
 
 ---
 
+## Phase CR: Course Reminder Emails (standalone — `email-automation-setup/`)
+*Goal: automatic student emails for each 8-day Express Training cohort — welcome (14 days out),
+check-in (5 days out), a reminder 1 hour before every session with that day's Zoom + resources,
+optional follow-up. Built by Claude directly (not a Codex task). Separate Apps Script project and
+sheet; sends from the normal Google account via MailApp, never the cold-email domain.*
+
+- [x] ✅ **Task CR.1** Scheduling + rendering (pure): `Schedule.gs`, `Render.gs`, `Config.gs`
+- [x] ✅ **Task CR.2** Sheet I/O + setup tabs + send loop/menu/trigger: `SheetStore.gs`, `Main.gs`
+- [x] ✅ **Task CR.3** Tests: `email-automation-setup/tests/email-automation.test.js`
+- [ ] 🏠 **Setup CR.a** New Sheet → Apps Script → paste 5 files + manifest → run `setup` (see subdir README)
+- [ ] 🏠 **Setup CR.b** Settings: Test Email + Internal Emails; enter first cohort/calendar/recipients; preview templates
+- [ ] 🏠 **Setup CR.c** Turn on automatic sending in test mode; then set Test Mode = FALSE
+
+---
+
 ## Upgrade Triggers (human decides, not Codex)
 
 | Signal | Action |

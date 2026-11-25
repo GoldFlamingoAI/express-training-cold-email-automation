@@ -1,4 +1,4 @@
-// Run: node course-reminders/tests/course-reminders.test.js
+// Run: node email-automation-setup/tests/email-automation.test.js
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -273,4 +273,4 @@ assert.ok(ctx.textToHtml('<b>').includes('&lt;b&gt;'));
   }
 }
 
-console.log('course-reminders: all tests passed');
+console.log('email-automation-setup: all tests passed');

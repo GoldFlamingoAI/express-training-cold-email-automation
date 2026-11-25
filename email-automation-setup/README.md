@@ -11,17 +11,19 @@ Automatic emails for every 8-day Express Training cohort, driven by one Google S
 
 All timings are editable on the **Settings** tab.
 
-This is a **separate Apps Script project** from the cold-email system in `/src` — different
-sheet, sends from your normal Google account, never from the cold-email domain.
+This is a **separate project** from the cold-email automation (`/src`). It shares no code
+with it, runs as its own Apps Script project on its own sheet, and sends from your normal
+Google account, never the cold-email domain. Everything it needs is in this folder, so it can
+be lifted into its own repo at any time by copying `email-automation-setup/`.
 
 ## Setup (about 15 minutes)
 
 1. Create a new blank Google Sheet (e.g. "Express Training — Course Emails").
 2. **Extensions → Apps Script.** Delete the starter `Code.gs`.
-3. Create 5 script files and paste in the matching file from `course-reminders/src/`:
+3. Create 5 script files and paste in the matching file from `email-automation-setup/src/`:
    `Config`, `Schedule`, `Render`, `SheetStore`, `Main`.
 4. **Project Settings (gear) → check "Show appsscript.json"**, open it, and replace it with
-   `course-reminders/appsscript.json`. Set `timeZone` to your timezone if it isn't New York.
+   `email-automation-setup/appsscript.json`. Set `timeZone` to your timezone if it isn't New York.
 5. Back in the editor, pick `setup` in the function dropdown → **Run** → **Allow** permissions.
    (Google may warn the app is unverified — it's your own script: Advanced → Go to project.)
 6. Reload the sheet. You now have a **Course Emails** menu and these tabs, with sample data:
@@ -84,5 +86,5 @@ There's no auto-deploy. After changing a file here, paste it into the Apps Scrip
 
 ## Tests
 
-`node course-reminders/tests/course-reminders.test.js` — scheduling rules plus an end-to-end run
+`node email-automation-setup/tests/email-automation.test.js` — scheduling rules plus an end-to-end run
 against a fake sheet and mailbox.
